@@ -1,0 +1,14 @@
+## Default owners for everything in the repo
+**@kamesh-chathuranga**
+
+## Argocd Apps
+/argocd/apps/ @kamesh-chathuranga
+
+## Argocd Projects
+/argocd/projects/ @kamesh-chathuranga
+
+## Helm Values
+/helm-values/ @kamesh-chathuranga
+
+## CI workflows
+/.github/workflows/ @kamesh-chathuranga
