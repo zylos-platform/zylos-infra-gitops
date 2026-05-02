@@ -17,3 +17,6 @@ Thumbs.db
 secrets/
 .env
 .env.local
+
+Virtual Environments
+.venv/

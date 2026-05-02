@@ -1,0 +1,53 @@
+###############################################################################
+# cert-manager Helm values.
+#
+# Notes:
+#  - Use crds.enabled=true (the modern flag; installCRDs= is deprecated).
+#  - For local dev, we use a self-signed ClusterIssuer (separate manifest).
+#  - For production on AWS, we use Let's Encrypt with DNS-01 over Route 53.
+###############################################################################
+
+crds:
+  enabled: true
+  keep: true
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+webhook:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+cainjector:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+# Prometheus integration — auto-creates ServiceMonitor (requires the
+# Prometheus Operator CRDs from kube-prometheus-stack to exist first;
+# Argo CD's retry mechanism handles ordering.)
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: true
+    namespace: observability
+    labels:
+      release: kube-prometheus-stack

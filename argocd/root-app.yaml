@@ -1,0 +1,44 @@
+###############################################################################
+# Zylos GitOps Root Application — the "App of Apps".
+#
+# Argo CD treats this Application as a regular sync target. Its source is the
+# `argocd/apps/` directory in this repo. Every YAML file inside that directory
+# defines a CHILD Application. When Argo CD syncs this root, it creates each
+# child Application; each child then syncs its own manifests/charts.
+#
+# This pattern is the canonical way to bootstrap a GitOps-managed cluster.
+###############################################################################
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zylos-root
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: bootstrap
+spec:
+  project: default
+  source:
+    repoURL: REPO_URL_PLACEHOLDER
+    targetRevision: REVISION_PLACEHOLDER
+    path: argocd/apps
+    directory:
+      recurse: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true       # Delete child Apps removed from Git
+      selfHeal: true    # Reconcile drift automatically
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

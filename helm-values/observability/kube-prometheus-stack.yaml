@@ -1,0 +1,119 @@
+###############################################################################
+# kube-prometheus-stack Helm values for Zylos.
+#
+# Note: We DISABLE Grafana's bundled Loki and Tempo support (they ship in
+# separate Apps). The integration is wired via Grafana data sources.
+###############################################################################
+
+defaultRules:
+  create: true
+  # Reduce noise in dev clusters by disabling per-pod resource alerts
+  rules:
+    kubeProxy: false # Many local k8s distros don't run kube-proxy as a Pod
+    etcd: false # Same
+
+# Alertmanager — keep modest for local; HA in prod
+alertmanager:
+  alertmanagerSpec:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+
+# Prometheus — production-leaning configuration
+prometheus:
+  prometheusSpec:
+    replicas: 1
+    retention: 7d # Local dev — prod uses 30d
+    retentionSize: 8GB
+
+    # Discover ServiceMonitors and PodMonitors in ALL namespaces, not just our own
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+
+    # Enable remote write — OTel Collector pushes here too
+    enableRemoteWriteReceiver: true
+
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+# Grafana — preconfigured with Tempo and Loki data sources
+grafana:
+  enabled: true
+  adminPassword: "admin" # Local dev only; prod uses a Sealed/External Secret
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  persistence:
+    enabled: true
+    size: 5Gi
+    accessModes: ["ReadWriteOnce"]
+
+  # Auto-discover dashboards via labels
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+    datasources:
+      enabled: true
+      label: grafana_datasource
+      labelValue: "1"
+      searchNamespace: ALL
+
+  # Pre-wired data sources for Tempo and Loki
+  additionalDataSources:
+    - name: Tempo
+      type: tempo
+      access: proxy
+      url: http://tempo.observability.svc.cluster.local:3100
+      jsonData:
+        httpMethod: GET
+        serviceMap:
+          datasourceUid: prometheus
+        nodeGraph:
+          enabled: true
+
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki-gateway.observability.svc.cluster.local
+      jsonData:
+        derivedFields:
+          - datasourceUid: tempo
+            matcherRegex: 'trace_id=(\w+)'
+            name: TraceID
+            url: "$${__value.raw}"
