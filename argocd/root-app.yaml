@@ -21,8 +21,8 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
-    targetRevision: main
+    repoURL: REPO_URL_PLACEHOLDER
+    targetRevision: REVISION_PLACEHOLDER
     path: argocd/apps
     directory:
       recurse: false

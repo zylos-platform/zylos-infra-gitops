@@ -18,7 +18,7 @@ spec:
       helm:
         releaseName: loki
         valueFiles:
-          - $values/helm-values/loki.yaml
+          - $values/helm-values/observability/loki.yaml
     - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
       targetRevision: main
       ref: values

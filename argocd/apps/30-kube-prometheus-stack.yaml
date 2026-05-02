@@ -19,7 +19,7 @@ spec:
       helm:
         releaseName: kube-prometheus-stack
         valueFiles:
-          - $values/helm-values/kube-prometheus-stack.yaml
+          - $values/helm-values/observability/kube-prometheus-stack.yaml
     - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
       targetRevision: main
       ref: values

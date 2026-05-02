@@ -18,7 +18,7 @@ spec:
       helm:
         releaseName: cert-manager
         valueFiles:
-          - $values/helm-values/cert-manager.yaml
+          - $values/helm-values/cert-manager/cert-manager.yaml
     - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
       targetRevision: main
       ref: values

@@ -19,7 +19,7 @@ spec:
       helm:
         releaseName: keycloak
         valueFiles:
-          - $values/helm-values/keycloak.yaml
+          - $values/helm-values/keycloak/keycloak.yaml
     - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
       targetRevision: main
       ref: values

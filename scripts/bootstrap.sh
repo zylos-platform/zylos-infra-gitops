@@ -47,7 +47,7 @@ helm upgrade --install argocd argo/argo-cd \
   --version "${ARGOCD_CHART_VERSION}" \
   --namespace "${ARGOCD_NAMESPACE}" \
   --create-namespace \
-  --values argocd/install/argocd-values.yaml \
+  --values helm-values/argocd/argocd-values.yaml \
   --wait \
   --timeout 10m
 

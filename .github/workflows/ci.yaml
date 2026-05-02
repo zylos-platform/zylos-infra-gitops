@@ -59,7 +59,7 @@ jobs:
           # kube-prometheus-stack
           helm template kps prometheus-community/kube-prometheus-stack \
             --version 65.0.0 \
-            --values helm-values/kube-prometheus-stack.yaml \
+            --values helm-values/observability/kube-prometheus-stack.yaml \
             > /dev/null
 
   conventional-commits:

@@ -18,7 +18,7 @@ spec:
       helm:
         releaseName: tempo
         valueFiles:
-          - $values/helm-values/tempo.yaml
+          - $values/helm-values/observability/tempo.yaml
     - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
       targetRevision: main
       ref: values
