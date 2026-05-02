@@ -1,0 +1,43 @@
+###############################################################################
+# Argo CD AppProject for cluster-platform components (Istio, observability,
+# cert-manager, Keycloak, etc.). These are infrastructure, not user code, and
+# get broad permissions inside the cluster.
+###############################################################################
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Cluster platform components managed by GitOps
+
+  sourceRepos:
+    - https://github.com/zylos-platform/*
+    - https://argoproj.github.io/argo-helm
+    - https://istio-release.storage.googleapis.com/charts
+    - https://prometheus-community.github.io/helm-charts
+    - https://grafana.github.io/helm-charts
+    - https://charts.jetstack.io
+    - oci://quay.io/jetstack/charts/cert-manager
+    - https://charts.external-secrets.io
+    - https://bitnami-labs.github.io/sealed-secrets
+    - https://charts.bitnami.com/bitnami
+    - https://open-telemetry.github.io/opentelemetry-helm-charts
+    - https://codecentric.github.io/helm-charts
+
+  destinations:
+    - namespace: "*"
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+
+  orphanedResources:
+    warn: true

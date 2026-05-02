@@ -1,0 +1,82 @@
+###############################################################################
+# Keycloak (Codecentric chart, which uses the Keycloak.X distribution).
+# Imports the same realm config we use in Docker Compose for parity.
+###############################################################################
+
+image:
+  tag: 26.6.1
+
+extraEnv: |
+  - name: KC_BOOTSTRAP_ADMIN_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-admin
+        key: username
+  - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-admin
+        key: password
+  - name: KC_HOSTNAME_STRICT
+    value: "false"
+  - name: KC_HEALTH_ENABLED
+    value: "true"
+  - name: KC_METRICS_ENABLED
+    value: "true"
+
+# Production: PostgreSQL backing store
+database:
+  vendor: postgres
+  hostname: keycloak-postgresql
+  port: 5432
+  database: keycloak
+  username: keycloak
+  existingSecret: keycloak-db
+
+# Embedded Postgres (dev only) — disable and provide your own in prod
+postgresql:
+  enabled: true
+  auth:
+    username: keycloak
+    database: keycloak
+    existingSecret: keycloak-db
+
+# Realm import — references a ConfigMap we provide separately
+extraVolumes: |
+  - name: realm
+    configMap:
+      name: zylos-realm
+
+extraVolumeMounts: |
+  - name: realm
+    mountPath: /opt/keycloak/data/import
+
+command:
+  - "/opt/keycloak/bin/kc.sh"
+  - "start"
+  - "--optimized"
+  - "--import-realm"
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# Health and metrics endpoints
+service:
+  httpPort: 8080
+  httpManagementPort: 9000
+
+ingress:
+  enabled: false   # Local dev: port-forward; prod uses Istio gateway
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: keycloak
+    labels:
+      release: kube-prometheus-stack

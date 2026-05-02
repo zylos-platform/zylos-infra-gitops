@@ -1,0 +1,8 @@
+# ztunnel: per-node L4 proxy daemon
+resources:
+  requests:
+    cpu: 200m
+    memory: 128Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi

@@ -1,0 +1,55 @@
+###############################################################################
+# Pre-create platform namespaces with the right labels:
+#   - Istio ambient mode enrollment via "istio.io/dataplane-mode: ambient"
+#   - Pod Security Standards via "pod-security.kubernetes.io/enforce"
+###############################################################################
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-system
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    app.kubernetes.io/part-of: zylos-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    app.kubernetes.io/part-of: zylos-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    istio.io/dataplane-mode: ambient
+    app.kubernetes.io/part-of: zylos-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: keycloak
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    istio.io/dataplane-mode: ambient
+    app.kubernetes.io/part-of: zylos-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: external-secrets
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sealed-secrets
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform

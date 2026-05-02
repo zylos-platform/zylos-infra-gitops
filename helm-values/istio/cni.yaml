@@ -1,0 +1,13 @@
+profile: ambient
+
+cni:
+  ambient:
+    enabled: true
+  # Resource sizing — modest for kind, scaled in prod via overlays
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 1000m
+      memory: 256Mi

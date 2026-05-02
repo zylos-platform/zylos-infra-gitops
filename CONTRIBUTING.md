@@ -10,7 +10,7 @@
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;
+`<type>(<scope>): <subject>`
 
 Types: `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `revert`.
 

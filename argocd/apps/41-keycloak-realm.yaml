@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: keycloak-realm
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "9"   # Before keycloak itself (sync-wave 10)
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
+    targetRevision: main
+    path: manifests/keycloak-realm
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: keycloak
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
