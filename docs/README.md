@@ -5,16 +5,16 @@ This repo's manifests are reconciled by Argo CD against any cluster.
 
 ## What's Inside
 
-| Component | Purpose |
-|-----------|---------|
-| Argo CD | GitOps controller |
-| Istio (ambient mode) | Service mesh |
-| cert-manager | TLS certificate automation |
-| kube-prometheus-stack | Metrics + alerting (Prometheus, Grafana, Alertmanager) |
-| Grafana Tempo | Distributed traces |
-| Grafana Loki | Log aggregation |
-| OpenTelemetry Collector | OTLP receiver, fan-out to Tempo/Prom/Loki |
-| Keycloak | Identity provider |
+| Component               | Purpose                                                |
+| ----------------------- | ------------------------------------------------------ |
+| Argo CD                 | GitOps controller                                      |
+| Istio (ambient mode)    | Service mesh                                           |
+| cert-manager            | TLS certificate automation                             |
+| kube-prometheus-stack   | Metrics + alerting (Prometheus, Grafana, Alertmanager) |
+| Grafana Tempo           | Distributed traces                                     |
+| Grafana Loki            | Log aggregation                                        |
+| OpenTelemetry Collector | OTLP receiver, fan-out to Tempo/Prom/Loki              |
+| Keycloak                | Identity provider                                      |
 
 ## Bootstrap Procedure
 

@@ -5,16 +5,16 @@ declaratively manage the entire platform layer.
 
 ## Stack
 
-| Component | Version | Notes |
-|-----------|---------|-------|
-| Argo CD | chart 9.5.x (app v3.3) | Server-side apply enabled |
-| Istio | 1.24.x | **Ambient mode** (no sidecars) |
-| cert-manager | v1.20.2 | OCI Helm chart from quay.io/jetstack |
-| kube-prometheus-stack | 65.x | Prometheus 3 + Grafana 11 |
-| Grafana Tempo | chart 1.18 | Traces |
-| Grafana Loki | chart 6.21 | Logs (monolithic mode) |
-| OpenTelemetry Collector | chart 0.108 | OTLP receiver |
-| Keycloak | 26.6.x (codecentric chart) | Identity |
+| Component               | Version                    | Notes                                |
+| ----------------------- | -------------------------- | ------------------------------------ |
+| Argo CD                 | chart 9.5.x (app v3.3)     | Server-side apply enabled            |
+| Istio                   | 1.24.x                     | **Ambient mode** (no sidecars)       |
+| cert-manager            | v1.20.2                    | OCI Helm chart from quay.io/jetstack |
+| kube-prometheus-stack   | 65.x                       | Prometheus 3 + Grafana 11            |
+| Grafana Tempo           | chart 1.18                 | Traces                               |
+| Grafana Loki            | chart 6.21                 | Logs (monolithic mode)               |
+| OpenTelemetry Collector | chart 0.108                | OTLP receiver                        |
+| Keycloak                | 26.6.x (codecentric chart) | Identity                             |
 
 ## Quick Start
 
@@ -37,15 +37,16 @@ procedure.
 
 ```
 ├── argocd/
-│      └─ install/      # Argo CD's own values (one-time install)
-│      └─ projects/     # AppProjects (RBAC scopes)
-│      └─ apps/         # Child Applications managed by the root
-│      └─ root-app.yaml # The "app of apps" entrypoint
-├── helm-values/        # Per-chart values files (referenced by Apps via $values)
-├── manifests/          # Plain manifests (not Helm-charted)
-├── scripts/            # bootstrap, teardown, port-forward
-├── docs/               # README, ADRs, runbooks
+│      └─ cluster-bootstrap/
+│               └─ projects/     # AppProjects (RBAC scopes)
+│               └─ apps/         # Child Applications managed by the root
+│      └─ root-app.yaml          # The "app of apps" entrypoint
+├── helm-values/                 # Per-chart values files (referenced by Apps via $values)
+├── manifests/                   # Plain manifests (not Helm-charted)
+├── scripts/                     # bootstrap, teardown, port-forward
+├── docs/                        # README, ADRs, runbooks
 ```
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Every PR runs `yamllint` and

@@ -17,7 +17,7 @@ The script:
 
 1. Installs Argo CD via Helm (one-time direct install).
 2. Applies `argocd/root-app.yaml`.
-3. Argo CD reconciles every child Application from `argocd/apps/`.
+3. Argo CD reconciles every child Application from `argocd/cluster-bootstrap/apps/`.
 
 ## Watch Progress
 
