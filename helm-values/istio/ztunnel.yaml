@@ -1,4 +1,7 @@
 # ztunnel: per-node L4 proxy daemon
+env:
+  IPV6_ENABLED: "false"
+  
 resources:
   requests:
     cpu: 200m
