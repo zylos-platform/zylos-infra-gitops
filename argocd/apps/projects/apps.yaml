@@ -8,6 +8,8 @@ kind: AppProject
 metadata:
   name: apps
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-200" # Highest priority
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -17,10 +19,10 @@ spec:
     - https://github.com/zylos-platform/*
 
   destinations:
-    - namespace: "zylos-*"   # Only deploy to namespaces with the zylos- prefix
+    - namespace: "zylos-*" # Only deploy to namespaces with the zylos- prefix
       server: https://kubernetes.default.svc
 
-  clusterResourceWhitelist: []   # No cluster-wide resources
+  clusterResourceWhitelist: [] # No cluster-wide resources
 
   namespaceResourceWhitelist:
     - group: ""

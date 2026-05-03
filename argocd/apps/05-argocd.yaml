@@ -1,34 +1,42 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: keycloak
+  name: argocd
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "10"   # After observability is up
+    argocd.argoproj.io/sync-wave: "-50"
+  # This finalizer ensures that if you delete this Application,
+  # Argo CD cleans up the resources before it disappears.
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/part-of: zylos-platform
-    app.kubernetes.io/component: identity
 spec:
   project: platform
   sources:
-    - repoURL: https://codecentric.github.io/helm-charts
-      chart: keycloakx
-      targetRevision: 7.0.1
+    - repoURL: https://argoproj.github.io/argo-helm
+      chart: argo-cd
+      targetRevision: 9.5.5
       helm:
-        releaseName: keycloak
         valueFiles:
-          - $values/helm-values/keycloak/keycloak.yaml
+          - $values/helm-values/argocd/argocd-values.yaml
     - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
       targetRevision: main
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: keycloak
+    namespace: argocd
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
+      - CreateNamespace=false
+      # This prevents Argo CD from fighting with server-side apply fields
       - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

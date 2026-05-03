@@ -32,7 +32,7 @@ spec:
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
-      - SkipDryRunOnMissingResource=true   # CRDs may not exist on first sync
+      - SkipDryRunOnMissingResource=true # CRDs may not exist on first sync
     retry:
       limit: 10
       backoff:
