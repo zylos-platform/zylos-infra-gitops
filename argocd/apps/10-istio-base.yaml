@@ -35,7 +35,7 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=false   # Pre-created by namespaces app
+      - CreateNamespace=false # Pre-created by namespaces app
       - ServerSideApply=true
     retry:
       limit: 5

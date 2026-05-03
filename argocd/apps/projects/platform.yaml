@@ -8,6 +8,8 @@ kind: AppProject
 metadata:
   name: platform
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-200" # Highest priority
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

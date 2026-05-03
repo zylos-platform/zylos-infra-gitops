@@ -8,7 +8,7 @@ metadata:
   name: namespaces
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "-100"   # Highest priority — first
+    argocd.argoproj.io/sync-wave: "-100"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
@@ -24,7 +24,7 @@ spec:
     namespace: default
   syncPolicy:
     automated:
-      prune: false   # Never auto-delete namespaces — too dangerous
+      prune: false # Never auto-delete namespaces — too dangerous
       selfHeal: true
     syncOptions:
       - ServerSideApply=true

@@ -38,10 +38,12 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 # Step 1: Install Argo CD with Helm.
+echo ""
 echo "==> [1/3] Adding Argo CD Helm repo..."
 helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update argo
 
+echo ""
 echo "==> [2/3] Installing Argo CD..."
 helm upgrade --install argocd argo/argo-cd \
   --version "${ARGOCD_CHART_VERSION}" \
@@ -51,23 +53,8 @@ helm upgrade --install argocd argo/argo-cd \
   --wait \
   --timeout 10m
 
+echo ""
 echo "==> [3/3] Applying root app-of-apps..."
 # Substitute the Git repo URL into the root app at apply time.
 sed "s|REPO_URL_PLACEHOLDER|${GIT_REPO_URL}|g; s|REVISION_PLACEHOLDER|${GIT_REVISION}|g" \
   argocd/root-app.yaml | kubectl apply -f -
-
-echo ""
-echo "✓ Bootstrap initiated."
-echo ""
-echo "Argo CD will now reconcile every component declared in argocd/apps/."
-echo ""
-echo "Watch progress:"
-echo "  kubectl get applications -n ${ARGOCD_NAMESPACE} -w"
-echo ""
-echo "Open the Argo CD UI:"
-echo "  ./scripts/port-forward-argocd.sh"
-echo "  Then visit http://localhost:8081"
-echo ""
-echo "Get the initial admin password:"
-echo "  kubectl -n ${ARGOCD_NAMESPACE} get secret argocd-initial-admin-secret \\"
-echo "    -o jsonpath='{.data.password}' | base64 -d && echo"

@@ -26,3 +26,9 @@ sync:  ## Force-sync all Argo CD Applications (rare; usually selfHeal handles it
 	@for app in $$(kubectl -n argocd get applications -o name); do \
 	  kubectl -n argocd patch $$app --type merge -p '{"operation":{"sync":{}}}' 2>/dev/null || true; \
 	done
+
+kind-up:  ## Create local kind cluster + bootstrap (LEAN=1 for single node)
+	./scripts/kind-up.sh
+
+kind-down:  ## Delete local kind cluster (releases all memory)
+	./scripts/kind-down.sh
