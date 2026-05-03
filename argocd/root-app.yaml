@@ -23,16 +23,16 @@ spec:
   source:
     repoURL: REPO_URL_PLACEHOLDER
     targetRevision: REVISION_PLACEHOLDER
-    path: argocd/apps
+    path: argocd/cluster-bootstrap
     directory:
-      recurse: false
+      recurse: true
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
   syncPolicy:
     automated:
-      prune: true       # Delete child Apps removed from Git
-      selfHeal: true    # Reconcile drift automatically
+      prune: true # Delete child Apps removed from Git
+      selfHeal: true # Reconcile drift automatically
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
