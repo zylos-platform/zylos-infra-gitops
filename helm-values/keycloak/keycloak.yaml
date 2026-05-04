@@ -19,10 +19,6 @@ extraEnv: |
         key: password
   - name: KC_HOSTNAME_STRICT
     value: "false"
-  - name: KC_HEALTH_ENABLED
-    value: "true"
-  - name: KC_METRICS_ENABLED
-    value: "true"
 
 # Production: PostgreSQL backing store
 database:
@@ -71,7 +67,7 @@ service:
   httpManagementPort: 9000
 
 ingress:
-  enabled: false   # Local dev: port-forward; prod uses Istio gateway
+  enabled: false # Local dev: port-forward; prod uses Istio gateway
 
 metrics:
   enabled: true

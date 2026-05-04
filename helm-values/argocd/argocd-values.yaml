@@ -32,7 +32,7 @@ configs:
 
   params:
     # Server-side apply is the default in v3, but explicit is better than implicit
-    server.insecure: "true"   # Local dev only; behind Istio gateway in prod
+    server.insecure: "true" # Local dev only; behind Istio gateway in prod
     application.namespaces: "argocd,zylos-*"
     controller.diff.server.side: "true"
 
