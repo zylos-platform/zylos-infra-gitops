@@ -3,7 +3,7 @@
 deploymentMode: SingleBinary
 
 loki:
-  auth_enabled: false   # Local dev; prod uses tenant headers
+  auth_enabled: false # Local dev; prod uses tenant headers
   commonConfig:
     replication_factor: 1
   storage:
