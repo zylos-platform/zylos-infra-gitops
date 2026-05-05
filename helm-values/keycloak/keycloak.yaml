@@ -50,7 +50,6 @@ extraVolumeMounts: |
 command:
   - "/opt/keycloak/bin/kc.sh"
   - "start"
-  - "--optimized"
   - "--import-realm"
 
 resources:
