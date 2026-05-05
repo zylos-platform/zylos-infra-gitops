@@ -1,0 +1,45 @@
+###############################################################################
+# CloudNativePG — production-grade Postgres operator for Kubernetes.
+#
+# Used as the local equivalent of AWS Aurora PostgreSQL. Manages Postgres
+# clusters declaratively with backups, HA, and PITR. CNCF Sandbox project.
+#
+# We need this BEFORE Keycloak so the Keycloak operator can request a
+# Postgres cluster via a Cluster CR.
+###############################################################################
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudnative-pg
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: database
+spec:
+  project: platform
+  source:
+    repoURL: https://cloudnative-pg.github.io/charts
+    chart: cloudnative-pg
+    targetRevision: 0.23.0
+    helm:
+      releaseName: cloudnative-pg
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cnpg-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m
