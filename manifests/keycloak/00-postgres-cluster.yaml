@@ -1,0 +1,42 @@
+###############################################################################
+# CloudNativePG Postgres cluster for Keycloak.
+#
+# Single-instance for local kind. In production we'd set instances: 3 for HA
+# but Keycloak's data isn't large; CloudNativePG handles streaming
+# replication automatically.
+#
+# Connection string pattern:
+#   jdbc:postgresql://keycloak-postgres-rw.keycloak.svc.cluster.local:5432/keycloak
+#
+# `-rw` is CloudNativePG's primary endpoint; `-ro` for read replicas; `-r` for any.
+###############################################################################
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: keycloak-postgres
+  namespace: keycloak
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+
+  bootstrap:
+    initdb:
+      database: keycloak
+      owner: keycloak
+      secret:
+        name: keycloak-db-credentials
+      encoding: UTF8
+
+  storage:
+    size: 5Gi
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  monitoring:
+    enablePodMonitor: true

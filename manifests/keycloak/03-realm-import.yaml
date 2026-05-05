@@ -1,0 +1,108 @@
+###############################################################################
+# Declarative realm config — same shape as the Compose realm in zylos-local-env.
+#
+# The KeycloakRealmImport CRD is the operator's canonical way to import a realm.
+# Updates to this CR trigger a re-import on the running Keycloak.
+###############################################################################
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: KeycloakRealmImport
+metadata:
+  name: zylos-realm
+  namespace: keycloak
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+spec:
+  keycloakCRName: keycloak
+
+  realm:
+    realm: zylos
+    enabled: true
+    displayName: "Zylos Platform"
+    registrationAllowed: false
+    rememberMe: true
+    loginWithEmailAllowed: true
+    duplicateEmailsAllowed: false
+    resetPasswordAllowed: true
+    bruteForceProtected: true
+    accessTokenLifespan: 900
+    ssoSessionIdleTimeout: 1800
+    ssoSessionMaxLifespan: 36000
+
+    roles:
+      realm:
+        - name: customer
+          description: Standard customer
+        - name: seller
+          description: Marketplace seller
+        - name: admin
+          description: Platform admin
+        - name: support
+          description: Customer support agent
+
+    clients:
+      - clientId: zylos-web
+        name: Zylos Web Client (Next.js)
+        enabled: true
+        publicClient: true
+        standardFlowEnabled: true
+        directAccessGrantsEnabled: false
+        implicitFlowEnabled: false
+        serviceAccountsEnabled: false
+        redirectUris:
+          - "http://localhost:3001/*"
+          - "https://zylos.local/*"
+          - "https://www.zylos.app/*"
+        webOrigins:
+          - "http://localhost:3001"
+          - "https://zylos.local"
+          - "https://www.zylos.app"
+        attributes:
+          pkce.code.challenge.method: "S256"
+          post.logout.redirect.uris: "+"
+
+      - clientId: zylos-mobile
+        name: Zylos Mobile Client
+        enabled: true
+        publicClient: true
+        standardFlowEnabled: true
+        directAccessGrantsEnabled: false
+        redirectUris:
+          - "app.zylos://callback"
+        attributes:
+          pkce.code.challenge.method: "S256"
+
+      - clientId: zylos-internal
+        name: Zylos Internal Service Client
+        enabled: true
+        publicClient: false
+        secret: "zylos-internal-dev-secret-change-me"
+        standardFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+
+    users:
+      - username: alice
+        email: alice@example.com
+        firstName: Alice
+        lastName: Customer
+        enabled: true
+        emailVerified: true
+        credentials:
+          - type: password
+            value: alice
+            temporary: false
+        realmRoles:
+          - customer
+
+      - username: bob
+        email: bob@example.com
+        firstName: Bob
+        lastName: Seller
+        enabled: true
+        emailVerified: true
+        credentials:
+          - type: password
+            value: bob
+            temporary: false
+        realmRoles:
+          - seller

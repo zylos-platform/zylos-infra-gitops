@@ -1,0 +1,79 @@
+###############################################################################
+# Keycloak server instance, managed by the Keycloak Operator.
+###############################################################################
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak
+  namespace: keycloak
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+spec:
+  instances: 1
+
+  # Pinned to match Compose stack and realm config.
+  image: quay.io/keycloak/keycloak:26.6.1
+
+  # Database — points at the CloudNativePG read-write service.
+  db:
+    vendor: postgres
+    host: keycloak-postgres-rw.keycloak.svc.cluster.local
+    port: 5432
+    database: keycloak
+    usernameSecret:
+      name: keycloak-db-credentials
+      key: username
+    passwordSecret:
+      name: keycloak-db-credentials
+      key: password
+
+  # HTTP only inside the cluster; TLS terminates at NGINX Ingress.
+  http:
+    httpEnabled: true
+    httpPort: 8080
+
+  # Hostname configuration. Local kind: keycloak.zylos.local
+  # In prod: keycloak.zylos.app
+  hostname:
+    hostname: keycloak.zylos.local
+    strict: false
+
+  # Proxy mode: trust X-Forwarded-* headers from NGINX.
+  proxy:
+    headers: xforwarded
+
+  # Bootstrap admin (initial admin user). After first login, create
+  # additional admins via the realm and disable this.
+  bootstrapAdmin:
+    user:
+      secret: keycloak-admin-credentials
+
+  # Resources — modest for kind, adjusted in production overlays.
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+  # Health & metrics endpoints.
+  features:
+    enabled:
+      - admin-fine-grained-authz
+      - token-exchange
+
+  # Operator's pod template overrides (Keycloak v26+ uses unsupported field
+  # for setting some env vars; included here for KC_HEALTH_ENABLED, etc.)
+  unsupported:
+    podTemplate:
+      spec:
+        containers:
+          - name: keycloak
+            env:
+              - name: KC_HEALTH_ENABLED
+                value: "true"
+              - name: KC_METRICS_ENABLED
+                value: "true"
+              - name: KC_LOG_LEVEL
+                value: "INFO"

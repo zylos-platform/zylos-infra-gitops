@@ -25,9 +25,9 @@ spec:
     - oci://quay.io/jetstack/charts/cert-manager
     - https://charts.external-secrets.io
     - https://bitnami-labs.github.io/sealed-secrets
-    - https://charts.bitnami.com/bitnami
     - https://open-telemetry.github.io/opentelemetry-helm-charts
-    - https://codecentric.github.io/helm-charts
+    - https://cloudnative-pg.github.io/charts
+    - https://operatorhub.io/install/
 
   destinations:
     - namespace: "*"
