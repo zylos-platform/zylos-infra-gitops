@@ -23,19 +23,12 @@ extraEnv: |
 # Production: PostgreSQL backing store
 database:
   vendor: postgres
-  hostname: keycloak-postgresql
+  hostname: keycloak-postgres-postgresql.keycloak.svc.cluster.local
   port: 5432
   database: keycloak
   username: keycloak
   existingSecret: keycloak-db
-
-# Embedded Postgres (dev only) — disable and provide your own in prod
-postgresql:
-  enabled: true
-  auth:
-    username: keycloak
-    database: keycloak
-    existingSecret: keycloak-db
+  existingSecretKey: password
 
 # Realm import — references a ConfigMap we provide separately
 extraVolumes: |
