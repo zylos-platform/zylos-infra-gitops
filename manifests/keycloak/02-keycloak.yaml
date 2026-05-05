@@ -13,6 +13,7 @@ spec:
 
   # Pinned to match Compose stack and realm config.
   image: quay.io/keycloak/keycloak:26.6.1
+  startOptimized: false
 
   # Database — points at the CloudNativePG read-write service.
   db:
