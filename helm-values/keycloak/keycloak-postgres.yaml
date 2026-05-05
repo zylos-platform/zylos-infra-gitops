@@ -1,0 +1,56 @@
+###############################################################################
+# Bitnami Postgres for Keycloak — modest, single-replica configuration.
+#
+# In production this is replaced entirely by Aurora; the Keycloak service just
+# points at the Aurora endpoint instead of this Service.
+###############################################################################
+
+global:
+  postgresql:
+    auth:
+      # The chart will create the user/db on first boot.
+      # The password comes from the existingSecret defined below.
+      username: keycloak
+      database: keycloak
+      existingSecret: keycloak-db
+      secretKeys:
+        # Bitnami chart looks for these key names in the Secret
+        adminPasswordKey: postgres-password
+        userPasswordKey: password
+
+# Single primary, no replicas — fine for an identity provider's session store
+# in development. In production we'd switch to managed Aurora entirely.
+architecture: standalone
+
+primary:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  persistence:
+    enabled: true
+    size: 5Gi
+
+  # Persistent volume claim retention — keep data even if the StatefulSet
+  # is recreated. We never want to lose Keycloak users by accident.
+  persistentVolumeClaimRetentionPolicy:
+    enabled: true
+    whenDeleted: Retain
+    whenScaled: Retain
+
+# Disable read replicas — not needed for our use case
+readReplicas:
+  replicaCount: 0
+
+# Health probes — Bitnami chart includes sensible defaults.
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: keycloak
+    labels:
+      release: kube-prometheus-stack
