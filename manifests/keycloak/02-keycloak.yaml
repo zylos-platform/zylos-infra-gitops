@@ -31,7 +31,6 @@ spec:
   http:
     httpEnabled: true
     httpPort: 8080
-    httpManagementPort: 9000
 
   # Hostname configuration. Local kind: keycloak.zylos.local
   # In prod: keycloak.zylos.app
