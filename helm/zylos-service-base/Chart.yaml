@@ -1,0 +1,8 @@
+apiVersion: v2
+name: zylos-service-base
+description: Shared Helm chart for Zylos backend services
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+maintainers:
+  - name: zylos-platform
