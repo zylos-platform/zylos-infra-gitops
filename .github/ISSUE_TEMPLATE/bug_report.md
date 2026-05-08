@@ -7,6 +7,7 @@ labels: bug
 ## Description
 
 ## Steps to Reproduce
+
 1.
 2.
 
@@ -15,6 +16,7 @@ labels: bug
 ## Actual Behavior
 
 ## Environment
+
 - Terraform version:
 - AWS region:
 - Other:

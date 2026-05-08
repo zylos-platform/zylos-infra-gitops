@@ -1,0 +1,48 @@
+###############################################################################
+# zylos-hello-service Argo CD Application.
+#
+# Composes the shared chart helm/zylos-service-base/ with the per-service
+# values file helm-values/services/zylos-hello-service.yaml. Both come from
+# this same repo (single source).
+###############################################################################
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zylos-hello-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "20" # After all platform components
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: application-service
+spec:
+  project: apps
+  sources:
+    - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
+      targetRevision: main
+      path: helm/zylos-service-base
+      helm:
+        releaseName: zylos-hello-service
+        valueFiles:
+          - $values/helm-values/services/zylos-hello-service.yaml
+    - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zylos-services
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

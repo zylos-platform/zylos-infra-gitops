@@ -1,0 +1,86 @@
+###############################################################################
+# Default values for the Zylos service base chart.
+# Per-service overrides live in helm-values/services/<service-name>.yaml in
+# the bootstrap repo.
+###############################################################################
+
+# Required by every consumer
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: ghcr.io/zylos-platform/CHANGEME
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  httpPort: 8080
+  managementPort: 9000
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts: []
+  tls: []
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# Spring profile to activate
+springProfile: prod
+
+# Health probes — match Spring Boot Actuator endpoints
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 5
+    periodSeconds: 5
+  startup:
+    path: /actuator/health
+    initialDelaySeconds: 10
+    failureThreshold: 30
+    periodSeconds: 10
+
+# Pod-level
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+  readOnlyRootFilesystem: true
+
+# OpenTelemetry endpoint
+otel:
+  endpoint: http://opentelemetry-collector.observability.svc.cluster.local:4318
+
+# Extra environment variables (raw)
+extraEnv: []
+
+# Prometheus ServiceMonitor (set true to scrape /actuator/prometheus)
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+
+# Pod anti-affinity for HA across nodes
+podAntiAffinity:
+  enabled: true

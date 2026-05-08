@@ -53,3 +53,12 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zylos-services
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    istio.io/dataplane-mode: ambient
+    app.kubernetes.io/part-of: zylos-platform
