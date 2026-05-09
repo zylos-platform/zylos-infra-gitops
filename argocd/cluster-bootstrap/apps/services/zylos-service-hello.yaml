@@ -24,9 +24,9 @@ spec:
       targetRevision: main
       path: helm/zylos-service-base
       helm:
-        releaseName: zylos-hello-service
+        releaseName: zylos-service-hello
         valueFiles:
-          - $values/helm-values/services/zylos-hello-service.yaml
+          - $values/helm-values/services/zylos-service-hello.yaml
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
