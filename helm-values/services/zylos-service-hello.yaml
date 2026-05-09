@@ -5,7 +5,7 @@
 
 image:
   repository: ghcr.io/zylos-platform/zylos-service-hello
-  tag: "20260508-93e61fb" # CI replaces this on each merged push to main
+  tag: "20260509-db89f3d" # CI replaces this on each merged push to main
 
 replicaCount: 2
 
