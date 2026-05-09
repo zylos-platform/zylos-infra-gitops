@@ -24,7 +24,7 @@ metadata:
 spec:
   project: platform
   source:
-    repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
+    repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
     targetRevision: main
     path: manifests/keycloak
   destination:

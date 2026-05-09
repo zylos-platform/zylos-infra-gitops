@@ -20,14 +20,14 @@ metadata:
 spec:
   project: apps
   sources:
-    - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
+    - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       path: helm/zylos-service-base
       helm:
         releaseName: zylos-hello-service
         valueFiles:
           - $values/helm-values/services/zylos-hello-service.yaml
-    - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
+    - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
   destination:

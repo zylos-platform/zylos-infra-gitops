@@ -20,7 +20,7 @@ spec:
       helm:
         valueFiles:
           - $values/helm-values/argocd/argocd-values.yaml
-    - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
+    - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
   destination:

@@ -19,7 +19,7 @@ spec:
         releaseName: istiod
         valueFiles:
           - $values/helm-values/istio/istiod.yaml
-    - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
+    - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
   destination:
