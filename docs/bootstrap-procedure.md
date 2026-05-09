@@ -68,7 +68,7 @@ Open http://localhost:8081 and log in as `admin`.
 ### Morning: Bring the cluster up
 
 ```bash
-cd ~/zylos/zylos-platform-bootstrap
+cd ~/zylos/zylos-infra-gitops
 make kind-up                  # Full bootstrap
 # OR
 LEAN=1 make kind-up           # Lean (no observability)

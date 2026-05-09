@@ -24,7 +24,7 @@ spec:
         releaseName: istio-base
         valueFiles:
           - $values/helm-values/istio/base.yaml
-    - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
+    - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
   destination:

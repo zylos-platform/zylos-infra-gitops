@@ -1,4 +1,4 @@
-# zylos-platform-bootstrap
+# zylos-infra-gitops
 
 GitOps bootstrap for the Zylos Kubernetes cluster. Uses Argo CD to
 declaratively manage the entire platform layer.

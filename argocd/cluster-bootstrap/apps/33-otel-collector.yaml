@@ -19,7 +19,7 @@ spec:
         releaseName: opentelemetry-collector
         valueFiles:
           - $values/helm-values/observability/otel-collector.yaml
-    - repoURL: https://github.com/zylos-platform/zylos-platform-bootstrap.git
+    - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
   destination:
