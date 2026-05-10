@@ -1,7 +1,7 @@
 ###############################################################################
 # Keycloak server instance, managed by the Keycloak Operator.
 ###############################################################################
-apiVersion: k8s.keycloak.org/v2alpha1
+apiVersion: k8s.keycloak.org/v2beta1
 kind: Keycloak
 metadata:
   name: keycloak
@@ -58,14 +58,7 @@ spec:
       cpu: 1000m
       memory: 2Gi
 
-  # Health & metrics endpoints.
-  features:
-    enabled:
-      - admin-fine-grained-authz
-      - token-exchange
-
-  # Operator's pod template overrides (Keycloak v26+ uses unsupported field
-  # for setting some env vars; included here for KC_HEALTH_ENABLED, etc.)
+  # Operator's pod template overrides.
   unsupported:
     podTemplate:
       spec:
