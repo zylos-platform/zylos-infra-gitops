@@ -27,6 +27,8 @@ See [`bootstrap-procedure.md`](./bootstrap-procedure.md).
 - [ADR 0003: ESO over Sealed Secrets for prod](adr/0003-eso-over-sealed-secrets-for-prod.md)
 - [ADR 0004: Helm via Argo CD, not Helm CLI](adr/0004-helm-via-argocd-not-helm-cli.md)
 - [ADR 0005: Istio as four charts, not IstioOperator](adr/0005-managing-istio-as-four-charts.md)
+- [ADR 0006: Bitnami removal and Keycloak Operator](adr/0006-bitnami-removal-and-keycloak-operator.md)
+- [ADR 0007: Sealed Secrets for kind dev, ESO for production](adr/0007-sealed-secrets-for-kind-dev.md)
 
 ## Troubleshooting
 

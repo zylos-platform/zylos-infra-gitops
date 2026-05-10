@@ -1,14 +1,14 @@
 ###############################################################################
-# zylos-hello-service Argo CD Application.
+# zylos-service-hello Argo CD Application.
 #
 # Composes the shared chart helm/zylos-service-base/ with the per-service
-# values file helm-values/services/zylos-hello-service.yaml. Both come from
+# values file helm-values/services/zylos-service-hello.yaml. Both come from
 # this same repo (single source).
 ###############################################################################
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: zylos-hello-service
+  name: zylos-service-hello
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "20" # After all platform components

@@ -2,6 +2,13 @@
 
 - **Status:** Accepted
 - **Date:** 2026-05-02
+- **Superseded by:** [ADR 0007](./0007-sealed-secrets-for-kind-dev.md)
+- **Supersession date:** 2026-05-10
+
+> **Note:** The "plain Secrets in Git for kind" portion of this ADR is no
+> longer in effect. ADR 0007 reverses that decision in favor of Sealed
+> Secrets for kind dev clusters. The ESO-for-production portion of this
+> ADR remains accepted and is reaffirmed by ADR 0007.
 
 ## Context
 

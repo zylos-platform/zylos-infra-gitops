@@ -20,7 +20,7 @@ cd "$(dirname "$0")/.."
 
 ARGOCD_NAMESPACE="${ARGOCD_NAMESPACE:-argocd}"
 ARGOCD_CHART_VERSION="${ARGOCD_CHART_VERSION:-9.5.5}"
-GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/zylos-platform/zylos-platform-bootstrap.git}"
+GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/zylos-platform/zylos-infra-gitops.git}"
 GIT_REVISION="${GIT_REVISION:-main}"
 
 echo "==============================================="
