@@ -1,15 +1,18 @@
 ###############################################################################
 # zylos-service-hello — values for the local kind cluster.
 # Image tag is bumped automatically by CI's deploy-PR.
+# Consumes zylos-service-base v0.2.0 features (NetworkPolicy, PDB, etc.).
 ###############################################################################
 
 image:
   repository: ghcr.io/zylos-platform/zylos-service-hello
   tag: "20260509-db89f3d" # CI replaces this on each merged push to main
+  # digest: ""            # When CI starts emitting digests, this overrides tag
 
 replicaCount: 2
 
 springProfile: prod
+environment: dev
 
 resources:
   requests:
@@ -32,3 +35,22 @@ ingress:
 
 serviceMonitor:
   enabled: true
+
+# NetworkPolicy: hello-service is exposed via NGINX ingress, so allow that.
+networkPolicy:
+  enabled: true
+  ingress:
+    fromIstio: true
+    fromObservability: true
+    fromIngressNginx: true # Required because ingress.enabled=true above
+
+# PDB: with replicaCount=2 and maxUnavailable=1, at least one pod is always
+# available during voluntary disruptions.
+pdb:
+  enabled: true
+  maxUnavailable: 1
+
+# Autoscaling: disabled for the reference service. Real services will enable
+# this with appropriate min/max replica caps.
+autoscaling:
+  enabled: false
