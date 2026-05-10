@@ -14,7 +14,7 @@ spec:
   policyTypes:
     - Ingress
     - Egress
-  {{- /* ---- INGRESS rules ---- */ -}}
+  # ---- INGRESS rules ---- 
   ingress:
     {{- if .Values.networkPolicy.ingress.fromIstio }}
     # Istio ambient: ztunnel and waypoint live in istio-system.
@@ -52,7 +52,7 @@ spec:
     {{- with .Values.networkPolicy.ingress.extra }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-  {{- /* ---- EGRESS rules ---- */ -}}
+  # ---- EGRESS rules ----
   egress:
     {{- if .Values.networkPolicy.egress.toDns }}
     # DNS to CoreDNS in kube-system.

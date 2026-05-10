@@ -4,6 +4,8 @@
 # Consumes zylos-service-base v0.2.0 features (NetworkPolicy, PDB, etc.).
 ###############################################################################
 
+fullnameOverride: "zylos-service-hello"
+
 image:
   repository: ghcr.io/zylos-platform/zylos-service-hello
   tag: "20260509-db89f3d" # CI replaces this on each merged push to main
