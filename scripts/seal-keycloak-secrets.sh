@@ -20,8 +20,8 @@ cd "$(dirname "$0")/.."
 # Dev-only credentials. 
 KEYCLOAK_DB_USER="keycloak"
 KEYCLOAK_DB_PASSWORD="kc_dev_db_pw_2026_change_in_prod"
-KEYCLOAK_ADMIN_USER="kc-admin"
-KEYCLOAK_ADMIN_PASSWORD="kc_dev_admin_pw_2026_change_in_prod"
+KEYCLOAK_ADMIN_USER="admin"
+KEYCLOAK_ADMIN_PASSWORD="admin"
 
 OUT_FILE="manifests/keycloak/01-sealed-secrets.yaml"
 
@@ -29,7 +29,7 @@ OUT_FILE="manifests/keycloak/01-sealed-secrets.yaml"
 echo "==> Verifying sealed-secrets controller..."
 if ! kubectl -n sealed-secrets get deploy sealed-secrets-controller >/dev/null 2>&1; then
   echo "ERROR: sealed-secrets-controller not found in namespace sealed-secrets." >&2
-  echo "Apply PR-A.1 and wait for Argo CD reconciliation before running this script." >&2
+  echo "Wait for Argo CD reconciliation before running this script." >&2
   exit 1
 fi
 

@@ -4,7 +4,7 @@
 # kind-up.sh — one-shot local cluster + Argo CD bootstrap.
 #
 # Combines:
-#   1. Create the kind cluster from zylos-platform-infra.
+#   1. Create the kind cluster from  zylos-infra-terraform.
 #   2. Install NGINX Ingress.
 #   3. Run scripts/bootstrap.sh to install Argo CD + apply root app.
 #
@@ -19,17 +19,17 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 # Find sibling infra repo
-INFRA_REPO="${INFRA_REPO:-$(realpath ../zylos-platform-infra)}"
+TERRAFORM_REPO="${TERRAFORM_REPO:-$(realpath ../zylos-infra-terraform)}"
 
-if [[ ! -d "${INFRA_REPO}/kubernetes/kind" ]]; then
-  echo "ERROR: zylos-platform-infra not found at ${INFRA_REPO}." >&2
-  echo "Set INFRA_REPO=/path/to/zylos-platform-infra and rerun." >&2
+if [[ ! -d "${TERRAFORM_REPO}/kubernetes/kind" ]]; then
+  echo "ERROR:  zylos-infra-terraform not found at ${TERRAFORM_REPO}." >&2
+  echo "Set TERRAFORM_REPO=/path/to/ zylos-infra-terraform and rerun." >&2
   exit 1
 fi
 
-CLUSTER_CONFIG="${INFRA_REPO}/kubernetes/kind/cluster.yaml"
+CLUSTER_CONFIG="${TERRAFORM_REPO}/kubernetes/kind/cluster.yaml"
 if [[ "${LEAN:-0}" == "1" ]]; then
-  CLUSTER_CONFIG="${INFRA_REPO}/kubernetes/kind/cluster-lean.yaml"
+  CLUSTER_CONFIG="${TERRAFORM_REPO}/kubernetes/kind/cluster-lean.yaml"
   echo "Using LEAN single-node cluster."
 fi
 
