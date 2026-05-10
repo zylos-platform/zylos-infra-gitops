@@ -1,4 +1,4 @@
-# Contributing to zylos-platform-bootstrap
+# Contributing to zylos-infra-gitops
 
 ## Branching
 
