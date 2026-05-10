@@ -1,25 +1,56 @@
 ###############################################################################
-# Default values for the Zylos service base chart.
-# Per-service overrides live in helm-values/services/<service-name>.yaml in
-# the bootstrap repo.
+# Default values for the Zylos service base chart (v0.2.0).
+#
+# Per-service overrides live in helm-values/services/<service>.yaml.
+# This file documents every available knob with its default and the rationale.
 ###############################################################################
 
-# Required by every consumer
+# -----------------------------------------------------------------------------
+# Naming
+# -----------------------------------------------------------------------------
 nameOverride: ""
 fullnameOverride: ""
 
+# -----------------------------------------------------------------------------
+# Image
+# -----------------------------------------------------------------------------
 image:
   repository: ghcr.io/zylos-platform/CHANGEME
+  # `tag` is used unless `digest` is set.
   tag: "latest"
+  # `digest` (SHA256, including the `sha256:` prefix) supersedes `tag` when
+  # non-empty. Production should pin by digest; CI's deploy-PR can populate
+  # both fields and we use whichever is set.
+  digest: ""
   pullPolicy: IfNotPresent
+  # `pullSecrets`: list of imagePullSecret names. Empty = anonymous pulls
+  # from public registries (GHCR public is anonymous-readable).
+  pullSecrets: []
 
-replicaCount: 1
+# -----------------------------------------------------------------------------
+# Replicas (ignored when autoscaling.enabled=true; HPA owns it)
+# -----------------------------------------------------------------------------
+replicaCount: 2
 
+# -----------------------------------------------------------------------------
+# Spring profile and environment marker
+# -----------------------------------------------------------------------------
+springProfile: prod
+# `environment` is exposed via OTEL_RESOURCE_ATTRIBUTES as
+# `deployment.environment`. Override per-cluster: dev (kind), staging, prod.
+environment: dev
+
+# -----------------------------------------------------------------------------
+# Service
+# -----------------------------------------------------------------------------
 service:
   type: ClusterIP
   httpPort: 8080
   managementPort: 9000
 
+# -----------------------------------------------------------------------------
+# Ingress (NGINX-class for kind; ALB or AWS-LBC for prod, set per-service)
+# -----------------------------------------------------------------------------
 ingress:
   enabled: false
   className: nginx
@@ -27,6 +58,9 @@ ingress:
   hosts: []
   tls: []
 
+# -----------------------------------------------------------------------------
+# Resources
+# -----------------------------------------------------------------------------
 resources:
   requests:
     cpu: 100m
@@ -35,52 +69,200 @@ resources:
     cpu: 1000m
     memory: 1Gi
 
-# Spring profile to activate
-springProfile: prod
-
-# Health probes — match Spring Boot Actuator endpoints
+# -----------------------------------------------------------------------------
+# Probes (Spring Boot Actuator on the management port)
+# -----------------------------------------------------------------------------
 probes:
   liveness:
     path: /actuator/health/liveness
     initialDelaySeconds: 30
     periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
   readiness:
     path: /actuator/health/readiness
     initialDelaySeconds: 5
     periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
   startup:
     path: /actuator/health
     initialDelaySeconds: 10
-    failureThreshold: 30
     periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 30
 
-# Pod-level
+# -----------------------------------------------------------------------------
+# ServiceAccount (dedicated per service for workload identity)
+# -----------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  # Empty = derive from fullname; override only if you need a specific name.
+  name: ""
+  # Best practice: opt-out of automount; opt-in only if pod calls K8s API.
+  automountServiceAccountToken: false
+  annotations: {}
+
+# -----------------------------------------------------------------------------
+# Pod-level security context
+# -----------------------------------------------------------------------------
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 65532
+  runAsGroup: 65532
   fsGroup: 65532
+  # OnRootMismatch reduces fsGroup chown overhead for many-file mounts.
+  fsGroupChangePolicy: OnRootMismatch
   seccompProfile:
     type: RuntimeDefault
 
+# -----------------------------------------------------------------------------
+# Container-level security context
+# -----------------------------------------------------------------------------
 containerSecurityContext:
   allowPrivilegeEscalation: false
+  privileged: false
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  readOnlyRootFilesystem: true
   capabilities:
     drop: ["ALL"]
-  readOnlyRootFilesystem: true
 
-# OpenTelemetry endpoint
+# -----------------------------------------------------------------------------
+# OpenTelemetry
+# -----------------------------------------------------------------------------
 otel:
   endpoint: http://opentelemetry-collector.observability.svc.cluster.local:4318
+  protocol: http/protobuf
+  # Built-in attributes: service.namespace=zylos, deployment.environment=<environment>,
+  # service.version=<image.tag or image.digest>. extras are appended.
+  extraResourceAttributes: {}
 
-# Extra environment variables (raw)
+# -----------------------------------------------------------------------------
+# Extra extensibility
+# -----------------------------------------------------------------------------
 extraEnv: []
+# extraEnvFrom: pull env from ConfigMaps/Secrets:
+#   extraEnvFrom:
+#     - configMapRef:
+#         name: my-config
+#     - secretRef:
+#         name: my-secret
+extraEnvFrom: []
+extraVolumes: []
+extraVolumeMounts: []
+extraInitContainers: []
 
-# Prometheus ServiceMonitor (set true to scrape /actuator/prometheus)
+# -----------------------------------------------------------------------------
+# Prometheus ServiceMonitor
+# -----------------------------------------------------------------------------
 serviceMonitor:
   enabled: false
   interval: 30s
   scrapeTimeout: 10s
+  # Metric relabel hooks for trimming / renaming
+  metricRelabelings: []
+  relabelings: []
 
-# Pod anti-affinity for HA across nodes
+# -----------------------------------------------------------------------------
+# Pod Disruption Budget
+#
+# Default: enabled with maxUnavailable=1. For services with replicaCount=1
+# (rare; only stateful sidecars), set pdb.enabled=false to avoid blocking
+# voluntary disruptions entirely.
+# -----------------------------------------------------------------------------
+pdb:
+  enabled: true
+  # Use minAvailable OR maxUnavailable, not both. Default favors maxUnavailable
+  # so that scaling up beyond replicaCount doesn't tighten the budget.
+  maxUnavailable: 1
+  minAvailable: ""
+
+# -----------------------------------------------------------------------------
+# Horizontal Pod Autoscaler (autoscaling/v2)
+# -----------------------------------------------------------------------------
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  # CPU target. Set to 0 to omit.
+  targetCPUUtilization: 70
+  # Memory target. Set to 0 to omit. (Most services don't memory-scale; CPU is primary.)
+  targetMemoryUtilization: 0
+  # Behavior — fast scale-up, cautious scale-down.
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+
+# -----------------------------------------------------------------------------
+# Pod scheduling
+# -----------------------------------------------------------------------------
+# Soft anti-affinity by default — preferred not required, so smaller clusters
+# can schedule. For production set HARD anti-affinity per-service.
 podAntiAffinity:
   enabled: true
+  type: preferred # `preferred` or `required`
+
+# Topology spread constraints (modern preferred mechanism for cross-zone HA).
+# When non-empty, rendered into the deployment.
+# Default empty; podAntiAffinity covers single-cluster spread.
+topologySpreadConstraints: []
+
+# -----------------------------------------------------------------------------
+# Network Policy
+#
+# Default-deny ingress and egress; explicit allow-rules below. Tuned for
+# Istio ambient mesh: allow ztunnel (istio-system), Prometheus
+# (observability), DNS (kube-system), and intra-platform traffic.
+# -----------------------------------------------------------------------------
+networkPolicy:
+  enabled: true
+  ingress:
+    # Allow ingress from istio-system (ztunnel, waypoint, gateways).
+    fromIstio: true
+    # Allow Prometheus to scrape the management port.
+    fromObservability: true
+    # Allow ingress-nginx to reach this pod (for services with public Ingress).
+    # Defaults false; set true for any service where ingress.enabled=true.
+    fromIngressNginx: false
+    # Extra ingress rules in raw NetworkPolicy `from`/`ports` form.
+    extra: []
+  egress:
+    # Allow DNS to kube-system's CoreDNS.
+    toDns: true
+    # Allow egress to istio-system (for waypoint forwarding).
+    toIstio: true
+    # Allow egress to other zylos-services pods (intra-platform mesh traffic).
+    toSamePlatform: true
+    # Allow unrestricted external (Internet) egress. Default off; turn on
+    # only for services that need direct external API calls (e.g., gateway
+    # talking to Keycloak when Keycloak is external, BFFs hitting external IdPs).
+    toExternal: false
+    # Extra egress rules in raw NetworkPolicy `to`/`ports` form.
+    extra: []
+
+# -----------------------------------------------------------------------------
+# Pod-level miscellaneous
+# -----------------------------------------------------------------------------
+priorityClassName: ""
+terminationGracePeriodSeconds: 30
+# When non-empty, applied as a pod nodeSelector.
+nodeSelector: {}
+# When non-empty, applied as pod tolerations.
+tolerations: []

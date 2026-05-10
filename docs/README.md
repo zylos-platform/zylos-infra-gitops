@@ -29,6 +29,7 @@ See [`bootstrap-procedure.md`](./bootstrap-procedure.md).
 - [ADR 0005: Istio as four charts, not IstioOperator](adr/0005-managing-istio-as-four-charts.md)
 - [ADR 0006: Bitnami removal and Keycloak Operator](adr/0006-bitnami-removal-and-keycloak-operator.md)
 - [ADR 0007: Sealed Secrets for kind dev, ESO for production](adr/0007-sealed-secrets-for-kind-dev.md)
+- [ADR 0008: zylos-service-base chart design](adr/0008-zylos-service-base-chart-design.md)
 
 ## Troubleshooting
 

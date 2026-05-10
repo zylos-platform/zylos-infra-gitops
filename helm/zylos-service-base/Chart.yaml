@@ -1,8 +1,41 @@
 apiVersion: v2
 name: zylos-service-base
-description: Shared Helm chart for Zylos backend services
+description: |
+  Shared Helm chart for Zylos backend services. Provides Deployment,
+  Service, optional Ingress, ServiceAccount, NetworkPolicy, PodDisruptionBudget,
+  HorizontalPodAutoscaler, and ServiceMonitor templates with 
+  defaults aligned to Zylos's Istio ambient mesh + zero-trust posture.
 type: application
-version: 0.1.0
-appVersion: "0.1.0"
+version: 0.2.0
+appVersion: "0.2.0"
+kubeVersion: ">=1.32.0-0"
+keywords:
+  - zylos
+  - microservice
+  - spring-boot
+  - istio-ambient
+home: https://github.com/zylos-platform/zylos-infra-gitops
 maintainers:
   - name: zylos-platform
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: ServiceAccount template (dedicated per service)
+    - kind: added
+      description: PodDisruptionBudget template
+    - kind: added
+      description: NetworkPolicy template (default-deny with explicit allow rules)
+    - kind: added
+      description: HorizontalPodAutoscaler template (autoscaling/v2 with behavior)
+    - kind: added
+      description: image.digest field for SHA256-pinning
+    - kind: added
+      description: OTEL_RESOURCE_ATTRIBUTES env construction
+    - kind: added
+      description: topologySpreadConstraints support
+    - kind: added
+      description: extraEnvFrom, extraVolumes, extraVolumeMounts, extraInitContainers hooks
+    - kind: changed
+      description: automountServiceAccountToken now defaults to false
+    - kind: removed
+      description: legacy prometheus.io/* annotations on pod template (use ServiceMonitor)
