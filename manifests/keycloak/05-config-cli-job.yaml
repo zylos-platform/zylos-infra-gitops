@@ -1,0 +1,143 @@
+###############################################################################
+# keycloak-config-cli reconciliation Job.
+#
+# Sync-hook pattern: runs as part of every Argo CD sync of the keycloak app.
+# HookDeletePolicy=BeforeHookCreation ensures the old Job is removed before
+# the new one is created, so each sync runs a fresh Job with the current
+# ConfigMap contents. config-cli is idempotent — re-runs against unchanged
+# config complete in seconds via checksum caching.
+#
+# IMPORT_MANAGED_NO_DELETE=true enforces a deletion-safety mode: no remote
+# resources are ever deleted by config-cli, only created/updated.
+###############################################################################
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keycloak-config-cli
+  namespace: keycloak
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: identity
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600 # Auto-prune completed Jobs after 1h
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: keycloak-config-cli
+        app.kubernetes.io/part-of: zylos-platform
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: keycloak-config-cli
+          image: docker.io/adorsys/keycloak-config-cli:6.5.0-26.5.4
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          env:
+            # --- Connection to Keycloak ---
+            - name: KEYCLOAK_URL
+              value: "http://keycloak-service.keycloak.svc.cluster.local:8080"
+            - name: KEYCLOAK_USER
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-credentials
+                  key: username
+            - name: KEYCLOAK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-credentials
+                  key: password
+            - name: KEYCLOAK_SSLVERIFY
+              value: "false" # In-cluster HTTP only; TLS terminates at ingress
+            # --- Wait for Keycloak readiness ---
+            - name: KEYCLOAK_AVAILABILITYCHECK_ENABLED
+              value: "true"
+            - name: KEYCLOAK_AVAILABILITYCHECK_TIMEOUT
+              value: "300s"
+            # --- Import settings ---
+            - name: IMPORT_FILES_LOCATIONS
+              value: "/config/*.yaml"
+            - name: IMPORT_VAR_SUBSTITUTION_ENABLED
+              value: "true"
+            # Phase 1 safety: never delete remote resources. PR-C.2 will flip
+            # selected resource types to `full` mode for intentional management.
+            - name: IMPORT_MANAGED_NO_DELETE
+              value: "true"
+            # Idempotency cache: skip re-import when checksum unchanged
+            - name: IMPORT_CACHE_ENABLED
+              value: "true"
+            # --- Client credentials for var substitution in realm YAML ---
+            - name: ZYLOS_WEB_STOREFRONT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zylos-keycloak-client-secrets
+                  key: web-storefront-secret
+                  optional: true
+            - name: ZYLOS_MOBILE_BFF_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zylos-keycloak-client-secrets
+                  key: mobile-bff-secret
+                  optional: true
+            - name: ZYLOS_GATEWAY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zylos-keycloak-client-secrets
+                  key: gateway-secret
+                  optional: true
+            - name: ZYLOS_INTERNAL_HELLO_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zylos-keycloak-client-secrets
+                  key: internal-hello-secret
+                  optional: true
+            - name: ZYLOS_INTERNAL_CALLER_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zylos-keycloak-client-secrets
+                  key: internal-caller-secret
+                  optional: true
+            - name: ZYLOS_WEB_ADMIN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zylos-keycloak-client-secrets
+                  key: web-admin-secret
+                  optional: true
+            # --- Logging ---
+            - name: SPRING_PROFILES_ACTIVE
+              value: "json-log" # Structured JSON logs for Loki/Tempo correlation
+            - name: LOGGING_LEVEL_ROOT
+              value: "INFO"
+          volumeMounts:
+            - name: realm-config
+              mountPath: /config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: realm-config
+          configMap:
+            name: keycloak-realm-config
+        - name: tmp
+          emptyDir: {}
