@@ -19,7 +19,7 @@ metadata:
 data:
   zylos-realm.yaml: |
     ###########################################################################
-    # Zylos realm configuration 
+    # Zylos realm configuration
     #   - Token lifetimes, refresh-token reuse detection
     #   - Six clients with V2 token exchange enabled
     #   - Realm roles (customer, seller, admin, support)
