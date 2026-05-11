@@ -30,6 +30,7 @@ See [`bootstrap-procedure.md`](./bootstrap-procedure.md).
 - [ADR 0006: Bitnami removal and Keycloak Operator](adr/0006-bitnami-removal-and-keycloak-operator.md)
 - [ADR 0007: Sealed Secrets for kind dev, ESO for production](adr/0007-sealed-secrets-for-kind-dev.md)
 - [ADR 0008: zylos-service-base chart design](adr/0008-zylos-service-base-chart-design.md)
+- [ADR 0009: keycloak-config-cli for realm reconciliation](adr/0009-keycloak-config-cli-for-realm-reconciliation.md)
 
 ## Troubleshooting
 
