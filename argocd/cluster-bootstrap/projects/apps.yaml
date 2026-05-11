@@ -31,8 +31,6 @@ spec:
       kind: "*"
     - group: "networking.k8s.io"
       kind: "Ingress"
-    - group: "networking.k8s.io"
-      kind: "NetworkPolicy"
     - group: "autoscaling"
       kind: "*"
     - group: "policy"
