@@ -1,0 +1,30 @@
+###############################################################################
+# Keycloak realm configuration — source of truth.
+#
+# This ConfigMap is mounted into the keycloak-config-cli Job at /config.
+# config-cli imports the realm YAML in Keycloak's native realm-export format
+# and idempotently reconciles the realm state on every Argo CD sync.
+#
+# Variable substitution: ${VAR_NAME} references resolve to env vars in the
+# Job (sourced from sealed Secrets). Enabled via IMPORT_VAR_SUBSTITUTION_ENABLED.
+###############################################################################
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-realm-config
+  namespace: keycloak
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: identity
+data:
+  zylos-realm.yaml: |
+    ###########################################################################
+    # Zylos realm configuration 
+    #   - Token lifetimes, refresh-token reuse detection
+    #   - Six clients with V2 token exchange enabled
+    #   - Realm roles (customer, seller, admin, support)
+    #   - Test users (alice, bob, charlie)
+    ###########################################################################
+    realm: zylos
+    enabled: true
+    displayName: "Zylos Platform"
