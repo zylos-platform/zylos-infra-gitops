@@ -29,6 +29,7 @@ spec:
       labels:
         app.kubernetes.io/name: keycloak-config-cli
         app.kubernetes.io/part-of: zylos-platform
+        istio.io/dataplane-mode: none
     spec:
       restartPolicy: OnFailure
       securityContext:
