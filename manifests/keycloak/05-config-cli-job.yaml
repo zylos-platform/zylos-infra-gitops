@@ -4,11 +4,7 @@
 # Sync-hook pattern: runs as part of every Argo CD sync of the keycloak app.
 # HookDeletePolicy=BeforeHookCreation ensures the old Job is removed before
 # the new one is created, so each sync runs a fresh Job with the current
-# ConfigMap contents. config-cli is idempotent — re-runs against unchanged
-# config complete in seconds via checksum caching.
-#
-# IMPORT_MANAGED_NO_DELETE=true enforces a deletion-safety mode: no remote
-# resources are ever deleted by config-cli, only created/updated.
+# ConfigMap contents.
 ###############################################################################
 apiVersion: batch/v1
 kind: Job
@@ -23,7 +19,7 @@ metadata:
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
   backoffLimit: 3
-  ttlSecondsAfterFinished: 3600 # Auto-prune completed Jobs after 1h
+  ttlSecondsAfterFinished: 3600
   template:
     metadata:
       labels:
@@ -63,72 +59,99 @@ spec:
                   name: keycloak-admin-credentials
                   key: password
             - name: KEYCLOAK_SSLVERIFY
-              value: "false" # In-cluster HTTP only; TLS terminates at ingress
+              value: "false"
+
             # --- Wait for Keycloak readiness ---
             - name: KEYCLOAK_AVAILABILITYCHECK_ENABLED
               value: "true"
             - name: KEYCLOAK_AVAILABILITYCHECK_TIMEOUT
               value: "300s"
+
             # --- Import settings ---
             - name: IMPORT_FILES_LOCATIONS
               value: "/config/*.yaml"
-            - name: IMPORT_VAR_SUBSTITUTION_ENABLED
-              value: "true"
-            # Phase 1 safety: never delete remote resources. PR-C.2 will flip
-            # selected resource types to `full` mode for intentional management.
-            - name: IMPORT_MANAGED_NO_DELETE
-              value: "true"
-            # Idempotency cache: skip re-import when checksum unchanged
             - name: IMPORT_CACHE_ENABLED
               value: "true"
-            # --- Client credentials for var substitution in realm YAML ---
+
+            # --- Variable substitution (strict) ---
+            - name: IMPORT_VARSUBSTITUTION_ENABLED
+              value: "true"
+            - name: IMPORT_VARSUBSTITUTION_UNDEFINEDTHROWSEXCEPTIONS
+              value: "true"
+
+            # --- Remote state (track config-cli-managed resources only) ---
+            - name: IMPORT_REMOTESTATE_ENABLED
+              value: "true"
+
+            # --- Per-resource-type management mode ---
+            # Resources config-cli created: full lifecycle (create + update + delete).
+            # remote-state policy keeps them untouched.
+            - name: IMPORT_MANAGED_CLIENTS
+              value: "full"
+            - name: IMPORT_MANAGED_ROLES
+              value: "full"
+            - name: IMPORT_MANAGED_USERS
+              value: "full"
+            - name: IMPORT_MANAGED_CLIENTSCOPES
+              value: "full"
+            - name: IMPORT_MANAGED_CLIENTSCOPEMAPPINGS
+              value: "full"
+            - name: IMPORT_MANAGED_REQUIREDACTIONS
+              value: "no-delete"
+            - name: IMPORT_MANAGED_AUTHENTICATIONFLOWS
+              value: "no-delete"
+            - name: IMPORT_MANAGED_GROUPS
+              value: "no-delete"
+            - name: IMPORT_MANAGED_IDENTITYPROVIDERS
+              value: "no-delete"
+
+            # --- Client credentials (referenced from realm YAML as ${VAR}) ---
+            # No longer optional: missing values cause Job failure per strict
+            # variable substitution.
             - name: ZYLOS_WEB_STOREFRONT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: zylos-keycloak-client-secrets
                   key: web-storefront-secret
-                  optional: true
             - name: ZYLOS_MOBILE_BFF_SECRET
               valueFrom:
                 secretKeyRef:
                   name: zylos-keycloak-client-secrets
                   key: mobile-bff-secret
-                  optional: true
             - name: ZYLOS_GATEWAY_SECRET
               valueFrom:
                 secretKeyRef:
                   name: zylos-keycloak-client-secrets
                   key: gateway-secret
-                  optional: true
             - name: ZYLOS_INTERNAL_HELLO_SECRET
               valueFrom:
                 secretKeyRef:
                   name: zylos-keycloak-client-secrets
                   key: internal-hello-secret
-                  optional: true
             - name: ZYLOS_INTERNAL_CALLER_SECRET
               valueFrom:
                 secretKeyRef:
                   name: zylos-keycloak-client-secrets
                   key: internal-caller-secret
-                  optional: true
             - name: ZYLOS_WEB_ADMIN_SECRET
               valueFrom:
                 secretKeyRef:
                   name: zylos-keycloak-client-secrets
                   key: web-admin-secret
-                  optional: true
+
             # --- Logging ---
             - name: SPRING_PROFILES_ACTIVE
-              value: "json-log" # Structured JSON logs for Loki/Tempo correlation
+              value: "json-log"
             - name: LOGGING_LEVEL_ROOT
               value: "INFO"
+
           volumeMounts:
             - name: realm-config
               mountPath: /config
               readOnly: true
             - name: tmp
               mountPath: /tmp
+
           resources:
             requests:
               cpu: 100m
@@ -136,6 +159,7 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+
       volumes:
         - name: realm-config
           configMap:
