@@ -31,6 +31,9 @@ See [`bootstrap-procedure.md`](./bootstrap-procedure.md).
 - [ADR 0007: Sealed Secrets for kind dev, ESO for production](adr/0007-sealed-secrets-for-kind-dev.md)
 - [ADR 0008: zylos-service-base chart design](adr/0008-zylos-service-base-chart-design.md)
 - [ADR 0009: keycloak-config-cli for realm reconciliation](adr/0009-keycloak-config-cli-for-realm-reconciliation.md)
+- [ADR 0010: OAuth 2.1 flow selection per client type](adr/0010-oauth-flows-per-client-type.md)
+- [ADR 0011: RFC 8693 token exchange (V2) for audience downscoping](adr/0011-rfc-8693-token-exchange.md)
+- [ADR 0012: Refresh token reuse detection](adr/0012-refresh-token-reuse-detection.md)
 
 ## Troubleshooting
 
