@@ -4,6 +4,33 @@
 - **Date:** 2026-05-10
 - **Relates to:** ADR 0010
 
+## Refinement 
+
+This ADR was originally written assuming Keycloak's V2 Standard Token Exchange would populate the RFC 8693 `act` claim
+by default on exchanged tokens. **Empirical verification during Sub-phase 1.2 implementation revealed this assumption
+was incorrect:** Keycloak 26's V2 Standard Token Exchange optimizes for impersonation semantics and **does not naturally
+generate the `act` claim**, regardless of how the exchange request is formulated. Upstream
+tracking: [keycloak/keycloak#38279](https://github.com/keycloak/keycloak/issues/38279) (open as of March 2025).
+
+This gap is resolved by the **Zylos ActClaimMapper** — a custom Keycloak protocol mapper shipped from a dedicated repo (
+`zylos-infra-keycloak-extensions`) and pre-installed into a custom Keycloak image (
+`ghcr.io/zylos-platform/keycloak:26.6.1-zylos-act-*`). The mapper is attached to every client that can be the target of
+a token exchange (the 4 service-account clients) via the realm config in
+`manifests/keycloak/04-realm-config-configmap.yaml`.
+
+**Scope of the resolution:** single-hop only. The mapper records the immediate requesting client as the actor. Multi-hop
+chains (nested `act` preserving the full delegation history across two or more exchanges) are deferred to Phase 2.
+
+**Architectural alignment:** under the post-Phase 1.2 architecture, most endpoints authorize on
+direct-actor + user identity, not chain content. The single-hop `act` claim is sufficient for that model. Endpoints
+flagged `chainSensitive: true` (the sensitive subset: payment, refund, admin, PII export) use chain matching but
+typically care only about the immediate caller — which single-hop covers.
+
+See [ADR 0013](0013-keycloak-custom-image-act-mapper.md) for the full custom-image rationale and Phase 2 multi-hop plan.
+
+The remainder of this ADR documents the original Token Exchange V2 decision; the refinement above is the authoritative
+statement of how the `act` claim is actually populated in production.
+
 ## Context
 
 The security architecture mandates **audience downscoping**:
@@ -90,7 +117,7 @@ clientPolicies:
       conditions:
         - condition: client-roles
           configuration:
-            roles: ["zylos-gateway"]
+            roles: [ "zylos-gateway" ]
       profiles:
         - token-exchange-zylos
 ```

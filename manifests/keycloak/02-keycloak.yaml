@@ -11,9 +11,16 @@ metadata:
 spec:
   instances: 1
 
-  # Pinned to match Compose stack and realm config.
-  image: quay.io/keycloak/keycloak:26.6.1
-  startOptimized: false
+  # Custom Keycloak 26.6.1 image with the Zylos ActClaimMapper pre-installed
+  # and `kc.sh build` baked in. Built and published by:
+  #   https://github.com/zylos-platform/zylos-infra-keycloak-extensions
+  # See docs/adr/0013-keycloak-custom-image-act-mapper.md.
+  #
+  # The Keycloak Operator automatically appends `--optimized` to the startup
+  # command when spec.image is set. Our image is pre-built (kc.sh build ran
+  # in the builder stage), so this works correctly.
+  image: ghcr.io/zylos-platform/keycloak:26.6.1-zylos-act-0.1.0
+  startOptimized: true
 
   # Database — points at the CloudNativePG read-write service.
   db:
