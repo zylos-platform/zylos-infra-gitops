@@ -170,12 +170,24 @@ data:
     # Clients
     #
     # Standard Token Exchange V2 (RFC 8693) is enabled per-client via the
-    # `oauth2.token.exchange.grant.enabled` attribute. V2 is the default in
+    # `standard.token.exchange.enabled` attribute. V2 is the default in
     # Keycloak 26.2+; no V1 feature flags needed.
     #
     # Per ADR 0011, all confidential clients can request token exchange to
-    # any target audience. Client Policies for restricting
-    # source→target combinations are deferred to a later.
+    # any target audience. Client Policies for restricting source→target
+    # combinations are deferred to a later phase.
+    #
+    # The Zylos ActClaimMapper (protocolMapper: zylos-act-claim-mapper) is
+    # attached to every client with `serviceAccountsEnabled: true` — these
+    # are the legitimate targets of inter-service token exchange. When the
+    # mapper-bearing client receives an exchanged token, the mapper writes
+    # `act.client_id` recording the requesting party (the actor).
+    #
+    # Customer-facing BFFs (zylos-web-storefront, zylos-web-admin) are NOT
+    # exchange targets; their tokens never need an act claim. They do NOT
+    # carry the mapper.
+    #
+    # See ADR 0013 for the full rationale and Phase 2 multi-hop plan.
     ###########################################################################
     clients:
 
@@ -204,7 +216,7 @@ data:
         frontchannelLogout: true
         fullScopeAllowed: false
         attributes:
-          oauth2.token.exchange.grant.enabled: "true"
+          standard.token.exchange.enabled: "true"
           pkce.code.challenge.method: "S256"
           post.logout.redirect.uris: "http://web.zylos.local/+https://web.zylos.app/"
           backchannel.logout.session.required: "true"
@@ -236,10 +248,22 @@ data:
         frontchannelLogout: false
         fullScopeAllowed: false
         attributes:
-          oauth2.token.exchange.grant.enabled: "true"
+          standard.token.exchange.enabled: "true"
           access.token.signed.response.alg: "RS256"
         defaultClientScopes: ["acr", "profile", "roles", "email"]
         optionalClientScopes: ["offline_access", "microprofile-jwt"]
+        protocolMappers:
+          - name: zylos-act-claim
+            protocol: openid-connect
+            protocolMapper: zylos-act-claim-mapper
+            consentRequired: false
+            config:
+              # The Zylos ActClaimMapper has no user-configurable fields.
+              # These standard flags route the claim to the access token only
+              # (act in ID tokens or UserInfo is meaningless for our model).
+              access.token.claim: "true"
+              id.token.claim: "false"
+              userinfo.token.claim: "false"
 
       # ----- Spring Cloud Gateway (cluster perimeter) -----
       - clientId: zylos-gateway
@@ -262,11 +286,20 @@ data:
         frontchannelLogout: false
         fullScopeAllowed: false
         attributes:
-          oauth2.token.exchange.grant.enabled: "true"
+          standard.token.exchange.enabled: "true"
           access.token.signed.response.alg: "RS256"
           access.token.lifespan: "120" # 2-min exchanged tokens (architecture §6)
         defaultClientScopes: ["acr", "roles"]
         optionalClientScopes: []
+        protocolMappers:
+          - name: zylos-act-claim
+            protocol: openid-connect
+            protocolMapper: zylos-act-claim-mapper
+            consentRequired: false
+            config:
+              access.token.claim: "true"
+              id.token.claim: "false"
+              userinfo.token.claim: "false"
 
       # ----- Internal: Hello Service (reference service identity) -----
       - clientId: zylos-internal-hello
@@ -289,11 +322,20 @@ data:
         frontchannelLogout: false
         fullScopeAllowed: false
         attributes:
-          oauth2.token.exchange.grant.enabled: "true"
+          standard.token.exchange.enabled: "true"
           access.token.signed.response.alg: "RS256"
           access.token.lifespan: "300" # 5-min S2S tokens (architecture §6)
         defaultClientScopes: ["acr", "roles"]
         optionalClientScopes: []
+        protocolMappers:
+          - name: zylos-act-claim
+            protocol: openid-connect
+            protocolMapper: zylos-act-claim-mapper
+            consentRequired: false
+            config:
+              access.token.claim: "true"
+              id.token.claim: "false"
+              userinfo.token.claim: "false"
 
       # ----- Internal: Caller Service (used to exercise act chain validation) -----
       - clientId: zylos-internal-caller
@@ -316,11 +358,20 @@ data:
         frontchannelLogout: false
         fullScopeAllowed: false
         attributes:
-          oauth2.token.exchange.grant.enabled: "true"
+          standard.token.exchange.enabled: "true"
           access.token.signed.response.alg: "RS256"
           access.token.lifespan: "300"
         defaultClientScopes: ["acr", "roles"]
         optionalClientScopes: []
+        protocolMappers:
+          - name: zylos-act-claim
+            protocol: openid-connect
+            protocolMapper: zylos-act-claim-mapper
+            consentRequired: false
+            config:
+              access.token.claim: "true"
+              id.token.claim: "false"
+              userinfo.token.claim: "false"
 
       # ----- Admin Console (Auth Code + PKCE) -----
       - clientId: zylos-web-admin
@@ -347,7 +398,7 @@ data:
         frontchannelLogout: true
         fullScopeAllowed: false
         attributes:
-          oauth2.token.exchange.grant.enabled: "true"
+          standard.token.exchange.enabled: "true"
           pkce.code.challenge.method: "S256"
           post.logout.redirect.uris: "http://admin.zylos.local/+https://admin.zylos.app/"
           access.token.signed.response.alg: "RS256"
