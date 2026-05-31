@@ -1,0 +1,83 @@
+###############################################################################
+# zylos-infra-gateway — values for the local kind cluster.
+# Consumes zylos-service-base v0.2.0. Image tag bumped by CI on merge to main.
+###############################################################################
+
+fullnameOverride: "zylos-infra-gateway"
+
+image:
+  repository: ghcr.io/zylos-platform/zylos-infra-gateway
+  tag: "latest" # CI replaces with a date-sha tag on each merged push to main
+
+replicaCount: 2
+
+springProfile: prod
+environment: dev
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# The gateway is the API perimeter — externally reachable at api.zylos.local
+# via the kind nginx ingress.
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: api.zylos.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+serviceMonitor:
+  enabled: true
+
+# Autoscaling left off for kind (no guaranteed metrics-server). Production
+# enables HPA with appropriate caps.
+autoscaling:
+  enabled: false
+
+networkPolicy:
+  enabled: true
+  ingress:
+    fromIstio: true
+    fromObservability: true
+    fromIngressNginx: true # api.zylos.local is served via nginx
+  egress:
+    toDns: true
+    toIstio: true
+    toSamePlatform: true # reach zylos-service-hello (and future services)
+    toExternal: false
+    extra:
+      # Reach Keycloak (different namespace) for discovery, JWKS, and token
+      # exchange. keycloak.zylos.local resolves to the Keycloak Service via the
+      # CoreDNS rewrite.
+      - to:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: keycloak
+        ports:
+          - protocol: TCP
+            port: 8080
+
+extraEnv:
+  - name: ZYLOS_ISSUER_URI
+    value: "http://keycloak.zylos.local/realms/zylos"
+  - name: ZYLOS_TOKEN_ENDPOINT
+    value: "http://keycloak.zylos.local/realms/zylos/protocol/openid-connect/token"
+  - name: ZYLOS_GATEWAY_CLIENT_ID
+    value: "zylos-gateway"
+  - name: ZYLOS_GATEWAY_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: zylos-gateway-secrets
+        key: gateway-secret
+  - name: ZYLOS_HELLO_SERVICE_URI
+    value: "http://zylos-service-hello.zylos-services.svc.cluster.local:8080"
+  # kind pod CIDR (10.244.*). Tighten to the mesh egress range in production.
+  - name: ZYLOS_TRUSTED_PROXIES
+    value: "10\\..*"

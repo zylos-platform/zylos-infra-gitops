@@ -6,7 +6,7 @@ This repo's manifests are reconciled by Argo CD against any cluster.
 ## What's Inside
 
 | Component               | Purpose                                                |
-| ----------------------- | ------------------------------------------------------ |
+|-------------------------|--------------------------------------------------------|
 | Argo CD                 | GitOps controller                                      |
 | Istio (ambient mode)    | Service mesh                                           |
 | cert-manager            | TLS certificate automation                             |
@@ -34,6 +34,8 @@ See [`bootstrap-procedure.md`](./bootstrap-procedure.md).
 - [ADR 0010: OAuth 2.1 flow selection per client type](adr/0010-oauth-flows-per-client-type.md)
 - [ADR 0011: RFC 8693 token exchange (V2) for audience downscoping](adr/0011-rfc-8693-token-exchange.md)
 - [ADR 0012: Refresh token reuse detection](adr/0012-refresh-token-reuse-detection.md)
+- [ADR 0013: Keycloak custom image act mapper](adr/0013-keycloak-custom-image-act-mapper.md)
+- [ADR 0014: Gateway deployment](adr/0014-gateway-deployment.md)
 
 ## Troubleshooting
 
