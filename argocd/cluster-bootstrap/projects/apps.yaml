@@ -49,6 +49,8 @@ spec:
       kind: "*"
     - group: "networking.istio.io"
       kind: "*"
+    - group: "bitnami.com"
+      kind: "SealedSecret"
 
   orphanedResources:
     warn: true
