@@ -7,18 +7,13 @@ and this repository adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Changed
-
-- Keycloak image switched to `ghcr.io/zylos-platform/keycloak:26.6.1-zylos-act-0.1.0`
-  — a pre-built custom image with the Zylos ActClaimMapper installed and
-  `kc.sh build` baked in.
-- Keycloak operator's `startOptimized` set to `true` (image is pre-built).
-- Realm config: ActClaimMapper attached to the 4 service-account clients
-  (zylos-mobile-bff, zylos-gateway, zylos-internal-hello, zylos-internal-caller).
-
 ### Added
 
-- ADR 0013: Custom Keycloak image for ActClaimMapper, including operational
-  notes for version bumps and verification procedure.
-- Refinement section on ADR 0011 documenting the Keycloak `act` gap and its
-  resolution via the custom mapper.
+- Initial `zylos-infra-gateway` Argo CD application and corresponding Helm values for deployment based on the
+  `zylos-service-base` pattern.
+- Ingress support for `api.zylos.local` external exposure of the gateway via nginx ingress.
+- `zylos-services-secrets` Argo CD application for managing sealed secrets within the `zylos-services` namespace.
+- `seal-zylos-services-secrets.sh` script to generate gateway's Keycloak client credentials.
+- Gateway's development client credentials provisioned automatically as a SealedSecret.
+- ADR 0014 documenting the Gateway deployment, including in-cluster issuer resolution with CoreDNS.
+- Added references to ADR 0013 and ADR 0014 in the docs README.
