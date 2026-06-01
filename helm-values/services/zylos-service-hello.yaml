@@ -8,7 +8,7 @@ fullnameOverride: "zylos-service-hello"
 
 image:
   repository: ghcr.io/zylos-platform/zylos-service-hello
-  tag: "20260509-db89f3d" # CI replaces this on each merged push to main
+  tag: "20260601-e6ed860" # CI replaces this on each merged push to main
   # digest: ""            # When CI starts emitting digests, this overrides tag
 
 replicaCount: 2
