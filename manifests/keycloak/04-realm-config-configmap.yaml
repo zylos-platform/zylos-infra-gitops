@@ -166,6 +166,44 @@ data:
         requiredActions: []
         groups: []
 
+    clientScopes:
+      # Universal actor scope: emits the act claim ONLY during exchange
+      # (the ActClaimMapper is a no-op otherwise). Shared, attached as DEFAULT
+      # to exchange-capable clients — defined once, never duplicated per client.
+      - name: zylos-actor
+        description: "RFC 8693 act claim on exchange"
+        protocol: openid-connect
+        attributes:
+          include.in.token.scope: "false"
+          display.on.consent.screen: "false"
+        protocolMappers:
+          - name: zylos-act-claim
+            protocol: openid-connect
+            protocolMapper: zylos-act-claim-mapper
+            consentRequired: false
+            config:
+              access.token.claim: "true"
+              id.token.claim: "false"
+              userinfo.token.claim: "false"
+      # Per-target audience scope: adds aud=zylos-internal-hello. OPTIONAL —
+      # acquired only when the caller requests &scope=hello-aud during exchange,
+      # so a caller's base token never carries an internal audience.
+      - name: hello-aud
+        description: "Adds aud=zylos-internal-hello (requested per-route on exchange)"
+        protocol: openid-connect
+        attributes:
+          include.in.token.scope: "false"
+          display.on.consent.screen: "false"
+        protocolMappers:
+          - name: hello-audience
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              included.client.audience: zylos-internal-hello
+              access.token.claim: "true"
+              id.token.claim: "false"
+
     ###########################################################################
     # Clients
     #
@@ -250,20 +288,8 @@ data:
         attributes:
           standard.token.exchange.enabled: "true"
           access.token.signed.response.alg: "RS256"
-        defaultClientScopes: ["acr", "profile", "roles", "email"]
+        defaultClientScopes: ["acr", "profile", "roles", "email", "zylos-actor"]
         optionalClientScopes: ["offline_access", "microprofile-jwt"]
-        protocolMappers:
-          - name: zylos-act-claim
-            protocol: openid-connect
-            protocolMapper: zylos-act-claim-mapper
-            consentRequired: false
-            config:
-              # The Zylos ActClaimMapper has no user-configurable fields.
-              # These standard flags route the claim to the access token only
-              # (act in ID tokens or UserInfo is meaningless for our model).
-              access.token.claim: "true"
-              id.token.claim: "false"
-              userinfo.token.claim: "false"
 
       # ----- Spring Cloud Gateway (cluster perimeter) -----
       - clientId: zylos-gateway
@@ -289,17 +315,8 @@ data:
           standard.token.exchange.enabled: "true"
           access.token.signed.response.alg: "RS256"
           access.token.lifespan: "120" # 2-min exchanged tokens (architecture §6)
-        defaultClientScopes: ["acr", "roles"]
-        optionalClientScopes: []
-        protocolMappers:
-          - name: zylos-act-claim
-            protocol: openid-connect
-            protocolMapper: zylos-act-claim-mapper
-            consentRequired: false
-            config:
-              access.token.claim: "true"
-              id.token.claim: "false"
-              userinfo.token.claim: "false"
+        defaultClientScopes: ["acr", "roles", "zylos-actor"]
+        optionalClientScopes: ["hello-aud"]
 
       # ----- Internal: Hello Service (reference service identity) -----
       - clientId: zylos-internal-hello
@@ -325,17 +342,8 @@ data:
           standard.token.exchange.enabled: "true"
           access.token.signed.response.alg: "RS256"
           access.token.lifespan: "300" # 5-min S2S tokens (architecture §6)
-        defaultClientScopes: ["acr", "roles"]
+        defaultClientScopes: ["acr", "roles", "zylos-actor"]
         optionalClientScopes: []
-        protocolMappers:
-          - name: zylos-act-claim
-            protocol: openid-connect
-            protocolMapper: zylos-act-claim-mapper
-            consentRequired: false
-            config:
-              access.token.claim: "true"
-              id.token.claim: "false"
-              userinfo.token.claim: "false"
 
       # ----- Internal: Caller Service (used to exercise act chain validation) -----
       - clientId: zylos-internal-caller
@@ -361,17 +369,8 @@ data:
           standard.token.exchange.enabled: "true"
           access.token.signed.response.alg: "RS256"
           access.token.lifespan: "300"
-        defaultClientScopes: ["acr", "roles"]
-        optionalClientScopes: []
-        protocolMappers:
-          - name: zylos-act-claim
-            protocol: openid-connect
-            protocolMapper: zylos-act-claim-mapper
-            consentRequired: false
-            config:
-              access.token.claim: "true"
-              id.token.claim: "false"
-              userinfo.token.claim: "false"
+        defaultClientScopes: ["acr", "roles", "zylos-actor"]
+        optionalClientScopes: ["hello-aud"]
 
       # ----- Admin Console (Auth Code + PKCE) -----
       - clientId: zylos-web-admin
