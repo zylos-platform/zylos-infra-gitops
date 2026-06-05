@@ -203,6 +203,21 @@ data:
               included.client.audience: zylos-internal-hello
               access.token.claim: "true"
               id.token.claim: "false"
+      - name: gateway-aud
+        description: "Adds aud=zylos-gateway (requested by BFFs when calling the gateway)"
+        protocol: openid-connect
+        attributes:
+          include.in.token.scope: "false"
+          display.on.consent.screen: "false"
+        protocolMappers:
+          - name: gateway-audience
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              included.client.audience: zylos-gateway
+              access.token.claim: "true"
+              id.token.claim: "false"
 
     ###########################################################################
     # Clients
@@ -289,7 +304,7 @@ data:
           standard.token.exchange.enabled: "true"
           access.token.signed.response.alg: "RS256"
         defaultClientScopes: ["acr", "profile", "roles", "email", "zylos-actor"]
-        optionalClientScopes: ["offline_access", "microprofile-jwt"]
+        optionalClientScopes: ["offline_access", "microprofile-jwt", "gateway-aud"]
 
       # ----- Spring Cloud Gateway (cluster perimeter) -----
       - clientId: zylos-gateway
