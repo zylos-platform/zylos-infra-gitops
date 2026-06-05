@@ -25,26 +25,36 @@ resources:
     memory: 768Mi
 
 ingress:
-  enabled: true
-  className: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-  hosts:
-    - host: hello.zylos.local
-      paths:
-        - path: /
-          pathType: Prefix
+  enabled: false
 
 serviceMonitor:
   enabled: true
 
-# NetworkPolicy: hello-service is exposed via NGINX ingress, so allow that.
+# NetworkPolicy: hello-service is exposed via gateway.
 networkPolicy:
   enabled: true
   ingress:
-    fromIstio: true
+    fromIstio: true # gateway→service transits ztunnel (istio-system)
     fromObservability: true
-    fromIngressNginx: true # Required because ingress.enabled=true above
+    fromIngressNginx: false
+  egress:
+    toDns: true
+    toIstio: true
+    toSamePlatform: true
+    extra:
+      # Reach Keycloak (different namespace) for discovery + JWKS to validate
+      # tokens. keycloak.zylos.local resolves via the CoreDNS rewrite.
+      - to:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: keycloak
+        ports:
+          - protocol: TCP
+            port: 8080
+
+extraEnv:
+  - name: ZYLOS_ISSUER_URI
+    value: "http://keycloak.zylos.local/realms/zylos"
 
 # PDB: with replicaCount=2 and maxUnavailable=1, at least one pod is always
 # available during voluntary disruptions.
