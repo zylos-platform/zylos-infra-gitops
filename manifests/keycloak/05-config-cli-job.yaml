@@ -76,8 +76,12 @@ spec:
             # --- Variable substitution (strict) ---
             - name: IMPORT_VARSUBSTITUTION_ENABLED
               value: "true"
-            - name: IMPORT_VARSUBSTITUTION_UNDEFINEDTHROWSEXCEPTIONS
+            - name: IMPORT_VARSUBSTITUTION_UNDEFINEDISERROR
               value: "true"
+            - name: IMPORT_VARSUBSTITUTION_PREFIX
+              value: "${"
+            - name: IMPORT_VARSUBSTITUTION_SUFFIX
+              value: "}"
 
             # --- Remote state (track config-cli-managed resources only) ---
             - name: IMPORT_REMOTESTATE_ENABLED
