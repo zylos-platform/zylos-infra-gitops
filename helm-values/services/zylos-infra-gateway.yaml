@@ -7,7 +7,7 @@ fullnameOverride: "zylos-infra-gateway"
 
 image:
   repository: ghcr.io/zylos-platform/zylos-infra-gateway
-  tag: "20260604-ebff803" # CI replaces with a date-sha tag on each merged push to main
+  tag: "20260605-bb0d099" # CI replaces with a date-sha tag on each merged push to main
 
 replicaCount: 2
 
