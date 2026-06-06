@@ -36,7 +36,7 @@ prometheus:
   prometheusSpec:
     replicas: 1
     retention: 7d # Local dev — prod uses 30d
-    retentionSize: 8GB
+    retentionSize: 4GB
 
     # Discover ServiceMonitors and PodMonitors in ALL namespaces, not just our own
     serviceMonitorSelectorNilUsesHelmValues: false

@@ -48,6 +48,7 @@ config:
 
     prometheusremotewrite:
       endpoint: http://kube-prometheus-stack-prometheus.observability.svc.cluster.local:9090/api/v1/write
+      timeout: 30s
       tls:
         insecure: true
 
