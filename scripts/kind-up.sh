@@ -57,7 +57,7 @@ if kubectl get ns ingress-nginx >/dev/null 2>&1; then
   echo "==> NGINX Ingress already installed. Skipping."
 else
   echo ""
-  echo "==> [2a/4] Installing NGINX Ingress controller..."
+  echo "==> [2/4] Installing NGINX Ingress controller..."
   kubectl apply -f "https://raw.githubusercontent.com/kubernetes/ingress-nginx/${NGINX_INGRESS_VERSION}/deploy/static/provider/kind/deploy.yaml"
 
   echo ""
@@ -67,9 +67,6 @@ else
     --selector=app.kubernetes.io/component=controller \
     --timeout=180s
 fi
-
-echo "==> [2b/4] Patching CoreDNS for in-cluster issuer resolution..."
-"${TERRAFORM_REPO}/kubernetes/kind/patch-coredns.sh"
 
 # Step 3: Argo CD bootstrap (delegates to existing script)
 echo ""

@@ -28,25 +28,15 @@ perimeter. (The kind cluster installs nginx ingress during bootstrap.)
 holds the gateway's Keycloak client secret, matching the realm's `zylos-gateway`
 client secret. Synced ahead of the gateway (sync wave 19 vs 20).
 
-**In-cluster issuer resolution via CoreDNS rewrite.** `keycloak.zylos.local`
-resolves to the Keycloak Service in-cluster:
-
-    rewrite name keycloak.zylos.local keycloak-service.keycloak.svc.cluster.local
-
-The gateway then reaches Keycloak directly while sending `Host: keycloak.zylos.local`
-(which Keycloak accepts) and the validated `iss` matches. This rewrite is
-provisioned in `zylos-infra-terraform` (it owns kube-system CoreDNS), not in
-this app-of-apps.
+**In-cluster issuer resolution via decoupled `jwk-set-uri` (supersedes the CoreDNS rewrite).**
+Services validate `iss` against the port-less frontend string while fetching JWKS
+and exchanging tokens against the direct Keycloak Service (`:8080`) via
+`ZYLOS_JWK_SET_URI` and `ZYLOS_TOKEN_ENDPOINT`. Because nothing in-cluster ever
+dials `keycloak.zylos.local`, the earlier CoreDNS rewrite is retired (removed
+from `kind-up.sh` and `zylos-infra-terraform`). See security-starter README
+("Split-horizon networks").
 
 ## Rationale
-
-- **Rewrite over split frontend/backchannel hostnames.** Keycloak's
-  dynamic-backchannel mode would let in-cluster clients use the Service URL, but
-  Spring Security's `withIssuerLocation` validates that the discovery document's
-  `issuer` equals the configured location — which breaks if the gateway calls a
-  different URL than the `iss`. A DNS rewrite keeps one hostname everywhere, so
-  discovery, JWKS, exchange, and `iss` validation all align with no decoder
-  changes. This also unblocks every future in-cluster token-validating service.
 
 - **Cross-namespace egress is explicit.** The chart's default `toSamePlatform`
   egress covers `zylos-services` only; an explicit `egress.extra` rule allows the
@@ -57,10 +47,6 @@ this app-of-apps.
   Cluster DNS is provisioning, so it belongs with the cluster.
 
 ## Trade-offs Accepted
-
-- **Hard dependency on the CoreDNS rewrite.** Without it the gateway can't reach
-  Keycloak; readiness stays down. Documented as a prerequisite and verified
-  post-merge.
 
 - **Dev secret in the sealing script.** Acceptable for kind reproducibility;
   production uses ESO + AWS Secrets Manager.
