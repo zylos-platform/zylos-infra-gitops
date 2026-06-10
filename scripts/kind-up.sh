@@ -19,17 +19,17 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 # Find sibling infra repo
-TERRAFORM_REPO="${TERRAFORM_REPO:-$(realpath ../zylos-infra-terraform)}"
+#TERRAFORM_REPO="${TERRAFORM_REPO:-$(realpath ../zylos-infra-terraform)}"
+#
+#if [[ ! -d "${TERRAFORM_REPO}/kubernetes/kind" ]]; then
+#  echo "ERROR:  zylos-infra-terraform not found at ${TERRAFORM_REPO}." >&2
+#  echo "Set TERRAFORM_REPO=/path/to/ zylos-infra-terraform and rerun." >&2
+#  exit 1
+#fi
 
-if [[ ! -d "${TERRAFORM_REPO}/kubernetes/kind" ]]; then
-  echo "ERROR:  zylos-infra-terraform not found at ${TERRAFORM_REPO}." >&2
-  echo "Set TERRAFORM_REPO=/path/to/ zylos-infra-terraform and rerun." >&2
-  exit 1
-fi
-
-CLUSTER_CONFIG="${TERRAFORM_REPO}/kubernetes/kind/cluster.yaml"
+CLUSTER_CONFIG="kind/cluster.yaml"
 if [[ "${LEAN:-0}" == "1" ]]; then
-  CLUSTER_CONFIG="${TERRAFORM_REPO}/kubernetes/kind/cluster-lean.yaml"
+  CLUSTER_CONFIG="kind/cluster-lean.yaml"
   echo "Using LEAN single-node cluster."
 fi
 

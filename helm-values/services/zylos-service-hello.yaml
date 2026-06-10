@@ -32,7 +32,7 @@ serviceMonitor:
 
 # NetworkPolicy: hello-service is exposed via gateway.
 networkPolicy:
-  enabled: true
+  enabled: false
   ingress:
     fromIstio: true # gateway→service transits ztunnel (istio-system)
     fromObservability: true
