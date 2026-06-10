@@ -42,7 +42,7 @@ autoscaling:
   enabled: false
 
 networkPolicy:
-  enabled: true
+  enabled: false
   ingress:
     fromIstio: true
     fromObservability: true
