@@ -11,6 +11,9 @@ metadata:
 spec:
   instances: 1
 
+  networkPolicy:
+    enabled: false
+
   # Custom Keycloak 26.6.1 image with the Zylos ActClaimMapper pre-installed
   # and `kc.sh build` baked in. Built and published by:
   #   https://github.com/zylos-platform/zylos-infra-keycloak-extensions
@@ -78,3 +81,32 @@ spec:
                 value: "true"
               - name: KC_LOG_LEVEL
                 value: "INFO"
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-zylos-to-keycloak
+  namespace: keycloak
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: keycloak
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow external ingress traffic
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+
+    # Allow ALL pods in zylos-services to fetch JWKs
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: zylos-services
+      ports:
+        - protocol: TCP
+          port: 8080

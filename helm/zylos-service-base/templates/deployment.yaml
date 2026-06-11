@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "service.fullname" . }}
-  labels: {{- include "service.labels" . | nindent 4 }}
+  labels: {{ include "service.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -13,51 +13,51 @@ spec:
       maxSurge: 1
       maxUnavailable: 0
   selector:
-    matchLabels: {{- include "service.selectorLabels" . | nindent 6 }}
+    matchLabels: {{ include "service.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      labels: {{- include "service.labels" . | nindent 8 }}
+      labels: {{ include "service.labels" . | nindent 8 }}
       # Note: legacy prometheus.io/* annotations removed; ServiceMonitor is the
       # scrape configuration source under Prometheus Operator.
     spec:
       serviceAccountName: {{ include "service.serviceAccountName" . }}
       automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
       {{- with .Values.image.pullSecrets }}
-      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.priorityClassName }}
       priorityClassName: {{ . }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
-      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      securityContext: {{ toYaml .Values.podSecurityContext | nindent 8 }}
       {{- if .Values.podAntiAffinity.enabled }}
       affinity:
         podAntiAffinity:
           {{- if eq .Values.podAntiAffinity.type "required" }}
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
-                matchLabels: {{- include "service.selectorLabels" . | nindent 18 }}
+                matchLabels: {{ include "service.selectorLabels" . | nindent 18 }}
               topologyKey: kubernetes.io/hostname
           {{- else }}
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:
                 labelSelector:
-                  matchLabels: {{- include "service.selectorLabels" . | nindent 20 }}
+                  matchLabels: {{ include "service.selectorLabels" . | nindent 20 }}
                 topologyKey: kubernetes.io/hostname
           {{- end }}
       {{- end }}
       {{- with .Values.topologySpreadConstraints }}
-      topologySpreadConstraints: {{- toYaml . | nindent 8 }}
+      topologySpreadConstraints: {{ toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.nodeSelector }}
-      nodeSelector: {{- toYaml . | nindent 8 }}
+      nodeSelector: {{ toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}
-      tolerations: {{- toYaml . | nindent 8 }}
+      tolerations: {{ toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.extraInitContainers }}
-      initContainers: {{- toYaml . | nindent 8 }}
+      initContainers: {{ toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -82,10 +82,10 @@ spec:
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: {{ include "service.otelResourceAttrs" . | quote }}
             {{- with .Values.extraEnv }}
-            {{- toYaml . | nindent 12 }}
+            {{ toYaml . | nindent 12 }}
             {{- end }}
           {{- with .Values.extraEnvFrom }}
-          envFrom: {{- toYaml . | nindent 12 }}
+          envFrom: {{ toYaml . | nindent 12 }}
           {{- end }}
           livenessProbe:
             httpGet:
@@ -111,17 +111,17 @@ spec:
             periodSeconds: {{ .Values.probes.startup.periodSeconds }}
             timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
             failureThreshold: {{ .Values.probes.startup.failureThreshold }}
-          resources: {{- toYaml .Values.resources | nindent 12 }}
-          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+          securityContext: {{ toYaml .Values.containerSecurityContext | nindent 12 }}
           volumeMounts:
             - name: tmp
               mountPath: /tmp
             {{- with .Values.extraVolumeMounts }}
-            {{- toYaml . | nindent 12 }}
+            {{ toYaml . | nindent 12 }}
             {{- end }}
       volumes:
         - name: tmp
           emptyDir: {}
         {{- with .Values.extraVolumes }}
-        {{- toYaml . | nindent 8 }}
+        {{ toYaml . | nindent 8 }}
         {{- end }}

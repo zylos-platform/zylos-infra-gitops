@@ -41,24 +41,8 @@ networkPolicy:
     toDns: true
     toIstio: true
     toSamePlatform: true
-    extra:
-      # Reach Keycloak (different namespace) for discovery + JWKS to validate
-      # tokens.
-      - to:
-          - namespaceSelector:
-              matchLabels:
-                kubernetes.io/metadata.name: keycloak
-        ports:
-          - protocol: TCP
-            port: 8080
-
-      - to:
-          - namespaceSelector:
-              matchLabels:
-                kubernetes.io/metadata.name: observability
-        ports:
-          - protocol: TCP
-            port: 4318
+    toKeycloak: true
+    toObservability: true
 
 extraEnv:
   - name: ZYLOS_ISSUER_URI

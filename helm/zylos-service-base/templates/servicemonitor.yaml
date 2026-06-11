@@ -4,11 +4,11 @@ kind: ServiceMonitor
 metadata:
   name: {{ include "service.fullname" . }}
   labels:
-    {{- include "service.labels" . | nindent 4 }}
+    {{ include "service.labels" . | nindent 4 }}
     release: kube-prometheus-stack
 spec:
   selector:
-    matchLabels: {{- include "service.selectorLabels" . | nindent 6 }}
+    matchLabels: {{ include "service.selectorLabels" . | nindent 6 }}
   endpoints:
     - port: management
       path: /actuator/prometheus
@@ -17,9 +17,9 @@ spec:
       scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
       honorLabels: false
       {{- with .Values.serviceMonitor.relabelings }}
-      relabelings: {{- toYaml . | nindent 8 }}
+      relabelings: {{ toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.serviceMonitor.metricRelabelings }}
-      metricRelabelings: {{- toYaml . | nindent 8 }}
+      metricRelabelings: {{ toYaml . | nindent 8 }}
       {{- end }}
 {{- end }}

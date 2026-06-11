@@ -7,14 +7,14 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: {{ include "service.fullname" . }}
-  labels: {{- include "service.labels" . | nindent 4 }}
+  labels: {{ include "service.labels" . | nindent 4 }}
 spec:
   podSelector:
-    matchLabels: {{- include "service.selectorLabels" . | nindent 6 }}
+    matchLabels: {{ include "service.selectorLabels" . | nindent 6 }}
   policyTypes:
     - Ingress
     - Egress
-  # ---- INGRESS rules ---- 
+  # ---- INGRESS rules ----
   ingress:
     {{- if .Values.networkPolicy.ingress.fromIstio }}
     # Istio ambient: ztunnel and waypoint live in istio-system.
@@ -50,7 +50,7 @@ spec:
           port: {{ .Values.service.httpPort }}
     {{- end }}
     {{- with .Values.networkPolicy.ingress.extra }}
-    {{- toYaml . | nindent 4 }}
+    {{ toYaml . | nindent 4 }}
     {{- end }}
   # ---- EGRESS rules ----
   egress:
@@ -83,6 +83,26 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: zylos-services
     {{- end }}
+    {{- if .Values.networkPolicy.egress.toKeycloak }}
+    # Explicitly allow certificate/JWKS fetching from Keycloak namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: keycloak
+      ports:
+        - protocol: TCP
+          port: 8080
+    {{- end }}
+    {{- if .Values.networkPolicy.egress.toObservability }}
+        # Allow sending telemetry to observability namespace (e.g., OpenTelemetry Collector)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+      ports:
+        - protocol: TCP
+          port: 4318
+    {{- end }}
     {{- if .Values.networkPolicy.egress.toExternal }}
     # Unrestricted external (cluster-external) egress. Equivalent to "internet
     # access permitted." Use sparingly — most services should not need this.
@@ -99,6 +119,6 @@ spec:
               - 169.254.0.0/16
     {{- end }}
     {{- with .Values.networkPolicy.egress.extra }}
-    {{- toYaml . | nindent 4 }}
+    {{ toYaml . | nindent 4 }}
     {{- end }}
 {{- end }}
