@@ -42,7 +42,7 @@ autoscaling:
   enabled: false
 
 networkPolicy:
-  enabled: false
+  enabled: true
   ingress:
     fromIstio: true
     fromObservability: true
@@ -51,25 +51,9 @@ networkPolicy:
     toDns: true
     toIstio: true
     toSamePlatform: true # reach zylos-service-hello (and future services)
+    toKeycloak: true
+    toObservability: true
     toExternal: false
-    extra:
-      # Reach Keycloak (different namespace) for discovery, JWKS, and token
-      # exchange.
-      - to:
-          - namespaceSelector:
-              matchLabels:
-                kubernetes.io/metadata.name: keycloak
-        ports:
-          - protocol: TCP
-            port: 8080
-
-      - to:
-          - namespaceSelector:
-              matchLabels:
-                kubernetes.io/metadata.name: observability
-        ports:
-          - protocol: TCP
-            port: 4318
 
 extraEnv:
   - name: ZYLOS_ISSUER_URI

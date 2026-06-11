@@ -17,15 +17,15 @@ fullnameOverride: ""
 image:
   repository: ghcr.io/zylos-platform/CHANGEME
   # `tag` is used unless `digest` is set.
-  tag: "latest"
+  tag: "v0.0.1-CHANGEME"
   # `digest` (SHA256, including the `sha256:` prefix) supersedes `tag` when
   # non-empty. Production should pin by digest; CI's deploy-PR can populate
-  # both fields and we use whichever is set.
+  # both fields, and we use whichever is set.
   digest: ""
   pullPolicy: IfNotPresent
   # `pullSecrets`: list of imagePullSecret names. Empty = anonymous pulls
   # from public registries (GHCR public is anonymous-readable).
-  pullSecrets: []
+  pullSecrets: [ ]
 
 # -----------------------------------------------------------------------------
 # Replicas (ignored when autoscaling.enabled=true; HPA owns it)
@@ -54,9 +54,9 @@ service:
 ingress:
   enabled: false
   className: nginx
-  annotations: {}
-  hosts: []
-  tls: []
+  annotations: { }
+  hosts: [ ]
+  tls: [ ]
 
 # -----------------------------------------------------------------------------
 # Resources
@@ -65,9 +65,11 @@ resources:
   requests:
     cpu: 100m
     memory: 256Mi
+    ephemeral-storage: 1Gi
   limits:
     cpu: 1000m
     memory: 1Gi
+    ephemeral-storage: 2Gi
 
 # -----------------------------------------------------------------------------
 # Probes (Spring Boot Actuator on the management port)
@@ -101,7 +103,7 @@ serviceAccount:
   name: ""
   # Best practice: opt-out of automount; opt-in only if pod calls K8s API.
   automountServiceAccountToken: false
-  annotations: {}
+  annotations: { }
 
 # -----------------------------------------------------------------------------
 # Pod-level security context
@@ -127,7 +129,7 @@ containerSecurityContext:
   runAsGroup: 65532
   readOnlyRootFilesystem: true
   capabilities:
-    drop: ["ALL"]
+    drop: [ "ALL" ]
 
 # -----------------------------------------------------------------------------
 # OpenTelemetry
@@ -137,22 +139,22 @@ otel:
   protocol: http/protobuf
   # Built-in attributes: service.namespace=zylos, deployment.environment=<environment>,
   # service.version=<image.tag or image.digest>. extras are appended.
-  extraResourceAttributes: {}
+  extraResourceAttributes: { }
 
 # -----------------------------------------------------------------------------
 # Extra extensibility
 # -----------------------------------------------------------------------------
-extraEnv: []
+extraEnv: [ ]
 # extraEnvFrom: pull env from ConfigMaps/Secrets:
 #   extraEnvFrom:
 #     - configMapRef:
 #         name: my-config
 #     - secretRef:
 #         name: my-secret
-extraEnvFrom: []
-extraVolumes: []
-extraVolumeMounts: []
-extraInitContainers: []
+extraEnvFrom: [ ]
+extraVolumes: [ ]
+extraVolumeMounts: [ ]
+extraInitContainers: [ ]
 
 # -----------------------------------------------------------------------------
 # Prometheus ServiceMonitor
@@ -162,8 +164,8 @@ serviceMonitor:
   interval: 30s
   scrapeTimeout: 10s
   # Metric relabel hooks for trimming / renaming
-  metricRelabelings: []
-  relabelings: []
+  metricRelabelings: [ ]
+  relabelings: [ ]
 
 # -----------------------------------------------------------------------------
 # Pod Disruption Budget
@@ -222,7 +224,7 @@ podAntiAffinity:
 # Topology spread constraints (modern preferred mechanism for cross-zone HA).
 # When non-empty, rendered into the deployment.
 # Default empty; podAntiAffinity covers single-cluster spread.
-topologySpreadConstraints: []
+topologySpreadConstraints: [ ]
 
 # -----------------------------------------------------------------------------
 # Network Policy
@@ -242,7 +244,7 @@ networkPolicy:
     # Defaults false; set true for any service where ingress.enabled=true.
     fromIngressNginx: false
     # Extra ingress rules in raw NetworkPolicy `from`/`ports` form.
-    extra: []
+    extra: [ ]
   egress:
     # Allow DNS to kube-system's CoreDNS.
     toDns: true
@@ -253,9 +255,11 @@ networkPolicy:
     # Allow unrestricted external (Internet) egress. Default off; turn on
     # only for services that need direct external API calls (e.g., gateway
     # talking to Keycloak when Keycloak is external, BFFs hitting external IdPs).
+    toKeycloak: true
+    toObservability: true
     toExternal: false
     # Extra egress rules in raw NetworkPolicy `to`/`ports` form.
-    extra: []
+    extra: [ ]
 
 # -----------------------------------------------------------------------------
 # Pod-level miscellaneous
@@ -263,6 +267,6 @@ networkPolicy:
 priorityClassName: ""
 terminationGracePeriodSeconds: 30
 # When non-empty, applied as a pod nodeSelector.
-nodeSelector: {}
+nodeSelector: { }
 # When non-empty, applied as pod tolerations.
-tolerations: []
+tolerations: [ ]
