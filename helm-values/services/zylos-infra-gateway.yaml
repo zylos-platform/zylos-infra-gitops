@@ -58,10 +58,8 @@ networkPolicy:
 extraEnv:
   - name: ZYLOS_ISSUER_URI
     value: "http://keycloak.zylos.local/realms/zylos"
-  - name: ZYLOS_JWK_SET_URI
-    value: "http://keycloak-service.keycloak.svc.cluster.local:8080/realms/zylos/protocol/openid-connect/certs"
   - name: ZYLOS_TOKEN_ENDPOINT
-    value: "http://keycloak-service.keycloak.svc.cluster.local:8080/realms/zylos/protocol/openid-connect/token"
+    value: "http://keycloak.zylos.local/realms/zylos/protocol/openid-connect/token"
   - name: ZYLOS_GATEWAY_CLIENT_ID
     value: "zylos-gateway"
   - name: ZYLOS_GATEWAY_CLIENT_SECRET
