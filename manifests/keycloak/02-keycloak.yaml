@@ -47,7 +47,7 @@ spec:
   # In prod: keycloak.zylos.app
   hostname:
     hostname: keycloak.zylos.local
-    strict: false
+    strict: true
 
   # Proxy mode: trust X-Forwarded-* headers from NGINX.
   proxy:
