@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [ main ]
   push:
-    branches: [main]
+    branches: [ main ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -42,25 +42,47 @@ jobs:
             argocd/ manifests/
 
   helm-lint:
-    name: helm lint values files
+    name: helm lint & template validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar -xz
+          sudo mv kubeconform /usr/local/bin/
+
       - uses: azure/setup-helm@v4
         with:
           version: v3.16.0
-      - name: Add Helm repos
+
+      - name: Add External Helm repos
         run: |
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo add grafana https://grafana.github.io/helm-charts
           helm repo update
-      - name: Validate Helm values render
+
+      - name: Lint Zylos Base Chart
+        run: helm lint ./helm/zylos-service-base
+
+      - name: Validate Zylos Microservices
         run: |
-          # kube-prometheus-stack
+          # Render Gateway and validate against K8s schemas
+          helm template zylos-infra-gateway ./helm/zylos-service-base \
+            --values helm-values/services/zylos-infra-gateway.yaml \
+            | kubeconform -strict -ignore-missing-schemas -schema-location default -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+
+          # Render Hello Service and validate against K8s schemas
+          helm template zylos-service-hello ./helm/zylos-service-base \
+            --values helm-values/services/zylos-service-hello.yaml \
+            | kubeconform -strict -ignore-missing-schemas -schema-location default -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+
+      - name: Validate External Overlays
+        run: |
           helm template kps prometheus-community/kube-prometheus-stack \
             --version 65.0.0 \
             --values helm-values/observability/kube-prometheus-stack.yaml \
-            > /dev/null
+            | kubeconform -strict -ignore-missing-schemas -schema-location default -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
 
   conventional-commits:
     name: Conventional Commits
