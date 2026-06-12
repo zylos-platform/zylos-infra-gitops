@@ -11,6 +11,9 @@ metadata:
 spec:
   instances: 1
 
+  ingress:
+    enabled: false
+
   networkPolicy:
     enabled: false
 
