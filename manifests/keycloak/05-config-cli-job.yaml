@@ -27,6 +27,7 @@ spec:
         app.kubernetes.io/part-of: zylos-platform
         istio.io/dataplane-mode: none
     spec:
+      automountServiceAccountToken: false
       restartPolicy: OnFailure
       securityContext:
         runAsNonRoot: true
@@ -160,9 +161,11 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
+              ephemeral-storage: "100Mi"
             limits:
               cpu: 500m
               memory: 512Mi
+              ephemeral-storage: "100Mi"
 
       volumes:
         - name: realm-config

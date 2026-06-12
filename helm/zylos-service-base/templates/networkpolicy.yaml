@@ -88,10 +88,12 @@ spec:
     - to:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: keycloak
+              kubernetes.io/metadata.name: ingress-nginx
       ports:
         - protocol: TCP
-          port: 8080
+          port: 80
+        - protocol: TCP
+          port: 443
     {{- end }}
     {{- if .Values.networkPolicy.egress.toObservability }}
         # Allow sending telemetry to observability namespace (e.g., OpenTelemetry Collector)
