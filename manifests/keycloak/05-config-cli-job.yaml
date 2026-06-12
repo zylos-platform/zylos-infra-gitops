@@ -27,6 +27,7 @@ spec:
         app.kubernetes.io/part-of: zylos-platform
         istio.io/dataplane-mode: none
     spec:
+      automountServiceAccountToken: false
       restartPolicy: OnFailure
       securityContext:
         runAsNonRoot: true
@@ -47,7 +48,7 @@ spec:
           env:
             # --- Connection to Keycloak ---
             - name: KEYCLOAK_URL
-              value: "http://keycloak.zylos.local"
+              value: "http://keycloak-service.keycloak.svc.cluster.local:8080"
             - name: KEYCLOAK_USER
               valueFrom:
                 secretKeyRef:
@@ -160,9 +161,11 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
+              ephemeral-storage: "100Mi"
             limits:
               cpu: 500m
               memory: 512Mi
+              ephemeral-storage: "100Mi"
 
       volumes:
         - name: realm-config
