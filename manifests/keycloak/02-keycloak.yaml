@@ -46,7 +46,7 @@ spec:
   # Hostname configuration. Local kind: keycloak.zylos.local
   # In prod: keycloak.zylos.app
   hostname:
-    hostname: keycloak.zylos.local
+    hostname: http://keycloak.zylos.local
     strict: true
 
   # Proxy mode: trust X-Forwarded-* headers from NGINX.
@@ -83,7 +83,6 @@ spec:
                 value: "INFO"
 
 ---
-
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -101,12 +100,6 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: ingress-nginx
-
-    # Allow ALL pods in zylos-services to fetch JWKs
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: zylos-services
       ports:
         - protocol: TCP
           port: 8080
