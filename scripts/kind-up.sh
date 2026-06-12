@@ -46,7 +46,7 @@ echo ""
 if kind get clusters 2>/dev/null | grep -qx "zylos"; then
   echo "==> kind cluster 'zylos' already exists. Reusing."
 else
-  echo "==> [1/4] Creating kind cluster..."
+  echo "==> [1/5] Creating kind cluster..."
   kind create cluster --config "${CLUSTER_CONFIG}" --wait 5m
 fi
 
@@ -57,7 +57,7 @@ if kubectl get ns ingress-nginx >/dev/null 2>&1; then
   echo "==> NGINX Ingress already installed. Skipping."
 else
   echo ""
-  echo "==> [2/4] Installing NGINX Ingress controller..."
+  echo "==> [2/5] Installing NGINX Ingress controller..."
   kubectl apply -f "https://raw.githubusercontent.com/kubernetes/ingress-nginx/${NGINX_INGRESS_VERSION}/deploy/static/provider/kind/deploy.yaml"
 
   echo ""
@@ -67,13 +67,36 @@ else
     --selector=app.kubernetes.io/component=controller \
     --timeout=180s
 fi
-
-# Step 3: Argo CD bootstrap (delegates to existing script)
+# Step 3: Split-horizon DNS — resolve *.zylos.local in-cluster to the NGINX ingress controller
 echo ""
-echo "==> [3/4] Bootstrapping Argo CD and platform components..."
+echo "==> [3/5] Configuring CoreDNS rewrite for *.zylos.local..."
+COREFILE_TMP="$(mktemp)"
+kubectl -n kube-system get cm coredns -o go-template='{{index .data "Corefile"}}' > "${COREFILE_TMP}"
+if grep -q 'zylos\\.local' "${COREFILE_TMP}"; then
+  echo "    CoreDNS rewrite already present. Skipping."
+else
+  awk '/forward \. \/etc\/resolv\.conf/ && !done {
+        print "    rewrite stop {";
+        print "      name regex (.*)\\.zylos\\.local ingress-nginx-controller.ingress-nginx.svc.cluster.local";
+        print "      answer auto";
+        print "    }";
+        done=1
+      } { print }' "${COREFILE_TMP}" > "${COREFILE_TMP}.new"
+  kubectl -n kube-system create configmap coredns \
+    --from-file=Corefile="${COREFILE_TMP}.new" \
+    --dry-run=client -o yaml | kubectl apply -f -
+  kubectl -n kube-system rollout restart deploy/coredns
+  kubectl -n kube-system rollout status deploy/coredns --timeout=60s
+  echo "    *.zylos.local now resolves to the ingress controller in-cluster."
+fi
+rm -f "${COREFILE_TMP}" "${COREFILE_TMP}.new" 2>/dev/null || true
+
+# Step 4: Argo CD bootstrap (delegates to existing script)
+echo ""
+echo "==> [4/5] Bootstrapping Argo CD and platform components..."
 ./scripts/bootstrap.sh
 
-# Step 4: Show the user how to monitor
+# Step 5: Show the user how to monitor
 echo ""
 echo "==============================================="
 echo "✓ Bootstrap initiated."
