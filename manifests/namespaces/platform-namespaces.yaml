@@ -62,3 +62,12 @@ metadata:
     pod-security.kubernetes.io/enforce: baseline
 #    istio.io/dataplane-mode: ambient
     app.kubernetes.io/part-of: zylos-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: opa
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    #    istio.io/dataplane-mode: ambient
+    app.kubernetes.io/part-of: zylos-platform
