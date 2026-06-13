@@ -13,6 +13,9 @@ data:
       ghcr:
         url: https://ghcr.io
         type: oci
+        credentials:
+          bearer:
+            token: "${GHCR_TOKEN}"
 
     bundles:
       zylos-policies:

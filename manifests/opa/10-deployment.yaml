@@ -47,6 +47,12 @@ spec:
             - "--diagnostic-addr=0.0.0.0:8282"
             - "--log-format=json"
             - "--log-level=info"
+          env:
+            - name: GHCR_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: ghcr-opa-token
+                  key: token
           ports:
             - name: http
               containerPort: 8181
