@@ -95,6 +95,15 @@ spec:
         - protocol: TCP
           port: 443
     {{- end }}
+    {{- if .Values.networkPolicy.egress.toOpa }}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: opa
+      ports:
+        - protocol: TCP
+          port: 8181
+    {{- end }}
     {{- if .Values.networkPolicy.egress.toObservability }}
         # Allow sending telemetry to observability namespace (e.g., OpenTelemetry Collector)
     - to:

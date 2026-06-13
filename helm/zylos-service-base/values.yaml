@@ -256,6 +256,7 @@ networkPolicy:
     # only for services that need direct external API calls (e.g., gateway
     # talking to Keycloak when Keycloak is external, BFFs hitting external IdPs).
     toKeycloak: true
+    toOpa: true
     toObservability: true
     toExternal: false
     # Extra egress rules in raw NetworkPolicy `to`/`ports` form.
