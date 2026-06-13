@@ -32,7 +32,7 @@ serviceMonitor:
 
 # NetworkPolicy: hello-service is exposed via gateway.
 networkPolicy:
-  enabled: false
+  enabled: true
   ingress:
     fromIstio: true # gateway→service transits ztunnel (istio-system)
     fromObservability: true
@@ -42,11 +42,14 @@ networkPolicy:
     toIstio: true
     toSamePlatform: true
     toKeycloak: true
+    toOpa: true
     toObservability: true
 
 extraEnv:
   - name: ZYLOS_ISSUER_URI
     value: "http://keycloak.zylos.local/realms/zylos"
+  - name: ZYLOS_SECURITY_OPA_ENDPOINT
+    value: "http://opa.opa.svc.cluster.local:8181"
 
 # PDB: with replicaCount=2 and maxUnavailable=1, at least one pod is always
 # available during voluntary disruptions.
