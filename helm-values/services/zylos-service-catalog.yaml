@@ -8,7 +8,7 @@ fullnameOverride: "zylos-service-catalog"
 
 image:
   repository: ghcr.io/zylos-platform/zylos-service-catalog
-  tag: "20260614-7a87f3f" # CI bumps
+  tag: "20260614-6153a71" # CI bumps
 
 replicaCount: 2
 
