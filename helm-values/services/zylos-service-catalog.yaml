@@ -1,0 +1,59 @@
+###############################################################################
+# zylos-service-catalog — values for the local kind cluster.
+# Image tag is bumped automatically by CI's deploy-PR.
+# Consumes zylos-service-base v0.2.0.
+###############################################################################
+
+fullnameOverride: "zylos-service-catalog"
+
+image:
+  repository: ghcr.io/zylos-platform/zylos-service-catalog
+  tag: "20260614-7a87f3f" # CI bumps
+
+replicaCount: 2
+
+springProfile: prod
+environment: dev
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 384Mi
+  limits:
+    cpu: 500m
+    memory: 768Mi
+
+ingress:
+  enabled: false
+
+serviceMonitor:
+  enabled: true
+
+# NetworkPolicy: catalog is reached internally (gateway / peer services); no public ingress.
+# Datastore egress (Mongo / Kafka / OpenSearch / Redis) is added alongside persistence in 2.2+.
+networkPolicy:
+  enabled: true
+  ingress:
+    fromIstio: true
+    fromObservability: true
+    fromIngressNginx: false
+  egress:
+    toDns: true
+    toIstio: true
+    toSamePlatform: false # no synchronous peer calls yet
+    toKeycloak: true # JWKS
+    toOpa: true
+    toObservability: true
+
+extraEnv:
+  - name: ZYLOS_ISSUER_URI
+    value: "http://keycloak.zylos.local/realms/zylos"
+  - name: ZYLOS_SECURITY_OPA_ENDPOINT
+    value: "http://opa.opa.svc.cluster.local:8181"
+
+pdb:
+  enabled: true
+  maxUnavailable: 1
+
+autoscaling:
+  enabled: false
