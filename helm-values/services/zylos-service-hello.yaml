@@ -48,6 +48,8 @@ networkPolicy:
 extraEnv:
   - name: ZYLOS_ISSUER_URI
     value: "http://keycloak.zylos.local/realms/zylos"
+  - name: ZYLOS_JWK_SET_URI
+    value: "http://keycloak.zylos.local/realms/zylos/protocol/openid-connect/certs"
   - name: ZYLOS_SECURITY_OPA_ENDPOINT
     value: "http://opa.opa.svc.cluster.local:8181"
 
