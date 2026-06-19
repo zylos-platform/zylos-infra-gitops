@@ -9,7 +9,7 @@ metadata:
   finalizers:
     - percona.com/delete-psmdb-pods-in-order
 spec:
-  crVersion: 1.23.0
+  crVersion: 1.22.0
   image: percona/percona-server-mongodb:8.0
   imagePullPolicy: IfNotPresent
   updateStrategy: SmartUpdate
