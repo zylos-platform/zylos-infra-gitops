@@ -24,7 +24,7 @@ spec:
     - https://charts.jetstack.io
     - oci://quay.io/jetstack/charts/cert-manager
     - https://charts.external-secrets.io
-    - https://bitnami-labs.github.io/sealed-secrets
+    - https://bitnami.github.io/sealed-secrets
     - https://open-telemetry.github.io/opentelemetry-helm-charts
     - https://cloudnative-pg.github.io/charts
     - https://operatorhub.io/install/
