@@ -26,7 +26,7 @@ metadata:
   name: observability
   labels:
     pod-security.kubernetes.io/enforce: privileged
-#    istio.io/dataplane-mode: ambient
+    #    istio.io/dataplane-mode: ambient
     app.kubernetes.io/part-of: zylos-platform
 ---
 apiVersion: v1
@@ -35,7 +35,7 @@ metadata:
   name: keycloak
   labels:
     pod-security.kubernetes.io/enforce: baseline
-#    istio.io/dataplane-mode: ambient
+    #    istio.io/dataplane-mode: ambient
     app.kubernetes.io/part-of: zylos-platform
 ---
 apiVersion: v1
@@ -60,13 +60,22 @@ metadata:
   name: zylos-services
   labels:
     pod-security.kubernetes.io/enforce: baseline
-#    istio.io/dataplane-mode: ambient
+    #    istio.io/dataplane-mode: ambient
     app.kubernetes.io/part-of: zylos-platform
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: opa
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    #    istio.io/dataplane-mode: ambient
+    app.kubernetes.io/part-of: zylos-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mongodb
   labels:
     pod-security.kubernetes.io/enforce: baseline
     #    istio.io/dataplane-mode: ambient

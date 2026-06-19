@@ -1,0 +1,67 @@
+###############################################################################
+# Single-node MongoDB replica set for the Catalog bounded context.
+###############################################################################
+apiVersion: psmdb.percona.com/v1
+kind: PerconaServerMongoDB
+metadata:
+  name: catalog-mongodb
+  namespace: mongodb
+  finalizers:
+    - percona.com/delete-psmdb-pods-in-order
+spec:
+  crVersion: 1.23.0
+  image: percona/percona-server-mongodb:8.0
+  imagePullPolicy: IfNotPresent
+  updateStrategy: SmartUpdate
+  upgradeOptions:
+    apply: disabled
+    schedule: "0 2 * * *"
+
+  # Local-dev relaxations. Prod: remove these, size>=3, tls.mode requireTLS.
+  unsafeFlags:
+    replsetSize: true
+    tls: true
+  tls:
+    mode: disabled
+
+  secrets:
+    users: catalog-mongodb-system-users # operator auto-generates if absent
+
+  replsets:
+    - name: rs0
+      size: 1
+      affinity:
+        antiAffinityTopologyKey: "none"
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+      volumeSpec:
+        persistentVolumeClaim:
+          resources:
+            requests:
+              storage: 5Gi
+      expose:
+        enabled: false
+
+  users:
+    - name: catalog
+      db: catalog
+      passwordSecretRef:
+        name: catalog-mongodb-app-user
+        key: password
+      roles:
+        - name: readWrite
+          db: catalog
+
+  backup:
+    enabled: false # PBM/PITR enabled in prod
+    image: percona/percona-backup-mongodb:2.4.1
+  pmm:
+    enabled: false
+    image: percona/pmm-client:2.41.2
+  sharding:
+    enabled: false

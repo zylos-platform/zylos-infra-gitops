@@ -28,6 +28,7 @@ spec:
     - https://open-telemetry.github.io/opentelemetry-helm-charts
     - https://cloudnative-pg.github.io/charts
     - https://operatorhub.io/install/
+    - https://percona.github.io/percona-helm-charts
 
   destinations:
     - namespace: "*"
