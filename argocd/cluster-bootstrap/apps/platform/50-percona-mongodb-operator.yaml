@@ -19,7 +19,7 @@ spec:
   source:
     repoURL: https://percona.github.io/percona-helm-charts
     chart: psmdb-operator
-    targetRevision: 1.23.0
+    targetRevision: 1.22.0
     helm:
       releaseName: psmdb-operator
   destination:
