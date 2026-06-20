@@ -3,7 +3,7 @@
 # Bootstrap (for SR/Connect/catalog): zylos-kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
 # Prod: 3 brokers, RF 3 / minISR 2, TLS + SCRAM/mTLS listeners.
 ###############################################################################
-apiVersion: kafka.strimzi.io/v1beta2
+apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
   name: zylos-kafka
