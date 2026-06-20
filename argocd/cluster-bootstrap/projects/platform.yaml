@@ -29,6 +29,7 @@ spec:
     - https://cloudnative-pg.github.io/charts
     - https://operatorhub.io/install/
     - https://percona.github.io/percona-helm-charts
+    - https://opensearch-project.github.io/helm-charts
 
   destinations:
     - namespace: "*"
