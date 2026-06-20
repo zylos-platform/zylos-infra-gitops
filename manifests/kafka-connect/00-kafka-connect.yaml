@@ -1,0 +1,58 @@
+###############################################################################
+# Kafka Connect (Strimzi) with the Debezium MongoDB connector + Confluent Avro
+# converter. Strimzi builds the plugin image in-cluster and pushes to GHCR.
+#
+# Single broker -> internal Connect topics RF=1 (prod: 3).
+# Default converters: String keys (aggregate id) + Avro values (events) -> SR.
+# Connector instances (catalog outbox) are declared as KafkaConnector CRs.
+###############################################################################
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: zylos-connect
+  namespace: kafka
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+spec:
+  replicas: 1
+  bootstrapServers: zylos-kafka-kafka-bootstrap.kafka.svc.cluster.local:9092
+  config:
+    group.id: zylos-connect
+    offset.storage.topic: connect-cluster-offsets
+    config.storage.topic: connect-cluster-configs
+    status.storage.topic: connect-cluster-status
+    config.storage.replication.factor: 1
+    offset.storage.replication.factor: 1
+    status.storage.replication.factor: 1
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: io.confluent.connect.avro.AvroConverter
+    value.converter.schema.registry.url: http://schema-registry.kafka.svc.cluster.local:8081
+  resources:
+    requests:
+      cpu: 250m
+      memory: 768Mi
+    limits:
+      cpu: "1"
+      memory: 1536Mi
+  jvmOptions:
+    -Xms: 512m
+    -Xmx: 512m
+  build:
+    output:
+      type: docker
+      image: ghcr.io/zylos-platform/zylos-kafka-connect:0.1.0
+      pushSecret: kafka-connect-build-secret
+    plugins:
+      - name: debezium-mongodb
+        artifacts:
+          - type: maven
+            group: io.debezium
+            artifact: debezium-connector-mongodb
+            version: 3.1.2
+      - name: avro-converter
+        artifacts:
+          - type: maven
+            repository: https://packages.confluent.io/maven/
+            group: io.confluent
+            artifact: kafka-connect-avro-converter
+            version: 8.0.0
