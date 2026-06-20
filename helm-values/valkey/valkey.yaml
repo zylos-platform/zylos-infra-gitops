@@ -1,0 +1,30 @@
+###############################################################################
+# Valkey (BSD, Redis-protocol-compatible) — cache-aside store for hot Catalog
+# reads. Standalone, no auth, no persistence (cache is ephemeral and
+# rebuilt from the source of truth). LRU eviction bounds memory.
+#
+# In-cluster URL:
+#   valkey.valkey.svc.cluster.local:6379
+# Prod: ElastiCache for Valkey (AUTH + in-transit TLS).
+###############################################################################
+auth:
+  enabled: false
+
+replica:
+  enabled: false        # standalone single instance
+
+dataStorage:
+  enabled: false        # ephemeral cache
+
+# Cache semantics: cap memory, evict least-recently-used rather than OOM.
+valkeyConfig: |
+  maxmemory 256mb
+  maxmemory-policy allkeys-lru
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 320Mi       # headroom above maxmemory 256mb
