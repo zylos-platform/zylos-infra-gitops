@@ -50,11 +50,11 @@ spec:
           - type: maven
             group: io.debezium
             artifact: debezium-connector-mongodb
-            version: 3.1.2
+            version: 3.1.2.Final
       - name: avro-converter
         artifacts:
           - type: maven
             repository: https://packages.confluent.io/maven/
             group: io.confluent
             artifact: kafka-connect-avro-converter
-            version: 8.0.0
+            version: 8.2.0
