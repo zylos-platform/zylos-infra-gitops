@@ -30,6 +30,7 @@ spec:
     - https://operatorhub.io/install/
     - https://percona.github.io/percona-helm-charts
     - https://opensearch-project.github.io/helm-charts
+    - https://valkey.io/valkey-helm
 
   destinations:
     - namespace: "*"
