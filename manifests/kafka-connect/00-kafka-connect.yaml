@@ -6,7 +6,7 @@
 # Default converters: String keys (aggregate id) + Avro values (events) -> SR.
 # Connector instances (catalog outbox) are declared as KafkaConnector CRs.
 ###############################################################################
-apiVersion: kafka.strimzi.io/v1beta2
+apiVersion: kafka.strimzi.io/v1
 kind: KafkaConnect
 metadata:
   name: zylos-connect
