@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-# Generates the SealedSecret for the Catalog MongoDB application user.
+# Generates the SealedSecrets for the Catalog MongoDB application user.
+# One password is sealed into multiple namespaces that must share it:
+#   - mongodb        -> catalog-mongodb-app-user   (consumed by the Percona operator)
+#   - kafka          -> catalog-mongodb-debezium   (consumed by the Debezium connector)
+# (zylos-services -> catalog-mongodb-app-user for the service is added with the
+#  service's datastore wiring.)
 # Re-run after recreating the kind cluster (the sealing cert changes).
 set -euo pipefail
 
-NS=mongodb
-OUT=manifests/mongodb/01-sealed-secrets.yaml
 PASS="$(openssl rand -base64 24 | tr -d '\n=' )"
 
 # Verify the controller is reachable.
@@ -29,14 +32,18 @@ if ! command -v kubeseal >/dev/null 2>&1; then
 fi
 
 # Generate plain Secrets and pipe through kubeseal.
-echo "==> Generating SealedSecret for catalog-mongodb-app-user..."
-kubectl create secret generic catalog-mongodb-app-user \
-  --namespace "$NS" \
-  --from-literal=password="$PASS" \
-  --dry-run=client -o yaml \
-| kubeseal --format yaml \
-    --controller-namespace sealed-secrets \
-    --format=yaml \
-> "$OUT"
+seal() { # <namespace> <secret-name> <out-file>
+  local ns="$1" name="$2" out="$3"
+  echo "==> Sealing $name into $ns -> $out"
+  kubectl create secret generic "$name" \
+    --namespace "$ns" \
+    --from-literal=password="$PASS" \
+    --dry-run=client -o yaml \
+  | kubeseal --format yaml --controller-namespace sealed-secrets \
+  > "$out"
+}
 
-echo "Wrote $OUT (catalog-mongodb-app-user)."
+seal mongodb catalog-mongodb-app-user manifests/mongodb/01-sealed-secrets.yaml
+seal kafka   catalog-mongodb-debezium  manifests/kafka-connect/03-mongodb-debezium-sealed-secret.yaml
+
+echo "✅ Done."
