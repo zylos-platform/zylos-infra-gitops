@@ -32,11 +32,17 @@ spec:
     config.providers: file
     config.providers.file.class: org.apache.kafka.common.config.provider.FileConfigProvider
 
-  externalConfiguration:
-    volumes:
-      - name: mongo-creds
-        secret:
-          secretName: catalog-mongodb-debezium
+  template:
+    pod:
+      volumes:
+        - name: mongo-creds
+          secret:
+            secretName: catalog-mongodb-debezium
+    connectContainer:
+      volumeMounts:
+        - name: mongo-creds
+          mountPath: /opt/kafka/external-configuration/mongo-creds
+          readOnly: true
 
   resources:
     requests:
