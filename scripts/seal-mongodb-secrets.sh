@@ -3,8 +3,7 @@
 # One password is sealed into multiple namespaces that must share it:
 #   - mongodb        -> catalog-mongodb-app-user   (consumed by the Percona operator)
 #   - kafka          -> catalog-mongodb-debezium   (consumed by the Debezium connector)
-# (zylos-services -> catalog-mongodb-app-user for the service is added with the
-#  service's datastore wiring.)
+#   - zylos-services -> catalog-mongodb-app-user   (consumed by catalog service)
 # Re-run after recreating the kind cluster (the sealing cert changes).
 set -euo pipefail
 
@@ -45,5 +44,6 @@ seal() { # <namespace> <secret-name> <out-file>
 
 seal mongodb catalog-mongodb-app-user manifests/mongodb/01-sealed-secrets.yaml
 seal kafka   catalog-mongodb-debezium  manifests/kafka-connect/03-mongodb-debezium-sealed-secret.yaml
+seal zylos-services catalog-mongodb-app-user manifests/zylos-services/01-mongodb-app-user-sealed-secret.yaml
 
 echo "✅ Done."
