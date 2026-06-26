@@ -1,0 +1,21 @@
+###############################################################################
+# Catalog product event topic. Key = productId (per-aggregate ordering).
+# cleanup.policy=delete: retain all events for the window so every
+# consumer (projection, future audit/notify) sees the full stream.
+###############################################################################
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: catalog.product.events.v1
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: zylos-kafka
+spec:
+  topicName: catalog.product.events.v1
+  partitions: 6
+  replicas: 1
+  config:
+    cleanup.policy: delete
+    retention.ms: 604800000 # 7 days
+    min.insync.replicas: 1
+    max.message.bytes: 1048576
