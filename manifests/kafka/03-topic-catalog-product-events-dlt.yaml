@@ -1,0 +1,15 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: catalog.product.events.v1.dlt
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: zylos-kafka
+spec:
+  topicName: catalog.product.events.v1.DLT
+  partitions: 6
+  replicas: 1
+  config:
+    cleanup.policy: delete
+    retention.ms: 1209600000 # 14 days
+    min.insync.replicas: 1

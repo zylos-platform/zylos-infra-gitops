@@ -45,7 +45,7 @@ networkPolicy:
     toOpa: true
     toObservability: true
     extra:
-      # MongoDB (Percona) in the mongodb namespace.
+      # MongoDB (Percona) — write model + outbox.
       - to:
           - namespaceSelector:
               matchLabels:
@@ -53,7 +53,7 @@ networkPolicy:
         ports:
           - protocol: TCP
             port: 27017
-      # Confluent Schema Registry in the kafka namespace.
+      # Kafka namespace: Schema Registry (8081) + broker (9092, projection consumer + DLT producer).
       - to:
           - namespaceSelector:
               matchLabels:
@@ -61,6 +61,16 @@ networkPolicy:
         ports:
           - protocol: TCP
             port: 8081
+          - protocol: TCP
+            port: 9092
+      # OpenSearch — read-model projection store.
+      - to:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: opensearch
+        ports:
+          - protocol: TCP
+            port: 9200
 
 extraEnv:
   - name: ZYLOS_ISSUER_URI
