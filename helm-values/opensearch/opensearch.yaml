@@ -19,6 +19,17 @@ replicas: 1
 
 opensearchJavaOpts: "-Xms512m -Xmx512m"
 
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: catalog-service
+      ports:
+        - port: 9200
+          protocol: TCP
+
 # Disable the security plugin -> plain HTTP on 9200.
 extraEnvs:
   - name: DISABLE_SECURITY_PLUGIN
@@ -43,3 +54,105 @@ resources:
   limits:
     cpu: "1"
     memory: 1536Mi
+
+extraObjects:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: catalog-products-bootstrap
+      namespace: opensearch
+    data:
+      index-template.json: |
+        {
+          "index_patterns": ["catalog-products-*"],
+          "priority": 100,
+          "template": {
+            "settings": { "index": { "number_of_shards": 1, "number_of_replicas": 0, "refresh_interval": "1s" } },
+            "mappings": {
+              "dynamic": "strict",
+              "properties": {
+                "productId":   { "type": "keyword" },
+                "sellerId":    { "type": "keyword" },
+                "name":        { "type": "text", "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } } },
+                "description": { "type": "text" },
+                "categoryId":  { "type": "keyword" },
+                "visibility":  { "type": "keyword" },
+                "version":     { "type": "long" },
+                "attributes":  { "type": "nested", "properties": {
+                  "name":  { "type": "keyword" },
+                  "type":  { "type": "keyword" },
+                  "value": { "type": "keyword", "fields": { "text": { "type": "text" } } } } },
+                "variants": { "type": "nested", "properties": {
+                  "variantId":   { "type": "keyword" },
+                  "sku":         { "type": "keyword" },
+                  "status":      { "type": "keyword" },
+                  "purchasable": { "type": "boolean" },
+                  "listPrice":   { "properties": { "minorUnits": { "type": "long" }, "currency": { "type": "keyword" } } },
+                  "attributes":  { "type": "nested", "properties": {
+                    "name":  { "type": "keyword" },
+                    "type":  { "type": "keyword" },
+                    "value": { "type": "keyword", "fields": { "text": { "type": "text" } } } } } } },
+                "occurredAt": { "type": "date", "format": "epoch_millis" },
+                "eventId":    { "type": "keyword" }
+              }
+            }
+          }
+        }
+      index.json: |
+        { "aliases": { "catalog-products": { "is_write_index": true } } }
+      bootstrap.sh: |
+        #!/bin/sh
+        set -eu
+        OS="${OPENSEARCH_URL:-http://opensearch.opensearch.svc.cluster.local:9200}"
+        TEMPLATE="catalog-products"
+        INDEX="catalog-products-v1"
+        echo "Waiting for OpenSearch at $OS"
+        until curl -fsS "$OS/_cluster/health?wait_for_status=yellow&timeout=5s" >/dev/null 2>&1; do
+          echo "  not ready, retrying"; sleep 3
+        done
+        echo "Upserting composable index template: $TEMPLATE"
+        curl -fsS -X PUT "$OS/_index_template/$TEMPLATE" \
+          -H 'Content-Type: application/json' --data-binary @/bootstrap/index-template.json
+        echo
+        if curl -fsS -o /dev/null "$OS/$INDEX"; then
+          echo "Index $INDEX already exists; nothing to create"
+        else
+          echo "Creating index $INDEX with write alias"
+          curl -fsS -X PUT "$OS/$INDEX" \
+            -H 'Content-Type: application/json' --data-binary @/bootstrap/index.json
+          echo
+        fi
+        echo "Bootstrap complete"
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: catalog-products-bootstrap-25075bc9763b
+      namespace: opensearch
+      labels:
+        app.kubernetes.io/component: catalog-read-model-bootstrap
+    spec:
+      backoffLimit: 6
+      ttlSecondsAfterFinished: 600
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: bootstrap
+              image: curlimages/curl:8.11.0
+              command: ["/bin/sh", "/bootstrap/bootstrap.sh"]
+              env:
+                - name: OPENSEARCH_URL
+                  value: "http://opensearch.opensearch.svc.cluster.local:9200"
+              volumeMounts:
+                - name: bootstrap
+                  mountPath: /bootstrap
+              securityContext:
+                allowPrivilegeEscalation: false
+                runAsNonRoot: true
+                runAsUser: 1000
+                capabilities: {drop: ["ALL"]}
+                seccompProfile: {type: RuntimeDefault}
+          volumes:
+            - name: bootstrap
+              configMap:
+                name: catalog-products-bootstrap

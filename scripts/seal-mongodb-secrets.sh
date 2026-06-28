@@ -7,7 +7,7 @@
 # Re-run after recreating the kind cluster (the sealing cert changes).
 set -euo pipefail
 
-PASS="$(openssl rand -base64 24 | tr -d '\n=' )"
+PASS="$(openssl rand -hex 24)" # Mongo uri friendly
 
 # Verify the controller is reachable.
 echo "==> Verifying sealed-secrets controller..."

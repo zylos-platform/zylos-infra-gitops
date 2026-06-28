@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: catalog-outbox-ttl
+  namespace: mongodb
+data:
+  ttl-index.js: |
+    db = db.getSiblingDB("catalog");
+    db.outbox.createIndex(
+      {occurredAt: 1},
+      {
+        expireAfterSeconds: 604800, name: "outbox_ttl_occurredAt"
+      }
+    );
+    print("Ensured outbox TTL index (7d) on occurredAt");
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: catalog-outbox-ttl-c39cb3daafb2
+  namespace: mongodb
+  labels:
+    app.kubernetes.io/component: catalog-outbox-ttl
+spec:
+  backoffLimit: 6
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: ttl
+          image: mongo:8.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - >-
+              mongosh
+              "mongodb://catalog-mongodb-rs0.mongodb.svc.cluster.local:27017/catalog?replicaSet=rs0&authSource=catalog"
+              --username catalog --password "$MONGO_PASSWORD"
+              --file /scripts/ttl-index.js
+          env:
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-mongodb-app-user
+                  key: password
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+      volumes:
+        - name: scripts
+          configMap:
+            name: catalog-outbox-ttl

@@ -1,0 +1,56 @@
+###############################################################################
+# Argo CD AppProject for Zylos APPLICATION services (catalog, cart, order...).
+# More restricted than `platform`. Application services should NOT be able to
+# create cluster-wide resources.
+###############################################################################
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: apps
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-200" # Highest priority
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Zylos application services
+
+  sourceRepos:
+    - https://github.com/zylos-platform/*
+
+  destinations:
+    - namespace: "zylos-*" # Only deploy to namespaces with the zylos- prefix
+      server: https://kubernetes.default.svc
+
+  namespaceResourceWhitelist:
+    - group: ""
+      kind: "*"
+    - group: "apps"
+      kind: "*"
+    - group: "batch"
+      kind: "*"
+    - group: "networking.k8s.io"
+      kind: "Ingress"
+    - group: "networking.k8s.io"
+      kind: "NetworkPolicy"
+    - group: "autoscaling"
+      kind: "*"
+    - group: "policy"
+      kind: "*"
+    - group: "monitoring.coreos.com"
+      kind: "ServiceMonitor"
+    - group: "cert-manager.io"
+      kind: "*"
+    - group: "external-secrets.io"
+      kind: "*"
+    - group: "gateway.networking.k8s.io"
+      kind: "*"
+    - group: "security.istio.io"
+      kind: "*"
+    - group: "networking.istio.io"
+      kind: "*"
+    - group: "bitnami.com"
+      kind: "SealedSecret"
+
+  orphanedResources:
+    warn: true
