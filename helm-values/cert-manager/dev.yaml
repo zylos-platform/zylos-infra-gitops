@@ -1,0 +1,7 @@
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: true
+    namespace: observability
+    labels:
+      release: kube-prometheus-stack
