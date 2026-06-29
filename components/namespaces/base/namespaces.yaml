@@ -1,7 +1,6 @@
-###############################################################################
-# Pre-create platform namespaces with the right labels:
-#   - Pod Security Standards via "pod-security.kubernetes.io/enforce"
-###############################################################################
+# ---------------------------------------------------------
+# THE MESH & SECURITY (Highly Privileged)
+# ---------------------------------------------------------
 ---
 apiVersion: v1
 kind: Namespace
@@ -18,24 +17,18 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: privileged
     app.kubernetes.io/part-of: zylos-platform
+
+# ---------------------------------------------------------
+# PLATFORM CONTROL PLANE (Operators & Tooling)
+# ---------------------------------------------------------
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: observability
-  labels:
-    pod-security.kubernetes.io/enforce: privileged
-    app.kubernetes.io/part-of: zylos-platform
-    zylos.app/mesh-eligible: true
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: keycloak
+  name: platform-operators
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/mesh-eligible: true
 ---
 apiVersion: v1
 kind: Namespace
@@ -48,25 +41,20 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: zylos-services
-  labels:
-    pod-security.kubernetes.io/enforce: baseline
-    app.kubernetes.io/part-of: zylos-platform
-    zylos.app/mesh-eligible: true
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: opa
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
     zylos.app/mesh-eligible: true
+
+# ---------------------------------------------------------
+# PLATFORM DATA PLANE (Identity & Observability)
+# ---------------------------------------------------------
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: mongodb
+  name: platform
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
@@ -75,26 +63,34 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: opensearch
+  name: observability
   labels:
-    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce: privileged
     app.kubernetes.io/part-of: zylos-platform
     zylos.app/mesh-eligible: true
+
+# ---------------------------------------------------------
+# APPLICATION DATA PLANE (Stateful Data Services)
+# ---------------------------------------------------------
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: valkey
+  name: data
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
     zylos.app/mesh-eligible: true
+
+# ---------------------------------------------------------
+# APPLICATION TIER (Stateless Microservices)
+# ---------------------------------------------------------
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kafka
+  name: zylos-services
   labels:
-    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/enforce: restricted
     app.kubernetes.io/part-of: zylos-platform
     zylos.app/mesh-eligible: true
