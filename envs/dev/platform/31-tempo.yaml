@@ -9,6 +9,8 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: observability
+    zylos.app/environment: dev
 spec:
   project: platform
   sources:
@@ -18,7 +20,8 @@ spec:
       helm:
         releaseName: tempo
         valueFiles:
-          - $values/helm-values/observability/base.yaml
+          - $values/helm-values/observability/tempo/base.yaml
+          - $values/helm-values/observability/tempo/dev.yaml
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
@@ -31,3 +34,9 @@ spec:
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
+    retry:
+      limit: 10
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

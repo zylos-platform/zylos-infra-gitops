@@ -18,7 +18,7 @@ spec:
       helm:
         releaseName: loki
         valueFiles:
-          - $values/helm-values/observability/loki.yaml
+          - $values/helm-values/observability/base.yaml
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values

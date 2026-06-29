@@ -1,0 +1,7 @@
+prometheus:
+  prometheusSpec:
+    retention: 15d
+    replicas: 1
+grafana:
+  service:
+    type: ClusterIP

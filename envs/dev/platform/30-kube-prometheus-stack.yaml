@@ -4,12 +4,13 @@ metadata:
   name: kube-prometheus-stack
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "-12"
+    argocd.argoproj.io/sync-wave: "-2"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/part-of: zylos-platform
     app.kubernetes.io/component: observability
+    zylos.app/environment: dev
 spec:
   project: platform
   sources:
@@ -19,7 +20,8 @@ spec:
       helm:
         releaseName: kube-prometheus-stack
         valueFiles:
-          - $values/helm-values/observability/base.yaml
+          - $values/helm-values/observability/kube-prometheus-stack/base.yaml
+          - $values/helm-values/observability/kube-prometheus-stack/dev.yaml
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
@@ -40,7 +42,6 @@ spec:
         factor: 2
         maxDuration: 5m
   ignoreDifferences:
-    # Prometheus Operator updates these with status info Argo CD shouldn't fight
     - group: monitoring.coreos.com
       kind: ServiceMonitor
       jsonPointers:
