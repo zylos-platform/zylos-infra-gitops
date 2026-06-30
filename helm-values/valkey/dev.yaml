@@ -1,0 +1,15 @@
+dataStorage:
+  enabled: true         # Survive pod restarts (creates a PVC)
+  size: 5Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+valkeyConfig: |
+  maxmemory 384mb
+  maxmemory-policy allkeys-lru

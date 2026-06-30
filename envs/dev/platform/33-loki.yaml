@@ -1,42 +1,41 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: istiod
+  name: loki
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "-8"
+    argocd.argoproj.io/sync-wave: "0"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/part-of: zylos-platform
-    app.kubernetes.io/component: service-mesh
+    app.kubernetes.io/component: observability
     zylos.app/environment: dev
 spec:
   project: platform
   sources:
-    - repoURL: https://istio-release.storage.googleapis.com/charts
-      chart: istiod
-      targetRevision: 1.24.3
+    - repoURL: https://grafana.github.io/helm-charts
+      chart: loki
+      targetRevision: 6.21.0
       helm:
-        releaseName: istiod
+        releaseName: loki
         valueFiles:
-          - $values/helm-values/istio/istiod/base.yaml
-          - $values/helm-values/istio/istiod/dev.yaml
+          - $values/helm-values/observability/loki/base.yaml
+          - $values/helm-values/observability/loki/dev.yaml
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: istio-system
+    namespace: observability
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=false
       - ServerSideApply=true
     retry:
-      limit: 5
+      limit: 10
       backoff:
         duration: 30s
         factor: 2

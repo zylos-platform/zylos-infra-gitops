@@ -1,42 +1,41 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: istio-cni
+  name: opentelemetry-collector
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "-9"
+    argocd.argoproj.io/sync-wave: "1"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/part-of: zylos-platform
-    app.kubernetes.io/component: service-mesh
+    app.kubernetes.io/component: observability
     zylos.app/environment: dev
 spec:
   project: platform
   sources:
-    - repoURL: https://istio-release.storage.googleapis.com/charts
-      chart: cni
-      targetRevision: 1.24.3
+    - repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+      chart: opentelemetry-collector
+      targetRevision: 0.108.0
       helm:
-        releaseName: istio-cni
+        releaseName: opentelemetry-collector
         valueFiles:
-          - $values/helm-values/istio/istio-cni/base.yaml
-          - $values/helm-values/istio/istio-cni/dev.yaml
+          - $values/helm-values/observability/otel-collector/base.yaml
+          - $values/helm-values/observability/otel-collector/dev.yaml
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: istio-system
+    namespace: observability
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=false
       - ServerSideApply=true
     retry:
-      limit: 5
+      limit: 10
       backoff:
         duration: 30s
         factor: 2

@@ -1,34 +1,11 @@
-###############################################################################
-# OpenSearch — single-node, security plugin DISABLED for local dev (HTTP, no
-# TLS, no auth). Hosts the Catalog CQRS read model.
-#
-# HOST PREREQUISITE (WSL2 — kind shares the host kernel):
-#   sudo sysctl -w vm.max_map_count=262144
-#   echo 'vm.max_map_count=262144' | sudo tee -a /etc/sysctl.conf
-# If you can't set the host sysctl, set sysctlInit.enabled: true below AND
-# change the opensearch namespace to pod-security 'privileged'.
-#
-# In-cluster URL (for 2.4): http://opensearch.opensearch.svc.cluster.local:9200
-# Prod: AWS OpenSearch Service with fine-grained access control + TLS.
-###############################################################################
 clusterName: opensearch
 masterService: opensearch
 
 singleNode: true
 replicas: 1
 
-opensearchJavaOpts: "-Xms512m -Xmx512m"
-
 networkPolicy:
   enabled: true
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: catalog-service
-      ports:
-        - port: 9200
-          protocol: TCP
 
 # Disable the security plugin -> plain HTTP on 9200.
 extraEnvs:
@@ -45,22 +22,13 @@ sysctlInit:
 
 persistence:
   enabled: true
-  size: 5Gi
-
-resources:
-  requests:
-    cpu: 250m
-    memory: 1Gi
-  limits:
-    cpu: "1"
-    memory: 1536Mi
 
 extraObjects:
   - apiVersion: v1
     kind: ConfigMap
     metadata:
       name: catalog-products-bootstrap
-      namespace: opensearch
+      namespace: data
     data:
       index-template.json: |
         {
@@ -127,7 +95,7 @@ extraObjects:
     kind: Job
     metadata:
       name: catalog-products-bootstrap-25075bc9763b
-      namespace: opensearch
+      namespace: data
       labels:
         app.kubernetes.io/component: catalog-read-model-bootstrap
     spec:

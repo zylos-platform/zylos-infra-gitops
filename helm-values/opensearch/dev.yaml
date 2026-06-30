@@ -1,0 +1,13 @@
+singleNode: false
+replicas: 3
+opensearchJavaOpts: "-Xms1g -Xmx1g"
+antiAffinity: soft
+persistence:
+  size: 30Gi
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    cpu: 2
+    memory: 3Gi

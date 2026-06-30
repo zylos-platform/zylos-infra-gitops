@@ -23,7 +23,7 @@ spec:
       helm:
         releaseName: opensearch
         valueFiles:
-          - $values/helm-values/opensearch/opensearch.yaml
+          - $values/helm-values/opensearch/base.yaml
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values

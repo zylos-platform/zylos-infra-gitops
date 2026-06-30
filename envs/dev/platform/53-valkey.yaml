@@ -1,38 +1,42 @@
+###############################################################################
+# Valkey — Catalog cache-aside layer. Official valkey-io chart.
+###############################################################################
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: loki
+  name: valkey
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/sync-wave: "9"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/part-of: zylos-platform
-    app.kubernetes.io/component: observability
+    app.kubernetes.io/component: cache
     zylos.app/environment: dev
 spec:
   project: platform
   sources:
-    - repoURL: https://grafana.github.io/helm-charts
-      chart: loki
-      targetRevision: 6.21.0
+    - repoURL: https://valkey.io/valkey-helm
+      chart: valkey
+      targetRevision: 0.10.0
       helm:
-        releaseName: loki
+        releaseName: valkey
         valueFiles:
-          - $values/helm-values/observability/loki/base.yaml
-          - $values/helm-values/observability/loki/dev.yaml
+          - $values/helm-values/valkey/base.yaml
+          - $values/helm-values/valkey/dev.yaml
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: observability
+    namespace: data
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
+      - CreateNamespace=false
       - ServerSideApply=true
     retry:
       limit: 10

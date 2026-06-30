@@ -1,27 +1,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cloudnative-pg-operator
+  name: mongodb
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/sync-wave: "9"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/part-of: zylos-platform
-    app.kubernetes.io/component: operator
-    zylos.app/environment: local
+    app.kubernetes.io/component: database
+    zylos.app/environment: dev
 spec:
   project: platform
   source:
-    repoURL: https://cloudnative-pg.github.io/charts
-    chart: cloudnative-pg
-    targetRevision: 0.23.0
-    helm:
-      releaseName: cloudnative-pg
+    repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
+    targetRevision: main
+    path: components/mongodb/overlays/dev
   destination:
     server: https://kubernetes.default.svc
-    namespace: platform-operators
+    namespace: data
   syncPolicy:
     automated:
       prune: true
@@ -30,7 +28,7 @@ spec:
       - CreateNamespace=false
       - ServerSideApply=true
     retry:
-      limit: 5
+      limit: 10
       backoff:
         duration: 30s
         factor: 2

@@ -1,27 +1,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: strimzi-kafka-operator
+  name: mongodb
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "8"
+    argocd.argoproj.io/sync-wave: "9"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/part-of: zylos-platform
-    app.kubernetes.io/component: operator
-    zylos.app/environment: dev
+    app.kubernetes.io/component: database
+    zylos.app/environment: local
 spec:
   project: platform
   source:
-    repoURL: https://strimzi.io/charts/
-    chart: strimzi-kafka-operator
-    targetRevision: 1.0.1
-    helm:
-      releaseName: strimzi
+    repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
+    targetRevision: main
+    path: components/mongodb/overlays/local
   destination:
     server: https://kubernetes.default.svc
-    namespace: platform-operators
+    namespace: data
   syncPolicy:
     automated:
       prune: true
@@ -29,9 +27,8 @@ spec:
     syncOptions:
       - CreateNamespace=false
       - ServerSideApply=true
-      - SkipDryRunOnMissingResource=true # CRDs are created on first sync
     retry:
-      limit: 5
+      limit: 10
       backoff:
         duration: 30s
         factor: 2

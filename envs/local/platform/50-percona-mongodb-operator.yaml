@@ -26,7 +26,7 @@ spec:
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: mongodb
+    namespace: platform-operators
   syncPolicy:
     automated:
       prune: true

@@ -1,24 +1,27 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: observability-netpol
+  name: strimzi-kafka-operator
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "10"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: operator
     zylos.app/environment: dev
 spec:
   project: platform
   source:
-    repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
-    targetRevision: main
-    path: components/observability-netpol/overlays/dev
+    repoURL: https://strimzi.io/charts/
+    chart: strimzi-kafka-operator
+    targetRevision: 1.0.1
+    helm:
+      releaseName: strimzi
   destination:
     server: https://kubernetes.default.svc
-    namespace: observability
+    namespace: platform-operators
   syncPolicy:
     automated:
       prune: true
@@ -26,6 +29,7 @@ spec:
     syncOptions:
       - CreateNamespace=false
       - ServerSideApply=true
+      - SkipDryRunOnMissingResource=true # CRDs are created on first sync
     retry:
       limit: 5
       backoff:

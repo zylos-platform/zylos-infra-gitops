@@ -1,6 +1,5 @@
 ###############################################################################
 # Valkey — Catalog cache-aside layer. Official valkey-io chart.
-# Standalone for local kind; prod -> ElastiCache for Valkey.
 ###############################################################################
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -8,12 +7,13 @@ metadata:
   name: valkey
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "10"
+    argocd.argoproj.io/sync-wave: "9"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/part-of: zylos-platform
     app.kubernetes.io/component: cache
+    zylos.app/environment: local
 spec:
   project: platform
   sources:
@@ -24,17 +24,19 @@ spec:
         releaseName: valkey
         valueFiles:
           - $values/helm-values/valkey/base.yaml
+          - $values/helm-values/valkey/local.yaml
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: valkey
+    namespace: data
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
+      - CreateNamespace=false
       - ServerSideApply=true
     retry:
       limit: 10
