@@ -1,0 +1,46 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaConnector
+metadata:
+  name: catalog-outbox
+  namespace: data
+  labels:
+    strimzi.io/cluster: zylos-connect
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: messaging
+spec:
+  class: io.debezium.connector.mongodb.MongoDbConnector
+  tasksMax: 1
+  config:
+    # --- source: change streams over the catalog DB, outbox collection only ---
+    mongodb.connection.string: "mongodb://percona-server-mongodb-rs0.data.svc.cluster.local:27017/?replicaSet=rs0&authSource=catalog"
+    mongodb.user: catalog-cdc
+    mongodb.password: "${file:/opt/kafka/external-configuration/mongo-creds/password}"
+    topic.prefix: catalog
+    capture.scope: database
+    capture.target: catalog
+    collection.include.list: catalog.outbox
+    snapshot.mode: initial
+    tombstones.on.delete: false
+
+    # --- value: pass the Avro payload bytes through; delegate for other records ---
+    value.converter: io.debezium.converters.ByteArrayConverter
+    value.converter.delegate.converter.type: org.apache.kafka.connect.json.JsonConverter
+    value.converter.delegate.converter.type.schemas.enable: false
+
+    # --- outbox routing (our camelCase field names) ---
+    transforms: outbox
+    transforms.outbox.type: io.debezium.connector.mongodb.transforms.outbox.MongoEventRouter
+    transforms.outbox.route.by.field: aggregateType
+    transforms.outbox.route.topic.replacement: catalog.product.events.v1
+    transforms.outbox.collection.field.event.key: aggregateId
+    transforms.outbox.collection.field.event.type: eventType
+    transforms.outbox.collection.field.event.timestamp: occurredAt
+    transforms.outbox.collection.field.event.payload: payload
+    transforms.outbox.collection.expand.json.payload: false
+    transforms.outbox.collection.fields.additional.placement: "eventType:header:eventType"
+
+    # --- apply the router only to outbox change events ---
+    predicates: isOutbox
+    predicates.isOutbox.type: org.apache.kafka.connect.transforms.predicates.TopicNameMatches
+    predicates.isOutbox.pattern: 'catalog\.catalog\.outbox'
+    transforms.outbox.predicate: isOutbox

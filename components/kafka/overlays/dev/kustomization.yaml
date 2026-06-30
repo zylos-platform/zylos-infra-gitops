@@ -1,0 +1,62 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+patches:
+  # -----------------------------------------------------------------
+  # PATCH 1: NodePool infrastructure
+  # -----------------------------------------------------------------
+  - target:
+      kind: KafkaNodePool
+      name: dual
+    patch: |
+      apiVersion: kafka.strimzi.io/v1
+      kind: KafkaNodePool
+      metadata:
+        name: dual
+      spec:
+        replicas: 3
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            cpu: 2
+            memory: 3Gi
+
+  # -----------------------------------------------------------------
+  # PATCH 2: Cluster
+  # -----------------------------------------------------------------
+  - target:
+      kind: Kafka
+      name: zylos-kafka
+    patch: |
+      apiVersion: kafka.strimzi.io/v1
+      kind: Kafka
+      metadata:
+        name: zylos-kafka
+      spec:
+        kafka:
+          config:
+            default.replication.factor: 3
+            min.insync.replicas: 2
+            offsets.topic.replication.factor: 3
+            transaction.state.log.replication.factor: 3
+            transaction.state.log.min.isr: 2
+
+  # -----------------------------------------------------------------
+  # PATCH 3: Topics
+  # -----------------------------------------------------------------
+  - target:
+      kind: KafkaTopic
+    patch: |
+      apiVersion: kafka.strimzi.io/v1
+      kind: KafkaTopic
+      metadata:
+        name: wildcard-target # Kustomize ignores this name and matches all
+      spec:
+        replicas: 3
+        config:
+          min.insync.replicas: 2

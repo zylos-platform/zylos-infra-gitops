@@ -52,6 +52,16 @@ spec:
         - name: readWrite
           db: catalog
 
+    - name: catalog-cdc
+      db: catalog
+      passwordSecretRef:
+        name: catalog-mongodb-debezium
+      roles:
+        - name: readWrite
+          db: catalog
+        - name: read
+          db: local
+
   backup:
     enabled: false
     image: percona/percona-backup-mongodb:2.4.1

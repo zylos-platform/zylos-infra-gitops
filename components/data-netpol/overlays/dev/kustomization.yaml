@@ -5,3 +5,5 @@ resources:
   - mongodb-netpol.yaml
   - opensearch-netpol.yaml
   - valkey-netpol.yaml
+  - kafka-netpol.yaml
+  - schema-registry-netpol.yaml

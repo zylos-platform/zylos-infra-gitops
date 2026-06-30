@@ -13,14 +13,16 @@ data:
       }
     );
     print("Ensured outbox TTL index (7d) on occurredAt");
+
 ---
+
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: catalog-outbox-ttl-c39cb3daafb2
+  name: catalog-outbox-ttl-job
   namespace: data
   labels:
-    app.kubernetes.io/component: catalog-outbox-ttl
+    app.kubernetes.io/component: catalog-outbox-ttl-job
 spec:
   backoffLimit: 6
   ttlSecondsAfterFinished: 600
@@ -34,7 +36,7 @@ spec:
           args:
             - >-
               mongosh
-              "mongodb://catalog-mongodb-rs0.mongodb.svc.cluster.local:27017/catalog?replicaSet=rs0&authSource=catalog"
+              "mongodb://catalog-mongodb-rs0.data.svc.cluster.local:27017/catalog?replicaSet=rs0&authSource=catalog"
               --username catalog --password "$MONGO_PASSWORD"
               --file /scripts/ttl-index.js
           env:

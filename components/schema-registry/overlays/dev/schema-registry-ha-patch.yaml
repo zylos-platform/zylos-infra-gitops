@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schema-registry
+  namespace: data
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: schema-registry
+          env:
+            # Overrides the RF=1 from base to match the 3 Dev brokers
+            - name: SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR
+              value: "3"

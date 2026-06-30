@@ -1,0 +1,87 @@
+###############################################################################
+# Confluent Schema Registry — Avro schema governance (BACKWARD compatibility).
+# State lives in the Kafka topic _schemas (RF=1 on the single broker).
+###############################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schema-registry
+  namespace: data
+  labels:
+    app.kubernetes.io/name: schema-registry
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: messaging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: schema-registry
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: schema-registry
+        app.kubernetes.io/part-of: zylos-platform
+        app.kubernetes.io/component: messaging
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: schema-registry
+          image: confluentinc/cp-schema-registry:8.0.0
+          env:
+            - name: SCHEMA_REGISTRY_HOST_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+              value: "PLAINTEXT://zylos-kafka-kafka-bootstrap.data.svc.cluster.local:9092"
+            - name: SCHEMA_REGISTRY_LISTENERS
+              value: "http://0.0.0.0:8081"
+            # Single broker -> the _schemas topic must use RF 1 (prod: 3).
+            - name: SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            # Global compatibility policy from the architecture.
+            - name: SCHEMA_REGISTRY_SCHEMA_COMPATIBILITY_LEVEL
+              value: "backward"
+            - name: SCHEMA_REGISTRY_HEAP_OPTS
+              value: "-Xms256m -Xmx512m"
+          ports:
+            - name: http
+              containerPort: 8081
+          startupProbe: # tolerate Kafka not being ready instantly
+            httpGet:
+              path: /subjects
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /subjects
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /subjects
+              port: http
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+              ephemeral-storage: 500Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+              ephemeral-storage: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault

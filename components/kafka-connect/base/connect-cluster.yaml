@@ -1,0 +1,68 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaConnect
+metadata:
+  name: zylos-connect
+  namespace: data
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+spec:
+  replicas: 1
+  bootstrapServers: zylos-kafka-kafka-bootstrap.data.svc.cluster.local:9092
+
+  groupId: zylos-connect
+  configStorageTopic: connect-cluster-configs
+  offsetStorageTopic: connect-cluster-offsets
+  statusStorageTopic: connect-cluster-status
+
+  config:
+    config.storage.replication.factor: 1
+    offset.storage.replication.factor: 1
+    status.storage.replication.factor: 1
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: io.confluent.connect.avro.AvroConverter
+    value.converter.schema.registry.url: http://schema-registry.data.svc.cluster.local:8081
+    config.providers: file
+    config.providers.file.class: org.apache.kafka.common.config.provider.FileConfigProvider
+
+  template:
+    pod:
+      volumes:
+        - name: mongo-creds
+          secret:
+            secretName: catalog-mongodb-debezium
+    connectContainer:
+      volumeMounts:
+        - name: mongo-creds
+          mountPath: /opt/kafka/external-configuration/mongo-creds
+          readOnly: true
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 768Mi
+    limits:
+      cpu: 1
+      memory: 1536Mi
+  jvmOptions:
+    -Xms: 512m
+    -Xmx: 512m
+
+  build:
+    output:
+      type: docker
+      image: ghcr.io/zylos-platform/zylos-kafka-connect:0.1.0
+      pushSecret: kafka-connect-build-secret
+    plugins:
+      - name: debezium-mongodb
+        artifacts:
+          - type: maven
+            group: io.debezium
+            artifact: debezium-connector-mongodb
+            version: 3.1.2.Final
+      - name: avro-converter
+        artifacts:
+          - type: maven
+            repository: https://packages.confluent.io/maven/
+            group: io.confluent
+            artifact: kafka-connect-avro-converter
+            version: 8.2.0

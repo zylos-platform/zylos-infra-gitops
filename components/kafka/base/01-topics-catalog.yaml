@@ -1,0 +1,34 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: catalog.product.events.v1
+  namespace: data
+  labels:
+    strimzi.io/cluster: zylos-kafka
+spec:
+  topicName: catalog.product.events.v1
+  partitions: 6
+  replicas: 1
+  config:
+    cleanup.policy: delete
+    retention.ms: 604800000 # 7 days
+    min.insync.replicas: 1
+    max.message.bytes: 1048576
+
+---
+
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: catalog.product.events.v1.dlt
+  namespace: data
+  labels:
+    strimzi.io/cluster: zylos-kafka
+spec:
+  topicName: catalog.product.events.v1.DLT
+  partitions: 6
+  replicas: 1
+  config:
+    cleanup.policy: delete
+    retention.ms: 1209600000 # 14 days
+    min.insync.replicas: 1
