@@ -16,7 +16,7 @@ spec:
   source:
     repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
     targetRevision: main
-    path: components/keycloak/overlays/dev
+    path: components/platform/keycloak/overlays/dev
   destination:
     server: https://kubernetes.default.svc
     namespace: platform

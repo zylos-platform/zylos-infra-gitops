@@ -16,7 +16,7 @@ spec:
   source:
     repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
     targetRevision: main
-    path: components/kafka-connect/overlays/local
+    path: components/platform/kafka-connect/overlays/local
   destination:
     server: https://kubernetes.default.svc
     namespace: data

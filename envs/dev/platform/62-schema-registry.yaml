@@ -16,7 +16,7 @@ spec:
   source:
     repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
     targetRevision: main
-    path: components/schema-registry/overlays/dev
+    path: components/platform/schema-registry/overlays/dev
   destination:
     server: https://kubernetes.default.svc
     namespace: data

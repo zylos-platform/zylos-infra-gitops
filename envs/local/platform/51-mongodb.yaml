@@ -16,7 +16,7 @@ spec:
   source:
     repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
     targetRevision: main
-    path: components/mongodb/overlays/local
+    path: components/platform/mongodb/overlays/local
   destination:
     server: https://kubernetes.default.svc
     namespace: data

@@ -16,7 +16,7 @@ spec:
   source:
     repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
     targetRevision: main
-    path: components/istio-netpol/overlays/dev
+    path: components/platform/istio-netpol/overlays/dev
   destination:
     server: https://kubernetes.default.svc
     namespace: istio-system
