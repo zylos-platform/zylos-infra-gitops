@@ -1,0 +1,35 @@
+###############################################################################
+# CloudNativePG Postgres cluster for Keycloak.
+###############################################################################
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: keycloak-postgres
+  namespace: platform
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: identity-database
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+
+  bootstrap:
+    initdb:
+      database: keycloak
+      owner: keycloak
+      secret:
+        name: keycloak-db-credentials
+      encoding: UTF8
+
+  storage:
+    size: 5Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  monitoring:
+    enablePodMonitor: true

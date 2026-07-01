@@ -1,0 +1,367 @@
+###############################################################################
+# Keycloak realm configuration
+#
+# Mounted into the keycloak-config-cli Job at /config. Format is Keycloak's
+# native realm-export format. config-cli idempotently reconciles realm state
+# on every Argo CD sync.
+#
+# Variable substitution: ${VAR} references resolve to env vars in the Job,
+# sourced from sealed-secrets-decrypted Secrets in the keycloak namespace.
+# IMPORT_VARSUBSTITUTION_UNDEFINEDTHROWSEXCEPTIONS=true ensures the Job fails
+# loudly if any referenced env var is unset.
+###############################################################################
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-realm-config
+  namespace: platform
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: identity
+data:
+  zylos-realm.yaml: |
+    ###########################################################################
+    # Realm: zylos
+    ###########################################################################
+    realm: zylos
+    enabled: true
+    displayName: "Zylos Platform"
+    displayNameHtml: "<strong>Zylos</strong> Platform"
+
+    # --- Login / registration / account behaviors -------------------------
+    sslRequired: external
+    registrationAllowed: false
+    registrationEmailAsUsername: false
+    rememberMe: true
+    verifyEmail: false
+    loginWithEmailAllowed: true
+    duplicateEmailsAllowed: false
+    resetPasswordAllowed: true
+    editUsernameAllowed: false
+
+    # --- Brute force protection -------------------------------------------
+    bruteForceProtected: true
+    permanentLockout: false
+    failureFactor: 5
+    waitIncrementSeconds: 60
+    quickLoginCheckMilliSeconds: 1000
+    minimumQuickLoginWaitSeconds: 60
+    maxFailureWaitSeconds: 900
+    maxDeltaTimeSeconds: 43200
+
+    # --- Token lifetimes (ADR 0011, 0012) ---------------------------------
+    accessTokenLifespan: 900                     # 15 minutes
+    accessTokenLifespanForImplicitFlow: 900
+    ssoSessionIdleTimeout: 28800                 # 8 hours idle
+    ssoSessionMaxLifespan: 36000                 # 10 hours absolute
+    ssoSessionIdleTimeoutRememberMe: 0
+    ssoSessionMaxLifespanRememberMe: 0
+    offlineSessionIdleTimeout: 2592000           # 30 days
+    offlineSessionMaxLifespanEnabled: true
+    offlineSessionMaxLifespan: 5184000           # 60 days hard cap
+    clientSessionIdleTimeout: 0                  # 0 = use realm default
+    clientSessionMaxLifespan: 0
+    accessCodeLifespan: 60                       # 1 min for auth code redemption
+    accessCodeLifespanUserAction: 300            # 5 min for user action
+    accessCodeLifespanLogin: 1800                # 30 min for login flow
+    actionTokenGeneratedByAdminLifespan: 43200
+    actionTokenGeneratedByUserLifespan: 300
+
+    # --- Refresh token reuse detection (ADR 0012) -------------------------
+    revokeRefreshToken: true
+    refreshTokenMaxReuse: 0
+
+    # --- Password policy --------------------------------------------------
+    passwordPolicy: "length(12) and digits(1) and lowerCase(1) and upperCase(1) and specialChars(1) and notUsername and notEmail and passwordHistory(5)"
+
+    # --- OTP policy (defaults; MFA full rollout) --------------
+    otpPolicyType: totp
+    otpPolicyAlgorithm: HmacSHA256
+    otpPolicyInitialCounter: 0
+    otpPolicyDigits: 6
+    otpPolicyLookAheadWindow: 1
+    otpPolicyPeriod: 30
+    otpPolicyCodeReusable: false
+    otpSupportedApplications:
+      - totpAppFreeOTPName
+      - totpAppGoogleName
+      - totpAppMicrosoftAuthenticatorName
+
+    # --- WebAuthn policy (defaults; passkeys rollout deferred) ------------
+    webAuthnPolicyRpEntityName: keycloak
+    webAuthnPolicySignatureAlgorithms:
+      - ES256
+      - RS256
+
+    ###########################################################################
+    # Realm roles
+    ###########################################################################
+    roles:
+      realm:
+        - name: customer
+          description: "Customer of the Zylos platform"
+          composite: false
+          clientRole: false
+        - name: seller
+          description: "Seller / merchant on the Zylos platform"
+          composite: false
+          clientRole: false
+        - name: admin
+          description: "Platform administrator"
+          composite: false
+          clientRole: false
+        - name: support
+          description: "Customer support agent"
+          composite: false
+          clientRole: false
+
+    ###########################################################################
+    # Users (Test users — kind dev cluster only)
+    #
+    # alice/bob/charlie passwords are dev-only and stable for reproducibility.
+    ###########################################################################
+    users:
+      - username: alice
+        enabled: true
+        emailVerified: true
+        firstName: Alice
+        lastName: Customer
+        email: alice@zylos.example
+        credentials:
+          - type: password
+            value: "AliceDevPw_2026!"
+            temporary: false
+        realmRoles:
+          - customer
+        requiredActions: []
+        groups: []
+
+      - username: bob
+        enabled: true
+        emailVerified: true
+        firstName: Bob
+        lastName: Seller
+        email: bob@zylos.example
+        credentials:
+          - type: password
+            value: "BobDevPw_2026!"
+            temporary: false
+        realmRoles:
+          - seller
+        requiredActions: []
+        groups: []
+
+      - username: charlie
+        enabled: true
+        emailVerified: true
+        firstName: Charlie
+        lastName: Admin
+        email: charlie@zylos.example
+        credentials:
+          - type: password
+            value: "CharlieDevPw_2026!"
+            temporary: false
+        realmRoles:
+          - admin
+        requiredActions: []
+        groups: []
+
+    clientScopes:
+      # Universal actor scope: emits the act claim ONLY during exchange
+      # (the ActClaimMapper is a no-op otherwise). Shared, attached as DEFAULT
+      # to exchange-capable clients — defined once, never duplicated per client.
+      - name: zylos-actor
+        description: "RFC 8693 act claim on exchange"
+        protocol: openid-connect
+        attributes:
+          include.in.token.scope: "false"
+          display.on.consent.screen: "false"
+        protocolMappers:
+          - name: zylos-act-claim
+            protocol: openid-connect
+            protocolMapper: zylos-act-claim-mapper
+            consentRequired: false
+            config:
+              access.token.claim: "true"
+              id.token.claim: "false"
+              userinfo.token.claim: "false"
+      # Per-target audience scope: adds aud=zylos-internal-hello. OPTIONAL —
+      # acquired only when the caller requests &scope=hello-aud during exchange,
+      # so a caller's base token never carries an internal audience.
+      - name: hello-aud
+        description: "Adds aud=zylos-internal-hello (requested per-route on exchange)"
+        protocol: openid-connect
+        attributes:
+          include.in.token.scope: "false"
+          display.on.consent.screen: "false"
+        protocolMappers:
+          - name: hello-audience
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              included.client.audience: zylos-internal-hello
+              access.token.claim: "true"
+              id.token.claim: "false"
+      - name: gateway-aud
+        description: "Adds aud=zylos-gateway (requested by BFFs when calling the gateway)"
+        protocol: openid-connect
+        attributes:
+          include.in.token.scope: "false"
+          display.on.consent.screen: "false"
+        protocolMappers:
+          - name: gateway-audience
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              included.client.audience: zylos-gateway
+              access.token.claim: "true"
+              id.token.claim: "false"
+
+    ###########################################################################
+    # Clients
+    #
+    # Standard Token Exchange V2 (RFC 8693) is enabled per-client via the
+    # `standard.token.exchange.enabled` attribute. V2 is the default in
+    # Keycloak 26.2+; no V1 feature flags needed.
+    #
+    # Per ADR 0011, all confidential clients can request token exchange to
+    # any target audience. Client Policies for restricting source→target
+    # combinations are deferred to a later phase.
+    #
+    # The Zylos ActClaimMapper (protocolMapper: zylos-act-claim-mapper) is
+    # attached to every client with `serviceAccountsEnabled: true` — these
+    # are the legitimate targets of inter-service token exchange. When the
+    # mapper-bearing client receives an exchanged token, the mapper writes
+    # `act.client_id` recording the requesting party (the actor).
+    #
+    # Customer-facing BFFs (zylos-web-storefront, zylos-web-admin) are NOT
+    # exchange targets; their tokens never need an act claim. They do NOT
+    # carry the mapper.
+    #
+    # See ADR 0013 for the full rationale and Phase 2 multi-hop plan.
+    ###########################################################################
+    clients:
+
+      # ----- Web Storefront BFF (Next.js) -----
+      - clientId: zylos-web-storefront
+        name: "Zylos Web Storefront BFF"
+        description: "Next.js storefront BFF (confidential, Auth Code + PKCE)"
+        enabled: true
+        protocol: openid-connect
+        publicClient: false
+        bearerOnly: false
+        consentRequired: false
+        clientAuthenticatorType: client-secret
+        secret: "${ZYLOS_WEB_STOREFRONT_SECRET}"
+        redirectUris:
+          - "http://web.zylos.local/api/auth/callback/keycloak"
+          - "https://web.zylos.app/api/auth/callback/keycloak"
+        webOrigins:
+          - "http://web.zylos.local"
+          - "https://web.zylos.app"
+        standardFlowEnabled: true
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: false
+        authorizationServicesEnabled: false
+        frontchannelLogout: true
+        fullScopeAllowed: false
+        attributes:
+          standard.token.exchange.enabled: "true"
+          pkce.code.challenge.method: "S256"
+          post.logout.redirect.uris: "http://web.zylos.local/+https://web.zylos.app/"
+          backchannel.logout.session.required: "true"
+          backchannel.logout.revoke.offline.tokens: "true"
+          backchannel.logout.url: "http://web.zylos.local/api/auth/backchannel"
+          access.token.signed.response.alg: "RS256"
+          id.token.signed.response.alg: "RS256"
+        defaultClientScopes: ["web-origins", "acr", "profile", "roles", "email"]
+        optionalClientScopes: ["address", "phone", "offline_access", "microprofile-jwt"]
+
+      # ----- Mobile BFF (Spring Boot) -----
+      - clientId: zylos-mobile-bff
+        name: "Zylos Mobile BFF"
+        description: "Spring Boot Mobile BFF (confidential, validates mobile tokens, performs token exchange)"
+        enabled: true
+        protocol: openid-connect
+        publicClient: false
+        bearerOnly: false
+        consentRequired: false
+        clientAuthenticatorType: client-secret
+        secret: "${ZYLOS_MOBILE_BFF_SECRET}"
+        redirectUris: []
+        webOrigins: []
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        authorizationServicesEnabled: false
+        frontchannelLogout: false
+        fullScopeAllowed: false
+        attributes:
+          standard.token.exchange.enabled: "true"
+          access.token.signed.response.alg: "RS256"
+        defaultClientScopes: ["acr", "profile", "roles", "email", "zylos-actor"]
+        optionalClientScopes: ["offline_access", "microprofile-jwt", "gateway-aud"]
+
+      # ----- Spring Cloud Gateway (cluster perimeter) -----
+      - clientId: zylos-gateway
+        name: "Zylos Spring Cloud Gateway"
+        description: "Cluster perimeter gateway (confidential, performs RFC 8693 token exchange)"
+        enabled: true
+        protocol: openid-connect
+        publicClient: false
+        bearerOnly: false
+        consentRequired: false
+        clientAuthenticatorType: client-secret
+        secret: "${ZYLOS_GATEWAY_SECRET}"
+        redirectUris: []
+        webOrigins: []
+        standardFlowEnabled: false
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: true
+        authorizationServicesEnabled: false
+        frontchannelLogout: false
+        fullScopeAllowed: false
+        attributes:
+          standard.token.exchange.enabled: "true"
+          access.token.signed.response.alg: "RS256"
+          access.token.lifespan: "120" # 2-min exchanged tokens (architecture §6)
+        defaultClientScopes: ["acr", "roles", "zylos-actor"]
+        optionalClientScopes: ["hello-aud"]
+
+      # ----- Admin Console (Auth Code + PKCE) -----
+      - clientId: zylos-web-admin
+        name: "Zylos Admin Console"
+        description: "Internal admin tooling (confidential, Auth Code + PKCE; not customer-facing)"
+        enabled: true
+        protocol: openid-connect
+        publicClient: false
+        bearerOnly: false
+        consentRequired: false
+        clientAuthenticatorType: client-secret
+        secret: "${ZYLOS_WEB_ADMIN_SECRET}"
+        redirectUris:
+          - "http://admin.zylos.local/api/auth/callback/keycloak"
+          - "https://admin.zylos.app/api/auth/callback/keycloak"
+        webOrigins:
+          - "http://admin.zylos.local"
+          - "https://admin.zylos.app"
+        standardFlowEnabled: true
+        implicitFlowEnabled: false
+        directAccessGrantsEnabled: false
+        serviceAccountsEnabled: false
+        authorizationServicesEnabled: false
+        frontchannelLogout: true
+        fullScopeAllowed: false
+        attributes:
+          standard.token.exchange.enabled: "true"
+          pkce.code.challenge.method: "S256"
+          post.logout.redirect.uris: "http://admin.zylos.local/+https://admin.zylos.app/"
+          access.token.signed.response.alg: "RS256"
+          id.token.signed.response.alg: "RS256"
+        defaultClientScopes: ["web-origins", "acr", "profile", "roles", "email"]
+        optionalClientScopes: ["address", "phone", "offline_access", "microprofile-jwt"]

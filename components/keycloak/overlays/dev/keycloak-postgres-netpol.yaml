@@ -1,0 +1,74 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: keycloak-postgres-netpol
+spec:
+  podSelector:
+    matchLabels:
+      cnpg.io/cluster: keycloak-postgres
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow the CNPG Operator to manage the database and instance manager
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: platform-operators
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 8000
+
+    # Allow Keycloak pods to connect and query the database
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: keycloak
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow CNPG pods to talk to each other for HA Streaming Replication
+    - from:
+        - podSelector:
+            matchLabels:
+              cnpg.io/cluster: keycloak-postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 8000
+
+    # Istio Ambient Mesh: Allow inbound encrypted mTLS traffic via HBONE
+    - ports:
+        - protocol: TCP
+          port: 15008
+
+  egress:
+    # Allow CNPG pods to talk to each other (Egress side of HA Replication)
+    - to:
+        - podSelector:
+            matchLabels:
+              cnpg.io/cluster: keycloak-postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+        - protocol: TCP
+          port: 8000
+
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Istio Ambient Mesh: Allow outbound encrypted mTLS traffic via HBONE
+    - ports:
+        - protocol: TCP
+          port: 15008

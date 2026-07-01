@@ -1,0 +1,163 @@
+###############################################################################
+# keycloak-config-cli reconciliation Job.
+#
+# Sync-hook pattern: runs as part of every Argo CD sync of the keycloak app.
+# HookDeletePolicy=BeforeHookCreation ensures the old Job is removed before
+# the new one is created, so each sync runs a fresh Job with the current
+# ConfigMap contents.
+###############################################################################
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: keycloak-config-cli
+  namespace: platform
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: identity
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: keycloak-config-cli
+        app.kubernetes.io/part-of: zylos-platform
+        istio.io/dataplane-mode: none
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: keycloak-config-cli
+          image: docker.io/adorsys/keycloak-config-cli:6.5.0-26.5.4
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          env:
+            # --- Connection to Keycloak ---
+            - name: KEYCLOAK_URL
+              value: "http://keycloak.zylos.local"
+            - name: KEYCLOAK_USER
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-credentials
+                  key: username
+            - name: KEYCLOAK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-credentials
+                  key: password
+            - name: KEYCLOAK_SSLVERIFY
+              value: "false"
+
+            # --- Wait for Keycloak readiness ---
+            - name: KEYCLOAK_AVAILABILITYCHECK_ENABLED
+              value: "true"
+            - name: KEYCLOAK_AVAILABILITYCHECK_TIMEOUT
+              value: "300s"
+
+            # --- Import settings ---
+            - name: IMPORT_FILES_LOCATIONS
+              value: "/config/*.yaml"
+            - name: IMPORT_CACHE_ENABLED
+              value: "true"
+
+            # --- Variable substitution (strict) ---
+            - name: IMPORT_VARSUBSTITUTION_ENABLED
+              value: "true"
+            - name: IMPORT_VARSUBSTITUTION_UNDEFINEDISERROR
+              value: "true"
+            - name: IMPORT_VARSUBSTITUTION_PREFIX
+              value: "${"
+            - name: IMPORT_VARSUBSTITUTION_SUFFIX
+              value: "}"
+
+            # --- Remote state (track config-cli-managed resources only) ---
+            - name: IMPORT_REMOTESTATE_ENABLED
+              value: "true"
+
+            # --- Per-resource-type management mode ---
+            # Resources config-cli created: full lifecycle (create + update + delete).
+            # remote-state policy keeps them untouched.
+            - name: IMPORT_MANAGED_CLIENTS
+              value: "full"
+            - name: IMPORT_MANAGED_ROLES
+              value: "full"
+            - name: IMPORT_MANAGED_USERS
+              value: "full"
+            - name: IMPORT_MANAGED_CLIENTSCOPES
+              value: "full"
+            - name: IMPORT_MANAGED_CLIENTSCOPEMAPPINGS
+              value: "full"
+            - name: IMPORT_MANAGED_REQUIREDACTIONS
+              value: "no-delete"
+            - name: IMPORT_MANAGED_AUTHENTICATIONFLOWS
+              value: "no-delete"
+            - name: IMPORT_MANAGED_GROUPS
+              value: "no-delete"
+            - name: IMPORT_MANAGED_IDENTITYPROVIDERS
+              value: "no-delete"
+
+            # --- Client credentials (referenced from realm YAML as ${VAR}) ---
+            - name: ZYLOS_WEB_STOREFRONT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zylos-keycloak-client-secrets
+                  key: web-storefront-secret
+            - name: ZYLOS_WEB_ADMIN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zylos-keycloak-client-secrets
+                  key: web-admin-secret
+            - name: ZYLOS_MOBILE_BFF_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zylos-keycloak-client-secrets
+                  key: mobile-bff-secret
+            - name: ZYLOS_GATEWAY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zylos-keycloak-client-secrets
+                  key: gateway-secret
+
+            # --- Logging ---
+            - name: SPRING_PROFILES_ACTIVE
+              value: "json-log"
+            - name: LOGGING_LEVEL_ROOT
+              value: "INFO"
+
+          volumeMounts:
+            - name: realm-config
+              mountPath: /config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+              ephemeral-storage: "100Mi"
+            limits:
+              cpu: 500m
+              memory: 512Mi
+              ephemeral-storage: "100Mi"
+
+      volumes:
+        - name: realm-config
+          configMap:
+            name: keycloak-realm-config
+        - name: tmp
+          emptyDir: {}
