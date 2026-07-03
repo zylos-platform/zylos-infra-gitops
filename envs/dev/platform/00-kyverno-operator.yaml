@@ -8,6 +8,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
+    app.kubernetes.io/part-of: zylos-platform
     zylos.app/environment: dev
 spec:
   project: platform
@@ -31,5 +32,5 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace=true
+      - CreateNamespace=false
       - ServerSideApply=true
