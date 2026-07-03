@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: istio-netpol
+  name: zylos-istio-netpol
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-10"
@@ -16,7 +16,7 @@ spec:
   source:
     repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
     targetRevision: main
-    path: components/platform/istio-netpol/overlays/dev
+    path: components/platform/istio-netpol/base
   destination:
     server: https://kubernetes.default.svc
     namespace: istio-system
