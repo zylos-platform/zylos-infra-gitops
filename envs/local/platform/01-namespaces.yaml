@@ -9,13 +9,13 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/environment: dev
+    zylos.app/environment: local
 spec:
   project: platform
   source:
     repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
     targetRevision: main
-    path: components/platform/namespaces/overlays/dev
+    path: components/platform/namespaces/base
   destination:
     server: https://kubernetes.default.svc
     namespace: default
