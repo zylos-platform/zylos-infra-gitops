@@ -1,0 +1,48 @@
+crds:
+  install: true
+
+# The Admission Controller (Handles the real-time Validate/Mutate webhooks)
+admissionController:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+  # Distribute replicas across availability zones to prevent single-AZ outages
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/component: admission-controller
+
+# The Background Controller (Handles Generate rules: default-deny NetPol)
+backgroundController:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+
+# The Cleanup Controller (Handles resource TTL and cleanup policies)
+cleanupController:
+  replicas: 1
+
+# The Reports Controller (Handles policy violation reporting)
+reportsController:
+  replicas: 1
+
+config:
+  # Protect core platform namespaces from Kyverno's admission webhooks.
+  # If a poorly written Kyverno policy accidentally blocks all deployments.
+  resourceFilters:
+    - '[Event,*,*]'
+    - '[*/*,kube-system,*]'
+    - '[*/*,kube-public,*]'
+    - '[*/*,kube-node-lease,*]'
+    - '[*/*,argocd,*]'
