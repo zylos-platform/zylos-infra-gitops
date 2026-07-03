@@ -1,6 +1,15 @@
 # ---------------------------------------------------------
-# THE MESH & SECURITY (Highly Privileged)
+# THE MESH & SECURITY (Highly Privileged - DO NOT TOUCH)
 # ---------------------------------------------------------
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kyverno
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: system
 ---
 apiVersion: v1
 kind: Namespace
@@ -9,6 +18,7 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: privileged
     app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: system
 ---
 apiVersion: v1
 kind: Namespace
@@ -17,6 +27,7 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: privileged
     app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: system
 
 # ---------------------------------------------------------
 # PLATFORM CONTROL PLANE (Operators & Tooling)
@@ -25,18 +36,11 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: platform-operators
-  labels:
-    pod-security.kubernetes.io/enforce: baseline
-    app.kubernetes.io/part-of: zylos-platform
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: sealed-secrets
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: control-plane
 ---
 apiVersion: v1
 kind: Namespace
@@ -45,20 +49,12 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/mesh-eligible: true
+    zylos.app/namespace-tier: control-plane
+    istio.io/dataplane-mode: ambient
 
 # ---------------------------------------------------------
-# PLATFORM DATA PLANE (Identity & Observability)
+# PLATFORM OBSERVABILITY (Out of Mesh)
 # ---------------------------------------------------------
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: platform
-  labels:
-    pod-security.kubernetes.io/enforce: baseline
-    app.kubernetes.io/part-of: zylos-platform
-    zylos.app/mesh-eligible: true
 ---
 apiVersion: v1
 kind: Namespace
@@ -67,24 +63,67 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: privileged
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/mesh-eligible: true
+    zylos.app/namespace-tier: observability
 
 # ---------------------------------------------------------
 # APPLICATION DATA PLANE (Stateful Data Services)
 # ---------------------------------------------------------
+# Note: These namespaces WILL receive the Kyverno NetPol baseline
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: data
+  name: zylos-data-mongodb
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/mesh-eligible: true
+    zylos.app/namespace-tier: data
+    istio.io/dataplane-mode: ambient
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zylos-data-postgres
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: data
+    istio.io/dataplane-mode: ambient
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zylos-data-opensearch
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: data
+    istio.io/dataplane-mode: ambient
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zylos-data-valkey
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: data
+    istio.io/dataplane-mode: ambient
 
 # ---------------------------------------------------------
-# APPLICATION TIER (Stateless Microservices)
+# APPLICATION TIER (Stateless Microservices & Identity)
 # ---------------------------------------------------------
+# Note: These namespaces WILL receive the Kyverno NetPol baseline
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: keycloak
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: tenant
+    istio.io/dataplane-mode: ambient
 ---
 apiVersion: v1
 kind: Namespace
@@ -93,4 +132,5 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: restricted
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/mesh-eligible: true
+    zylos.app/namespace-tier: tenant
+    istio.io/dataplane-mode: ambient
