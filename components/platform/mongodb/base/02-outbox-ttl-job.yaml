@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: catalog-outbox-ttl
-  namespace: data
+  namespace: zylos-data-mongodb
 data:
   ttl-index.js: |
     db = db.getSiblingDB("catalog");
@@ -19,8 +19,8 @@ data:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: catalog-outbox-ttl-job
-  namespace: data
+  name: catalog-outbox-ttl-000000000000
+  namespace: zylos-data-mongodb
   labels:
     app.kubernetes.io/component: catalog-outbox-ttl-job
 spec:

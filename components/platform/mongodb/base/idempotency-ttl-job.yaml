@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: catalog-idempotency-ttl
+  namespace: zylos-data-mongodb
+  labels:
+    app.kubernetes.io/name: catalog-mongodb
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: ttl-index
+data:
+  ttl-index.js: |
+    db.idempotency.createIndex(
+      { createdAt: 1 },
+      { expireAfterSeconds: 172800, name: "idempotency_ttl_createdAt" }
+    );
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  # Name embeds the sha256(ttl-index.js) prefix so a script change triggers a new Job.
+  # Recompute: sha256sum ttl-index.js | cut -c1-12
+  name: catalog-idempotency-ttl-000000000000
+  namespace: zylos-data-mongodb
+  labels:
+    app.kubernetes.io/name: catalog-mongodb
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: ttl-index
+  annotations:
+    argocd.argoproj.io/hook: Sync
+spec:
+  ttlSecondsAfterFinished: 600
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: catalog-mongodb
+        app.kubernetes.io/component: ttl-index
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: create-ttl-index
+          image: mongo:8.0
+          command:
+            - mongosh
+            - "mongodb://catalog-mongodb-rs0.mongodb.svc.cluster.local:27017/catalog?replicaSet=rs0&authSource=catalog"
+            - "--username"
+            - "catalog"
+            - "--password"
+            - "$(MONGO_PASSWORD)"
+            - "--file"
+            - "/scripts/ttl-index.js"
+          env:
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-mongodb-app-user
+                  key: password
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+              readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: script
+          configMap:
+            name: catalog-idempotency-ttl
