@@ -49,8 +49,8 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/namespace-tier: control-plane
     istio.io/dataplane-mode: ambient
+    zylos.app/namespace-tier: control-plane
 ---
 apiVersion: v1
 kind: Namespace

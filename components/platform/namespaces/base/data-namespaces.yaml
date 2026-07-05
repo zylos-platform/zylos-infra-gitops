@@ -10,8 +10,9 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/namespace-tier: data
     istio.io/dataplane-mode: ambient
+    zylos.app/namespace-tier: data
+    zylos.app/trust-zone: "true"
 ---
 apiVersion: v1
 kind: Namespace
@@ -20,8 +21,8 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/namespace-tier: data
     istio.io/dataplane-mode: ambient
+    zylos.app/namespace-tier: data
 ---
 apiVersion: v1
 kind: Namespace
@@ -30,8 +31,8 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/namespace-tier: data
     istio.io/dataplane-mode: ambient
+    zylos.app/namespace-tier: data
 ---
 apiVersion: v1
 kind: Namespace
@@ -40,8 +41,8 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/namespace-tier: data
     istio.io/dataplane-mode: ambient
+    zylos.app/namespace-tier: data
 ---
 apiVersion: v1
 kind: Namespace
@@ -50,8 +51,8 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/namespace-tier: data
     istio.io/dataplane-mode: ambient
+    zylos.app/namespace-tier: data
 # ---------------------------------------------------------
 # APPLICATION TIER (Stateless Microservices & Identity)
 # ---------------------------------------------------------
@@ -64,8 +65,8 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/namespace-tier: tenant
     istio.io/dataplane-mode: ambient
+    zylos.app/namespace-tier: tenant
 ---
 apiVersion: v1
 kind: Namespace
@@ -74,5 +75,5 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: restricted
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/namespace-tier: tenant
     istio.io/dataplane-mode: ambient
+    zylos.app/namespace-tier: tenant

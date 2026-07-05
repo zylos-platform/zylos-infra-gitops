@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-mongodb-allow-operator-and-clients
+  namespace: zylos-data-mongodb
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: mongod
+  policyTypes:
+    - Ingress
+  ingress:
+    # ALLOW THE OPERATOR (Out-of-Mesh)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: percona-system
+      ports:
+        - protocol: TCP
+          port: 27017
+
+    # ALLOW ZYLOS MICROSERVICES
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: zylos-services
+      ports:
+        # Required for Istio Ambient Mesh HBONE tunneling
+        - protocol: TCP
+          port: 15008
+        # Fallback for raw traffic
+        - protocol: TCP
+          port: 27017

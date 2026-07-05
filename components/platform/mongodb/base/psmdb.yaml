@@ -5,7 +5,7 @@ apiVersion: psmdb.percona.com/v1
 kind: PerconaServerMongoDB
 metadata:
   name: percona-server-mongodb
-  namespace: data
+  namespace: zylos-data-mongodb
   finalizers:
     - percona.com/delete-psmdb-pods-in-order
 spec:
