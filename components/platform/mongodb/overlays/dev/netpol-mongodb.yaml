@@ -10,6 +10,15 @@ spec:
   policyTypes:
     - Ingress
   ingress:
+    # ALLOW INTRA-CLUSTER COMMUNICATION (HA / Replica Set Sync)
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: mongod
+      ports:
+        - protocol: TCP
+          port: 27017
+
     # ALLOW THE OPERATOR (Out-of-Mesh)
     - from:
         - namespaceSelector:
