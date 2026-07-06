@@ -1,0 +1,23 @@
+# values.yaml
+
+clusterName: opensearch
+masterService: opensearch
+
+# Enforce secure HTTPS routing globally
+protocol: https
+
+securityConfig:
+  enabled: true
+  internalUsersSecret: opensearch-internal-users
+  path: /usr/share/opensearch/config/opensearch-security
+
+# Keep the privileged init container off so the namespace remains 'baseline'.
+# This assumes vm.max_map_count is configured directly on the underlying host nodes.
+sysctlInit:
+  enabled: false
+
+# Global configuration defaults for all OpenSearch pods
+config:
+  opensearch.yml:
+    plugins.security.ssl.http.enabled: true
+    plugins.security.allow_default_init_securityindex: true

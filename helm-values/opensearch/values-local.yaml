@@ -1,8 +1,13 @@
+# values-local.yaml
+
 singleNode: true
 replicas: 1
-opensearchJavaOpts: "-Xms512m -Xmx512m"
+
 persistence:
+  enabled: true
+  enableStatefulSetAutoDelete: true
   size: 5Gi
+
 resources:
   requests:
     cpu: 250m
@@ -10,3 +15,5 @@ resources:
   limits:
     cpu: 1
     memory: 1536Mi
+
+opensearchJavaOpts: "-Xms512m -Xmx512m"

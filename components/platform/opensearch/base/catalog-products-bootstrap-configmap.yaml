@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: catalog-products-bootstrap-config
+  namespace: zylos-data-opensearch
+data:
+  index-template.json: |
+    {
+      "index_patterns": ["catalog-products-*"],
+      "priority": 100,
+      "template": {
+        "settings": { "index": { "number_of_shards": 1, "number_of_replicas": 0, "refresh_interval": "1s" } },
+        "mappings": {
+          "dynamic": "strict",
+          "properties": {
+            "productId":   { "type": "keyword" },
+            "sellerId":    { "type": "keyword" },
+            "name":        { "type": "text", "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } } },
+            "description": { "type": "text" },
+            "categoryId":  { "type": "keyword" },
+            "visibility":  { "type": "keyword" },
+            "version":     { "type": "long" },
+            "attributes":  { "type": "nested", "properties": {
+              "name":  { "type": "keyword" },
+              "type":  { "type": "keyword" },
+              "value": { "type": "keyword", "fields": { "text": { "type": "text" } } } } },
+            "variants": { "type": "nested", "properties": {
+              "variantId":   { "type": "keyword" },
+              "sku":         { "type": "keyword" },
+              "status":      { "type": "keyword" },
+              "purchasable": { "type": "boolean" },
+              "listPrice":   { "properties": { "minorUnits": { "type": "long" }, "currency": { "type": "keyword" } } },
+              "attributes":  { "type": "nested", "properties": {
+                "name":  { "type": "keyword" },
+                "type":  { "type": "keyword" },
+                "value": { "type": "keyword", "fields": { "text": { "type": "text" } } } } } } },
+            "occurredAt": { "type": "date", "format": "epoch_millis" },
+            "eventId":    { "type": "keyword" }
+          }
+        }
+      }
+    }
+  index.json: |
+    { "aliases": { "catalog-products": { "is_write_index": true } } }
+  bootstrap.sh: |
+    #!/bin/sh
+    set -eu
+
+    OS="${OPENSEARCH_URL:-https://opensearch.zylos-data-opensearch.svc.cluster.local:9200}"
+    TEMPLATE="catalog-products"
+    INDEX="catalog-products-v1"
+
+    # Helper function to ensure TLS bypass and Auth are perfectly applied to every call
+    os_curl() {
+      curl -k -u "admin:${ADMIN_PASSWORD}" -fsS "$@"
+    }
+
+    echo "Waiting for OpenSearch at $OS"
+    until os_curl "$OS/_cluster/health?wait_for_status=yellow&timeout=5s" >/dev/null 2>&1; do
+      echo "  not ready, retrying"; sleep 3
+    done
+
+    echo "Upserting composable index template: $TEMPLATE"
+    os_curl -X PUT "$OS/_index_template/$TEMPLATE" \
+      -H 'Content-Type: application/json' --data-binary @/bootstrap/index-template.json
+    echo
+
+      # Suppress both stdout (the JSON response) and stderr (if the index doesn't exist yet)
+    if os_curl -o /dev/null "$OS/$INDEX" >/dev/null 2>&1; then
+      echo "Index $INDEX already exists; nothing to create"
+    else
+      echo "Creating index $INDEX with write alias"
+      os_curl -X PUT "$OS/$INDEX" \
+        -H 'Content-Type: application/json' --data-binary @/bootstrap/index.json
+      echo
+    fi
+
+    echo "Bootstrap complete"

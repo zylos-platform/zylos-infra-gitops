@@ -23,14 +23,19 @@ spec:
       helm:
         releaseName: opensearch
         valueFiles:
-          - $values/helm-values/opensearch/base.yaml
-          - $values/helm-values/opensearch/local.yaml
+          - $values/helm-values/opensearch/values.yaml
+          - $values/helm-values/opensearch/values-local.yaml
+
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
+
+    - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
+      targetRevision: main
+      path: components/platform/opensearch/overlays/local
   destination:
     server: https://kubernetes.default.svc
-    namespace: data
+    namespace: zylos-data-opensearch
   syncPolicy:
     automated:
       prune: true

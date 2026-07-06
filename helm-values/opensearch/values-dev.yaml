@@ -1,9 +1,12 @@
+# helm-values/opensearch/values-dev.yaml
+
 singleNode: false
 replicas: 3
-opensearchJavaOpts: "-Xms1g -Xmx1g"
-antiAffinity: soft
+
 persistence:
+  enabled: true
   size: 30Gi
+
 resources:
   requests:
     cpu: 500m
@@ -11,3 +14,7 @@ resources:
   limits:
     cpu: 2
     memory: 3Gi
+
+opensearchJavaOpts: "-Xms1g -Xmx1g"
+
+antiAffinity: "soft"
