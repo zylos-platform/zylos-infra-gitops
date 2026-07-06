@@ -23,14 +23,19 @@ spec:
       helm:
         releaseName: valkey
         valueFiles:
-          - $values/helm-values/valkey/base.yaml
-          - $values/helm-values/valkey/local.yaml
+          - $values/helm-values/valkey/values.yaml
+          - $values/helm-values/valkey/values-local.yaml
+
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
+
+    - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
+      targetRevision: main
+      path: components/platform/valkey/overlays/local
   destination:
     server: https://kubernetes.default.svc
-    namespace: data
+    namespace: zylos-data-valkey
   syncPolicy:
     automated:
       prune: true

@@ -1,0 +1,63 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-valkey-netpol
+  namespace: zylos-data-valkey
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: valkey
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # INTRA-CLUSTER HA & FAILOVER
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: valkey
+      ports:
+        - protocol: TCP
+          port: 6379   # Valkey Data Port
+        - protocol: TCP
+          port: 26379  # Sentinel Port
+        - protocol: TCP
+          port: 15008  # Istio Ambient Mesh
+
+    # TENANT MICROSERVICES
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: zylos-services
+      ports:
+        - protocol: TCP
+          port: 6379   # Direct cache access
+        - protocol: TCP
+          port: 26379
+        - protocol: TCP
+          port: 15008
+
+    # OBSERVABILITY STACK
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+      ports:
+        - protocol: TCP
+          port: 9121
+        - protocol: TCP
+          port: 15008
+
+  egress:
+    # INTRA-CLUSTER HA & REPLICATION
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: valkey
+      ports:
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 26379
+        - protocol: TCP
+          port: 15008

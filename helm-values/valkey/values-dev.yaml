@@ -1,0 +1,35 @@
+# values-dev.yaml
+
+architecture: replication
+
+# Enable Sentinel for automatic failover monitoring
+sentinel:
+  enabled: true
+
+master:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  extraConfiguration: |-
+    maxmemory 384mb
+
+replica:
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  extraConfiguration: |-
+    maxmemory 384mb
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: zylos-data-valkey
