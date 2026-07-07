@@ -19,7 +19,7 @@ spec:
     path: components/platform/keycloak-operator/overlays/local
   destination:
     server: https://kubernetes.default.svc
-    namespace: platform-operators
+    namespace: keycloak-system
   syncPolicy:
     automated:
       prune: true

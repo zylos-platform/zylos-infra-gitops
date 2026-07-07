@@ -9,11 +9,11 @@ directory source.
 
 ## Files in This Directory
 
-| File                       | Source upstream                                | Purpose                                              |
-|----------------------------|------------------------------------------------|------------------------------------------------------|
-| `01-crd-keycloaks.yaml`    | `keycloaks.k8s.keycloak.org-v1.yml`            | CRD: `Keycloak` (server instance)                    |
-| `02-crd-realmimports.yaml` | `keycloakrealmimports.k8s.keycloak.org-v1.yml` | CRD: `KeycloakRealmImport` (declarative realm shell) |
-| `03-operator.yaml`         | `kubernetes.yml`                               | Operator Deployment + RBAC                           |
+| File                    | Source upstream                                | Purpose                                              |
+|-------------------------|------------------------------------------------|------------------------------------------------------|
+| `crd-keycloaks.yaml`    | `keycloaks.k8s.keycloak.org-v1.yml`            | CRD: `Keycloak` (server instance)                    |
+| `crd-realmimports.yaml` | `keycloakrealmimports.k8s.keycloak.org-v1.yml` | CRD: `KeycloakRealmImport` (declarative realm shell) |
+| `operator.yaml`         | `kubernetes.yml`                               | Operator Deployment + RBAC                           |
 
 The CRDs serve **v2beta1 only** as of v26.6.1. The previous `v2alpha1` is
 removed; manifests using it must be migrated.
