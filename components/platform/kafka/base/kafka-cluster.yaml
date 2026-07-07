@@ -2,7 +2,7 @@ apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
   name: zylos-kafka
-  namespace: data
+  namespace: zylos-data-kafka
   annotations:
     strimzi.io/node-pools: enabled
     strimzi.io/kraft: enabled
@@ -30,7 +30,7 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: dual
-  namespace: data
+  namespace: zylos-data-kafka
   labels:
     strimzi.io/cluster: zylos-kafka
 spec:

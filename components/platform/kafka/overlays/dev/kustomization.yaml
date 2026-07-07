@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - ../../base
+  - netpol-kafka.yaml
 
 patches:
   # -----------------------------------------------------------------

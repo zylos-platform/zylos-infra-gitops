@@ -19,7 +19,7 @@ spec:
     path: components/platform/kafka/overlays/dev
   destination:
     server: https://kubernetes.default.svc
-    namespace: data
+    namespace: zylos-data-kafka
   syncPolicy:
     automated:
       prune: true
