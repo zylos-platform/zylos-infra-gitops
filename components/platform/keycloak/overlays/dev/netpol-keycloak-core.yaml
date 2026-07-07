@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: keycloak-core-netpol
+  name: zylos-keycloak-core-netpol
 spec:
   podSelector:
     matchLabels:
@@ -61,17 +61,3 @@ spec:
       ports:
         - protocol: TCP
           port: 7800
-
-    # Allow communication to Cluster DNS
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-      ports:
-        - protocol: UDP
-          port: 53
-
-    # Istio Ambient Mesh: Allow outbound encrypted mTLS traffic via HBONE
-    - ports:
-        - protocol: TCP
-          port: 15008

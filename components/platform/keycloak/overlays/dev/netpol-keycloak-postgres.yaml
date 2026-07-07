@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: keycloak-postgres-netpol
+  name: zylos-keycloak-postgres-netpol
 spec:
   podSelector:
     matchLabels:
@@ -15,7 +15,7 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: platform-operators
+              kubernetes.io/metadata.name: cnpg-system
       ports:
         - protocol: TCP
           port: 5432
@@ -58,17 +58,3 @@ spec:
           port: 5432
         - protocol: TCP
           port: 8000
-
-    # Allow DNS resolution
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-      ports:
-        - protocol: UDP
-          port: 53
-
-    # Istio Ambient Mesh: Allow outbound encrypted mTLS traffic via HBONE
-    - ports:
-        - protocol: TCP
-          port: 15008
