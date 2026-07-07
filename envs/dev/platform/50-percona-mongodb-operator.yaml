@@ -20,7 +20,8 @@ spec:
       helm:
         releaseName: psmdb-operator
         valueFiles:
-          - $values/helm-values/psmdb-operator/dev.yaml
+          - $values/helm-values/psmdb-operator/values-dev.yaml
+
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
