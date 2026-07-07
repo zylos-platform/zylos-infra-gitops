@@ -1,9 +1,6 @@
-profile: ambient
+# values-dev.yaml
 
 cni:
-  ambient:
-    enabled: true
-  # Resource sizing — modest for kind, scaled in prod via overlays
   resources:
     requests:
       cpu: 100m

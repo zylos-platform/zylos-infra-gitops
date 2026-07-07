@@ -20,8 +20,9 @@ spec:
       helm:
         releaseName: istiod
         valueFiles:
-          - $values/helm-values/istio/istiod/base.yaml
-          - $values/helm-values/istio/istiod/dev.yaml
+          - $values/helm-values/istio/istiod/values.yaml
+          - $values/helm-values/istio/istiod/values-dev.yaml
+
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values

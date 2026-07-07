@@ -20,8 +20,9 @@ spec:
       helm:
         releaseName: ztunnel
         valueFiles:
-          - $values/helm-values/istio/ztunnel/base.yaml
-          - $values/helm-values/istio/ztunnel/dev.yaml
+          - $values/helm-values/istio/ztunnel/values.yaml
+          - $values/helm-values/istio/ztunnel/values-dev.yaml
+
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values

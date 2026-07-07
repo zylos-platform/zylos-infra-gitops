@@ -1,6 +1,7 @@
+# values.yaml
+
 profile: ambient
 
-# Istiod control plane configuration
 pilot:
   env:
     PILOT_ENABLE_AMBIENT: "true"
@@ -12,7 +13,6 @@ pilot:
       cpu: 1000m
       memory: 1Gi
 
-# Mesh-wide telemetry: prefer OpenTelemetry over the deprecated Mixer
 meshConfig:
   accessLogFile: /dev/stdout
   defaultConfig:
