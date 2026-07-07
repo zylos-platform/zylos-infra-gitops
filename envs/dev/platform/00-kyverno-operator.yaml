@@ -19,8 +19,9 @@ spec:
       helm:
         releaseName: kyverno
         valueFiles:
-          - $values/helm-values/kyverno/base.yaml
-          - $values/helm-values/kyverno/dev.yaml
+          - $values/helm-values/kyverno/values.yaml
+          - $values/helm-values/kyverno/values-dev.yaml
+
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values

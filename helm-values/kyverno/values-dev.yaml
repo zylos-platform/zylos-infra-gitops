@@ -6,12 +6,3 @@ admissionController:
       memory: 256Mi
     limits:
       memory: 1Gi
-
-backgroundController:
-  replicas: 1
-
-cleanupController:
-  replicas: 1
-
-reportsController:
-  replicas: 1
