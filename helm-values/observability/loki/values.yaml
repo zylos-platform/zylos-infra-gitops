@@ -1,3 +1,5 @@
+# values.yaml
+
 # Monolithic mode is the recommended deployment for our cluster size.
 # Microservices mode is for very high-throughput production at scale.
 deploymentMode: SingleBinary

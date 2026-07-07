@@ -1,9 +1,4 @@
-###############################################################################
-# kube-prometheus-stack Helm values for Zylos.
-#
-# Note: We DISABLE Grafana's bundled Loki and Tempo support (they ship in
-# separate Apps). The integration is wired via Grafana data sources.
-###############################################################################
+# values.yaml
 
 defaultRules:
   create: true
@@ -12,7 +7,6 @@ defaultRules:
     kubeProxy: false # Many local k8s distros don't run kube-proxy as a Pod
     etcd: false # Same
 
-# Alertmanager — keep modest for local; HA in prod
 alertmanager:
   alertmanagerSpec:
     replicas: 1

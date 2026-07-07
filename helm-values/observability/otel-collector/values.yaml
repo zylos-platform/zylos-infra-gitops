@@ -1,7 +1,4 @@
-###############################################################################
-# OpenTelemetry Collector — fans out to Tempo (traces), Prometheus (metrics),
-# and Loki (logs). Mirrors the local Compose config in zylos-local-env.
-###############################################################################
+# values.yaml
 
 mode: deployment
 

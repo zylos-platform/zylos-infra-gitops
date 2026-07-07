@@ -1,3 +1,5 @@
+# values.yaml
+
 tempo:
   retention: 168h # 7 days
 

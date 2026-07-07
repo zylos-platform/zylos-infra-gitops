@@ -20,8 +20,8 @@ spec:
       helm:
         releaseName: opentelemetry-collector
         valueFiles:
-          - $values/helm-values/observability/otel-collector/base.yaml
-          - $values/helm-values/observability/otel-collector/dev.yaml
+          - $values/helm-values/observability/otel-collector/values.yaml
+
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
@@ -33,6 +33,7 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
+      - CreateNamespace=false
       - ServerSideApply=true
     retry:
       limit: 10
