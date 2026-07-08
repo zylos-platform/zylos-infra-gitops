@@ -1,13 +1,4 @@
-###############################################################################
-# Argo CD installation values.
-#
-# Used ONLY for the initial `helm install` during cluster bootstrap.
-# After bootstrap, Argo CD manages itself via the `argocd` child Application
-# in argocd/apps/argocd.yaml — that file pins the SAME version of these values.
-#
-# Changes to this file should be mirrored to argocd/apps/argocd.yaml so that
-# future reconciliations don't fight the bootstrap.
-###############################################################################
+# values.yaml
 
 global:
   domain: argocd.zylos.local
@@ -19,16 +10,22 @@ crds:
 
 configs:
   cm:
-    # Enable Helm chart values templating in Application manifests
-    timeout.reconciliation: 180s
-    # Allow apps in any namespace to reference repos
-    application.namespaces: "argocd,zylos-*"
-    # Surface Kubernetes events as resource-level health
+    # Surface Kubernetes events as resource-level health, and ignore dynamic
+    # webhook certificates injected by cert-manager to prevent OutOfSync loops.
     resource.exclusions: |
       - apiGroups:
           - "*"
         kinds:
-          - "Event"
+          - Event
+        clusters:
+          - "*"
+      - apiGroups:
+          - admissionregistration.k8s.io
+        kinds:
+          - ValidatingWebhookConfiguration
+          - MutatingWebhookConfiguration
+        clusters:
+          - "*"
 
   params:
     # Server-side apply is the default in v3, but explicit is better than implicit
