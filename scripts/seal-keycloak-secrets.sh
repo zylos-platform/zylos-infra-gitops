@@ -15,8 +15,8 @@ if [[ "$ENV" != "local" && "$ENV" != "dev" ]]; then
   exit 1
 fi
 
-NS="platform"
-TARGET_DIR="components/keycloak/overlays/${ENV}"
+NS="keycloak"
+TARGET_DIR="components/platform/keycloak/overlays/${ENV}"
 OUT_FILE="${TARGET_DIR}/keycloak-secrets.yaml"
 
 mkdir -p "$TARGET_DIR"
@@ -33,20 +33,20 @@ if ! command -v kubeseal >/dev/null 2>&1; then
 fi
 
 if [[ "$ENV" == "local" ]]; then
-  echo "==> Using stable reproducible credentials for [LOCAL] environment..."
+  echo "==> Using stable reproducible credentials for ${ENV} environment..."
   KEYCLOAK_DB_USER="keycloak"
   KEYCLOAK_DB_PASSWORD="kc_local_db_pw_2026"
   KEYCLOAK_ADMIN_USER="admin"
   KEYCLOAK_ADMIN_PASSWORD="admin"
 else
-  echo "==> Generating strong random credentials for [DEV] environment..."
+  echo "==> Generating strong random credentials for ${ENV} environment..."
   KEYCLOAK_DB_USER="keycloak"
   KEYCLOAK_DB_PASSWORD="$(openssl rand -hex 16)"
   KEYCLOAK_ADMIN_USER="admin"
   KEYCLOAK_ADMIN_PASSWORD="$(openssl rand -hex 12)"
 
   # Print the admin password so the developer running the script can save it to their local vault
-  echo "    [!] DEV Admin Password generated: ${KEYCLOAK_ADMIN_PASSWORD}"
+  echo "[!] DEV Admin Password generated: ${KEYCLOAK_ADMIN_PASSWORD}"
 fi
 
 # Generate plain Secrets and pipe through kubeseal.
@@ -57,8 +57,8 @@ DB_SEALED=$(kubectl create secret generic keycloak-db-credentials \
   --from-literal=username="${KEYCLOAK_DB_USER}" \
   --from-literal=password="${KEYCLOAK_DB_PASSWORD}" \
   --dry-run=client -o yaml | \
-  kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml | \
-  kubeseal --controller-namespace=sealed-secrets --format=yaml)
+  kubeseal --controller-namespace=sealed-secrets --format=yaml | \
+  kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml)
 
 echo "==> Generating SealedSecret for keycloak-admin-credentials..."
 ADMIN_SEALED=$(kubectl create secret generic keycloak-admin-credentials \
@@ -66,8 +66,8 @@ ADMIN_SEALED=$(kubectl create secret generic keycloak-admin-credentials \
   --from-literal=username="${KEYCLOAK_ADMIN_USER}" \
   --from-literal=password="${KEYCLOAK_ADMIN_PASSWORD}" \
   --dry-run=client -o yaml | \
-  kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml | \
-  kubeseal --controller-namespace=sealed-secrets --format=yaml)
+  kubeseal --controller-namespace=sealed-secrets --format=yaml | \
+  kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml)
 
 # Write the combined manifest.
 cat > "${OUT_FILE}" <<HEADER
@@ -86,4 +86,4 @@ echo "${DB_SEALED}" >> "${OUT_FILE}"
 echo "---" >> "${OUT_FILE}"
 echo "${ADMIN_SEALED}" >> "${OUT_FILE}"
 
-echo "✓ Success! Wrote ${OUT_FILE}"
+echo "✅ Success!"

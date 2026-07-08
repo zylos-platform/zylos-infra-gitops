@@ -35,18 +35,40 @@ seal_secret() {
     --from-literal=password="$pass" \
     --dry-run=client -o yaml \
   | kubeseal --format yaml --controller-namespace sealed-secrets \
+  | kubectl annotate -f - --local \
+      "argocd.argoproj.io/hook=PreSync" \
+      -o yaml \
   > "$filename"
 }
 
 echo "==> Generating Catalog secrets for [${ENV^^}] environment..."
 
-# The App password for the Percona Operator (Data Namespace)
-seal_secret "data" "catalog-mongodb-app-user" "$APP_PASS" "components/mongodb/overlays/${ENV}/catalog-db-app-secret.yaml"
+# The App password for the Percona Operator (Namespace zylos-data-mongodb)
+seal_secret \
+  "zylos-data-mongodb" \
+  "catalog-mongodb-app-user" \
+  "$APP_PASS" \
+  "components/platform/mongodb/overlays/${ENV}/catalog-db-app-secret.yaml"
 
-# The App password twin for the catalog Service (Services Namespace)
-seal_secret "zylos-services" "catalog-mongodb-app-user" "$APP_PASS" "components/zylos-services-secrets/overlays/${ENV}/catalog-svc-app-secret.yaml"
+# The CDC password for Debezium (Namespace zylos-data-mongodb)
+seal_secret \
+  "zylos-data-mongodb" \
+  "catalog-mongodb-debezium" \
+  "$CDC_PASS" \
+  "components/platform/mongodb/overlays/${ENV}/catalog-cdc-secret.yaml"
 
-# The CDC password for Debezium (Data Namespace)
-seal_secret "data" "catalog-mongodb-debezium" "$CDC_PASS" "components/kafka-connect/overlays/${ENV}/catalog-cdc-secret.yaml"
+# The App password twin for the catalog Service
+seal_secret \
+  "zylos-services" \
+  "catalog-mongodb-app-user" \
+  "$APP_PASS" \
+  "components/services/zylos-service-catalog/overlays/${ENV}/catalog-svc-app-secret.yaml"
+
+# The CDC password for Debezium
+seal_secret \
+  "zylos-data-kafka" \
+  "catalog-mongodb-debezium" \
+  "$CDC_PASS" \
+  "components/platform/kafka-connect/overlays/${ENV}/catalog-cdc-secret.yaml"
 
 echo "✅ Success!"

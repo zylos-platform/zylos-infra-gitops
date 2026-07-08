@@ -10,9 +10,19 @@ if [[ "$ENV" != "local" && "$ENV" != "dev" ]]; then
   exit 1
 fi
 
-# Generate strong, random passwords for this execution
-ADMIN_PASS="$(openssl rand -hex 16)"
-APP_PASS="$(openssl rand -hex 16)"
+# Differentiate local (stable) vs dev (random) credentials
+if [[ "$ENV" == "local" ]]; then
+  echo "==> Using stable reproducible credentials for ${ENV} environment..."
+  ADMIN_PASS="admin"
+  APP_PASS="catalog"
+else
+  echo "==> Generating strong random credentials for ${ENV} environment..."
+  ADMIN_PASS="$(openssl rand -hex 16)"
+  APP_PASS="$(openssl rand -hex 16)"
+
+  echo "[!] DEV Admin Password generated: ${ADMIN_PASS}"
+  echo "[!] DEV Catalog App Password generated: ${APP_PASS}"
+fi
 
 echo "==> Verifying sealed-secrets-controller in ${ENV} cluster..."
 if ! kubectl -n sealed-secrets get deploy sealed-secrets-controller >/dev/null 2>&1; then
@@ -80,34 +90,55 @@ EOF
 seal_literal() {
   local ns="$1" name="$2" pass="$3" filename="$4"
   echo "    -> Sealing raw password '$name' into namespace '$ns'..."
+
+  mkdir -p "$(dirname "$filename")"
+
   kubectl create secret generic "$name" \
     --namespace "$ns" \
     --from-literal=password="$pass" \
     --dry-run=client -o yaml \
   | kubeseal --format yaml --controller-namespace sealed-secrets \
+  | kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml \
   > "$filename"
 }
 
 seal_file() {
   local ns="$1" name="$2" key="$3" filepath="$4" filename="$5"
   echo "    -> Sealing config file '$name' into namespace '$ns'..."
+
+  mkdir -p "$(dirname "$filename")"
+
   kubectl create secret generic "$name" \
     --namespace "$ns" \
     --from-file="${key}=${filepath}" \
     --dry-run=client -o yaml \
   | kubeseal --format yaml --controller-namespace sealed-secrets \
+  | kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml \
   > "$filename"
 }
 
 echo "==> Generating OpenSearch secrets for [${ENV^^}] environment..."
 
-# 1. The Hashed Users File (For the OpenSearch Helm Chart core config)
-seal_file "zylos-data-opensearch" "opensearch-internal-users" "internal_users.yml" "$INTERNAL_USERS_FILE" "components/platform/opensearch/overlays/${ENV}/opensearch-internal-users-secret.yaml"
+# The Hashed Users File (For the OpenSearch Helm Chart core config)
+seal_file \
+  "zylos-data-opensearch" \
+  "opensearch-internal-users" \
+  "internal_users.yml" \
+  "$INTERNAL_USERS_FILE" \
+  "components/platform/opensearch/overlays/${ENV}/opensearch-internal-users-secret.yaml"
 
-# 2. The Raw Admin Password (For the Argo CD Bootstrap Job)
-seal_literal "zylos-data-opensearch" "opensearch-admin-credentials" "$ADMIN_PASS" "components/platform/opensearch/overlays/${ENV}/opensearch-admin-secret.yaml"
+# The Raw Admin Password (For the Argo CD Bootstrap Job)
+seal_literal \
+  "zylos-data-opensearch" \
+  "opensearch-admin-credentials" \
+  "$ADMIN_PASS" \
+  "components/platform/opensearch/overlays/${ENV}/opensearch-admin-secret.yaml"
 
-# 3. The Raw App Password (For the Catalog Service to authenticate)
-seal_literal "zylos-services" "opensearch-catalog-credentials" "$APP_PASS" "components/services/zylos-service-catalog/overlays/${ENV}/catalog-opensearch-secret.yaml"
+# The Raw App Password (For the Catalog Service to authenticate)
+seal_literal \
+  "zylos-services" \
+  "catalog-opensearch-app-user" \
+  "$APP_PASS" \
+  "components/services/zylos-service-catalog/overlays/${ENV}/catalog-opensearch-secret.yaml"
 
 echo "✅ Success!"

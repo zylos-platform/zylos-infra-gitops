@@ -71,16 +71,16 @@ spec:
     - name: allow-node-probes
       match:
         any:
-            - resources:
-              kinds:
-                - Namespace
-              selector:
-                matchExpressions:
-                  - key: zylos.app/namespace-tier
-                    operator: In
-                    values:
-                      - data
-                      - tenant
+          - resources:
+            kinds:
+              - Namespace
+            selector:
+              matchExpressions:
+                - key: zylos.app/namespace-tier
+                  operator: In
+                  values:
+                    - data
+                    - tenant
       generate:
         apiVersion: networking.k8s.io/v1
         kind: NetworkPolicy

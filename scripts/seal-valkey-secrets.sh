@@ -22,10 +22,18 @@ if ! command -v kubeseal >/dev/null 2>&1; then
   exit 1
 fi
 
-# Generate a strong, random password for the default Valkey user
-VALKEY_PASS="$(openssl rand -hex 24)"
+if [[ "$ENV" == "local" ]]; then
+  echo "==> Using stable reproducible credentials for ${ENV} environment..."
+  VALKEY_PASS="valkey_local_pass_2026"
+else
+  echo "==> Generating strong random credentials for ${ENV} environment..."
+  VALKEY_PASS="$(openssl rand -hex 24)"
 
-# Helper function for ONLINE sealing
+  # Print the password so the platform engineer can save it
+  echo "[!] DEV Valkey Password generated: ${VALKEY_PASS}"
+fi
+
+# Helper function for sealing
 seal_literal() {
   local ns="$1" name="$2" pass="$3" filename="$4"
   echo "    -> Sealing '$name' into namespace '$ns' (Fetching key from cluster)..."
@@ -38,6 +46,7 @@ seal_literal() {
     --from-literal=password="$pass" \
     --dry-run=client -o yaml \
   | kubeseal --format yaml --controller-namespace sealed-secrets \
+  | kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml \
   > "$filename"
 }
 
@@ -51,7 +60,7 @@ seal_literal \
 
 seal_literal \
   "zylos-services" \
-  "catalog-valkey-credentials" \
+  "catalog-valkey-app-user" \
   "$VALKEY_PASS" \
   "components/services/zylos-service-catalog/overlays/${ENV}/catalog-valkey-secret.yaml"
 

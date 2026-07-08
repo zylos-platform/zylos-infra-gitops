@@ -41,5 +41,5 @@ extraEnv:
   - name: ZYLOS_GATEWAY_CLIENT_SECRET
     valueFrom:
       secretKeyRef:
-        name: zylos-gateway-secrets
+        name: zylos-gateway-secret
         key: gateway-secret

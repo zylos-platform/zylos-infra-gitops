@@ -18,6 +18,7 @@ spec:
         app.kubernetes.io/component: catalog-read-model-bootstrap
         zylos.app/namespace-tier: data
     spec:
+      automountServiceAccountToken: false
       restartPolicy: Never
       containers:
         - name: bootstrap

@@ -87,6 +87,11 @@ extraEnv:
     value: "valkey.zylos-data-valkey.svc.cluster.local"
   - name: ZYLOS_CATALOG_VALKEY_PORT
     value: "6379"
+  - name: ZYLOS_CATALOG_VALKEY_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: catalog-valkey-app-user
+        key: password
 
   - name: ZYLOS_CATALOG_KAFKA_BOOTSTRAP
     value: "zylos-kafka-kafka-bootstrap.zylos-data-kafka.svc.cluster.local:9092"
@@ -108,6 +113,13 @@ extraEnv:
     value: "http://opensearch.zylos-data-opensearch.svc.cluster.local:9200"
   - name: ZYLOS_CATALOG_OPENSEARCH_ALIAS
     value: "catalog-products"
+  - name: ZYLOS_CATALOG_OPENSEARCH_USERNAME
+    value: "catalog_service"
+  - name: ZYLOS_CATALOG_OPENSEARCH_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: catalog-opensearch-app-user
+        key: password
 
   - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
     value: "http://opentelemetry-collector.observability.svc.cluster.local:4318/v1/traces"

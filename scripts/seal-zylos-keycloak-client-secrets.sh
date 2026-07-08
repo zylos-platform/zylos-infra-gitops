@@ -15,8 +15,8 @@ if [[ "$ENV" != "local" && "$ENV" != "dev" ]]; then
   exit 1
 fi
 
-NS="platform"
-TARGET_DIR="components/keycloak/overlays/${ENV}"
+NS="keycloak"
+TARGET_DIR="components/platform/keycloak/overlays/${ENV}"
 OUT_FILE="${TARGET_DIR}/zylos-keycloak-client-secrets.yaml"
 
 mkdir -p "$TARGET_DIR"
@@ -33,20 +33,25 @@ if ! command -v kubeseal >/dev/null 2>&1; then
 fi
 
 if [[ "$ENV" == "local" ]]; then
-  echo "==> Using stable reproducible secrets for [LOCAL] environment..."
+  echo "==> Using stable reproducible secrets for ${ENV} environment..."
   WEB_STOREFRONT_SECRET="dev_secret_web_storefront_2026"
   WEB_ADMIN_SECRET="dev_secret_web_admin_2026"
   MOBILE_BFF_SECRET="dev_secret_mobile_bff_2026"
   GATEWAY_SECRET="dev_secret_gateway_2026"
 else
-  echo "==> Generating strong random secrets for [DEV] environment..."
+  echo "==> Generating strong random secrets for ${ENV} environment..."
   WEB_STOREFRONT_SECRET="$(openssl rand -hex 16)"
   WEB_ADMIN_SECRET="$(openssl rand -hex 16)"
   MOBILE_BFF_SECRET="$(openssl rand -hex 16)"
   GATEWAY_SECRET="$(openssl rand -hex 16)"
+
+  echo "[!] DEV Web Storefront Secret: ${WEB_STOREFRONT_SECRET}"
+  echo "[!] DEV Web Admin Secret:      ${WEB_ADMIN_SECRET}"
+  echo "[!] DEV Mobile BFF Secret:     ${MOBILE_BFF_SECRET}"
+  echo "[!] DEV Gateway Secret:        ${GATEWAY_SECRET}"
 fi
 
-echo "==> Generating and sealing credentials..."
+echo "==> Generating secret for Keycloak Realm Import..."
 
 SEALED=$(kubectl create secret generic zylos-keycloak-client-secrets \
   --namespace="${NS}" \
@@ -55,8 +60,8 @@ SEALED=$(kubectl create secret generic zylos-keycloak-client-secrets \
   --from-literal=mobile-bff-secret="${MOBILE_BFF_SECRET}" \
   --from-literal=gateway-secret="${GATEWAY_SECRET}" \
   --dry-run=client -o yaml | \
-  kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml | \
-  kubeseal --controller-namespace=sealed-secrets --format=yaml)
+  kubeseal --controller-namespace=sealed-secrets --format=yaml | \
+  kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml)
 
 cat > "${OUT_FILE}" <<HEADER
 ###############################################################################
@@ -71,5 +76,29 @@ cat > "${OUT_FILE}" <<HEADER
 HEADER
 
 echo "${SEALED}" >> "${OUT_FILE}"
+echo "✓ Success! Wrote monolithic secret to ${OUT_FILE}"
 
-echo "✓ Success! Wrote ${OUT_FILE}"
+seal_app_secret() {
+  local app_ns="$1" secret_name="$2" secret_key="$3" pass="$4" filename="$5"
+  echo "==> Distributing ${secret_name} to namespace '${app_ns}'..."
+
+  mkdir -p "$(dirname "$filename")"
+
+  kubectl create secret generic "$secret_name" \
+    --namespace "$app_ns" \
+    --from-literal="${secret_key}=${pass}" \
+    --dry-run=client -o yaml | \
+    kubeseal --controller-namespace=sealed-secrets --format=yaml | \
+    kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml \
+    > "$filename"
+}
+
+# Distribute the Gateway secret directly into the application namespace
+seal_app_secret \
+  "zylos-services" \
+  "zylos-gateway-secret" \
+  "gateway-secret" \
+  "${GATEWAY_SECRET}" \
+  "components/services/zylos-infra-gateway/overlays/${ENV}/gateway-secret.yaml"
+
+echo "✅ All secrets successfully generated and distributed!"

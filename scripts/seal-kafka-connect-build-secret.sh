@@ -11,8 +11,8 @@ if [[ "$ENV" != "local" && "$ENV" != "dev" ]]; then
   exit 1
 fi
 
-NS="data"
-OUT_DIR="components/kafka-connect/overlays/${ENV}"
+NS="zylos-data-kafka"
+OUT_DIR="components/platform/kafka-connect/overlays/${ENV}"
 OUT_FILE="${OUT_DIR}/kafka-connect-build-secret.yaml"
 
 mkdir -p "$OUT_DIR"
@@ -38,10 +38,10 @@ kubectl create secret docker-registry kafka-connect-build-secret \
   --docker-username="${GHCR_USER:?set GHCR_USER}" \
   --docker-password="${GHCR_PAT:?set GHCR_PAT (write:packages)}" \
   --dry-run=client -o yaml \
+| kubeseal --format yaml --controller-namespace sealed-secrets \
 | kubectl annotate -f - --local \
     "argocd.argoproj.io/hook=PreSync" \
     -o yaml \
-| kubeseal --format yaml --controller-namespace sealed-secrets \
 > "$OUT_FILE"
 
-echo "✅ Success! Wrote $OUT_FILE"
+echo "✅ Success!"
