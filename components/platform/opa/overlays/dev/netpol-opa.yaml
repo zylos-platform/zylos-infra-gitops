@@ -1,0 +1,61 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-opa-authorization-netpol
+  namespace: opa
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: opa
+      app.kubernetes.io/component: authorization
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # ALLOW TENANT MICROSERVICES (Authorization Queries)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: zylos-services
+      ports:
+        - protocol: TCP
+          port: 8181   # OPA Server Port
+        - protocol: TCP
+          port: 15008  # Istio Ambient Mesh HBONE Port
+
+    # ALLOW OBSERVABILITY SCRAPING & PROBES
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+      ports:
+        - protocol: TCP
+          port: 8282   # OPA Diagnostic/Metrics Port
+        - protocol: TCP
+          port: 15008  # Istio Ambient Mesh HBONE Port
+
+  egress:
+    # ALLOW KUBE-DNS RESOLUTION
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # ALLOW EXTERNAL BUNDLE DOWNLOADS (GHCR)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8     # Block access to internal private ranges
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443    # HTTPS for ghcr.io

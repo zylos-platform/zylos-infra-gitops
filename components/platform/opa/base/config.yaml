@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-config
+  namespace: opa
+  labels:
+    app.kubernetes.io/name: opa
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: authorization
+data:
+  config.yaml: |
+    services:
+      ghcr:
+        url: https://ghcr.io
+        type: oci
+        credentials:
+          bearer:
+            token: "${GHCR_TOKEN}"
+
+    bundles:
+      zylos-policies:
+        service: ghcr
+        resource: ghcr.io/zylos-platform/policies:main
+        persist: true
+        polling:
+          min_delay_seconds: 20
+          max_delay_seconds: 60
+
+    persistence_directory: /var/opa
+
+    status:
+      console: true
+
+    # Dev-grade: console decision logs. Routed to OTLP/Loki in observability hardening.
+    decision_logs:
+      console: true
