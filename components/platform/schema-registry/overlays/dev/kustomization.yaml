@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - ../../base
+  - netpol-schema-registry.yaml
 
 patches:
   - path: schema-registry-ha-patch.yaml

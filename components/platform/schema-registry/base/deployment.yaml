@@ -6,7 +6,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: schema-registry
-  namespace: data
+  namespace: zylos-data-kafka
   labels:
     app.kubernetes.io/name: schema-registry
     app.kubernetes.io/part-of: zylos-platform
@@ -40,7 +40,7 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
-              value: "PLAINTEXT://zylos-kafka-kafka-bootstrap.data.svc.cluster.local:9092"
+              value: "PLAINTEXT://zylos-kafka-kafka-bootstrap.zylos-data-kafka.svc.cluster.local:9092"
             - name: SCHEMA_REGISTRY_LISTENERS
               value: "http://0.0.0.0:8081"
             # Single broker -> the _schemas topic must use RF 1 (prod: 3).
