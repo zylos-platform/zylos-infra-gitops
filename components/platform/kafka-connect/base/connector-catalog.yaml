@@ -2,9 +2,9 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaConnector
 metadata:
   name: catalog-outbox
-  namespace: data
+  namespace: zylos-data-kafka
   labels:
-    strimzi.io/cluster: zylos-connect
+    strimzi.io/cluster: zylos-kafka-connect
     app.kubernetes.io/part-of: zylos-platform
     app.kubernetes.io/component: messaging
 spec:
@@ -12,7 +12,7 @@ spec:
   tasksMax: 1
   config:
     # --- source: change streams over the catalog DB, outbox collection only ---
-    mongodb.connection.string: "mongodb://percona-server-mongodb-rs0.data.svc.cluster.local:27017/?replicaSet=rs0&authSource=catalog"
+    mongodb.connection.string: "mongodb://percona-server-mongodb-rs0.zylos-data-mongodb.svc.cluster.local:27017/?replicaSet=rs0&authSource=catalog"
     mongodb.user: catalog-cdc
     mongodb.password: "${file:/opt/kafka/external-configuration/mongo-creds/password}"
     topic.prefix: catalog

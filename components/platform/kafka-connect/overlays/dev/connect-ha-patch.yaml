@@ -1,8 +1,8 @@
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaConnect
 metadata:
-  name: zylos-connect
-  namespace: data
+  name: zylos-kafka-connect
+  namespace: zylos-data-kafka
 spec:
   replicas: 2
   config:

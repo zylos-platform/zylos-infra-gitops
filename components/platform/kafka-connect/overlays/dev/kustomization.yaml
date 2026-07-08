@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - ../../base
+  - netpol-kafka-connect.yaml
 
 patches:
   - path: connect-ha-patch.yaml
