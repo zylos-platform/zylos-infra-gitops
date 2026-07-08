@@ -1,5 +1,6 @@
 # values-dev.yaml
 
+springProfile: dev
 environment: dev
 
 # High Availability
@@ -24,8 +25,17 @@ extraEnv:
   - name: ZYLOS_ISSUER_URI
     value: "https://auth.dev.zylos.app/realms/zylos"
 
+  - name: ZYLOS_JWK_SET_URI
+    value: "https://auth.dev.zylos.app/realms/zylos/protocol/openid-connect/certs"
+
   - name: ZYLOS_TOKEN_ENDPOINT
     value: "https://auth.dev.zylos.app/realms/zylos/protocol/openid-connect/token"
+
+  - name: ZYLOS_HELLO_SERVICE_URI
+    value: "http://zylos-service-hello.zylos-services.svc.cluster.local:8080"
+
+  - name: ZYLOS_CATALOG_SERVICE_URI
+    value: "http://zylos-service-catalog.zylos-services.svc.cluster.local:8080"
 
   # Tightened mesh egress range
   - name: ZYLOS_TRUSTED_PROXIES
