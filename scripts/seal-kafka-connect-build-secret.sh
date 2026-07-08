@@ -3,6 +3,8 @@
 # Export GHCR_USER and GHCR_PAT (a PAT with write:packages) first.
 set -euo pipefail
 
+cd "$(dirname "$0")/.."
+
 # Ensure an environment parameter is passed
 ENV=${1:-}
 if [[ "$ENV" != "local" && "$ENV" != "dev" ]]; then

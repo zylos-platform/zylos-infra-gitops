@@ -2,6 +2,8 @@
 # Generates environment-specific SealedSecrets for the OpenSearch Domain.
 set -euo pipefail
 
+cd "$(dirname "$0")/.."
+
 # Ensure an environment parameter is passed
 ENV=${1:-}
 if [[ "$ENV" != "local" && "$ENV" != "dev" ]]; then

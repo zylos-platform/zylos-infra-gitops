@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+cd "$(dirname "$0")/.."
+
 ENV=${1:-}
 if [[ "$ENV" != "local" && "$ENV" != "dev" ]]; then
   echo "Usage: $0 <local|dev>" >&2
