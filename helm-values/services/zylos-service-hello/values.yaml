@@ -1,0 +1,42 @@
+# values.yaml
+
+fullnameOverride: "zylos-service-hello"
+
+image:
+  repository: ghcr.io/zylos-platform/zylos-service-hello
+  tag: "20260613-37da61d" # CI replaces this on each merged push to main
+  # digest: ""            # When CI starts emitting digests, this overrides tag
+
+ingress:
+  enabled: false
+
+serviceMonitor:
+  enabled: true
+
+# NetworkPolicy: hello-service is exposed via gateway.
+networkPolicy:
+  enabled: true
+  ingress:
+    fromIstio: true
+    fromObservability: true
+    fromIngressNginx: false
+  egress:
+    toDns: true
+    toIstio: true
+    toSamePlatform: true
+    toKeycloak: true
+    toOpa: true
+    toObservability: true
+
+extraEnv:
+  - name: ZYLOS_JWK_SET_URI
+    value: "http://keycloak.zylos.local/realms/zylos/protocol/openid-connect/certs"
+
+  - name: ZYLOS_SECURITY_OPA_ENDPOINT
+    value: "http://opa.opa.svc.cluster.local:8181"
+
+  - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+    value: "http://opentelemetry-collector.observability.svc.cluster.local:4318/v1/traces"
+
+  - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+    value: "http://opentelemetry-collector.observability.svc.cluster.local:4318/v1/metrics"
