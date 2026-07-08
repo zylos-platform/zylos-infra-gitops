@@ -1,0 +1,29 @@
+# values-dev.yaml
+
+springProfile: dev
+environment: dev
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+pdb:
+  enabled: true
+  maxUnavailable: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 75
+  targetMemoryUtilizationPercentage: 80
+
+extraEnv:
+  - name: ZYLOS_ISSUER_URI
+    value: "https://auth.zylos.app/realms/zylos"

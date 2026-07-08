@@ -1,0 +1,51 @@
+###############################################################################
+# OpenSearch — Catalog read-model / search backend.
+###############################################################################
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: opensearch
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "9"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: search
+    zylos.app/environment: local
+spec:
+  project: platform
+  sources:
+    - repoURL: https://opensearch-project.github.io/helm-charts
+      chart: opensearch
+      targetRevision: 3.7.0
+      helm:
+        releaseName: opensearch
+        valueFiles:
+          - $values/helm-values/opensearch/values.yaml
+          - $values/helm-values/opensearch/values-local.yaml
+
+    - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
+      targetRevision: main
+      ref: values
+
+    - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
+      targetRevision: main
+      path: components/platform/opensearch/overlays/local
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zylos-data-opensearch
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true
+    retry:
+      limit: 10
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

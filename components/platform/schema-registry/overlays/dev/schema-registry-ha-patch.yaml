@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schema-registry
+  namespace: zylos-data-kafka
+spec:
+  replicas: 2
+  template:
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: schema-registry
+          env:
+            # Overrides the RF=1 from base to match the 3 Dev brokers
+            - name: SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR
+              value: "3"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+              ephemeral-storage: 500Mi
+            limits:
+              cpu: 500m
+              memory: 768Mi
+              ephemeral-storage: 1Gi

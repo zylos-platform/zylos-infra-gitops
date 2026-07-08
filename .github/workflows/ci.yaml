@@ -21,31 +21,62 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           pip install yamllint
-          yamllint -c .yamllint.yaml argocd/ helm-values/ manifests/
+          yamllint -c .yamllint.yaml envs/ helm-values/ components/
 
-  kubeconform:
-    name: kubeconform (k8s schema validation)
+  kubeconform-kustomize:
+    name: Validate Manifests & Kustomize Overlays
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout GitOps Repo
+        uses: actions/checkout@v4
+
       - name: Install kubeconform
         run: |
-          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz \
-            | tar -xz
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar -xz
           sudo mv kubeconform /usr/local/bin/
 
-      - name: Validate manifests
+      - name: Validate Argo CD Apps
         run: |
+          echo "==> Validating static Argo CD configurations in envs/"
+
+          # We validate these raw because Argo CD Applications do not need to be rendered via Kustomize
           kubeconform -strict -ignore-missing-schemas \
             -schema-location default \
             -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
-            argocd/ manifests/
+            envs/
+
+      - name: Validate Kustomize Components
+        run: |
+          echo "==> Dynamically discovering and validating Kustomize environments..."
+
+          # Find every kustomization.yaml file anywhere inside the components/ directory
+          find components/ -type f \( -name "kustomization.yaml" -o -name "kustomization.yml" \) | while read -r kustomization_file; do
+
+            # Extract the directory containing the kustomization file
+            target_dir=$(dirname "$kustomization_file")
+
+            echo " -> Rendering and validating: $target_dir"
+
+            # Render the directory and pipe it directly to the schema validator
+            kustomize build "$target_dir" | kubeconform -strict -ignore-missing-schemas \
+              -schema-location default \
+              -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+          done
 
   helm-lint:
-    name: helm lint & template validation
+    name: Validate Helm Templates
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout GitOps Repo
+        uses: actions/checkout@v4
+        with:
+          path: gitops-repo
+
+      - name: Checkout Zylos Base Chart
+        uses: actions/checkout@v4
+        with:
+          repository: 'zylos-platform/zylos-helm-charts'
+          path: 'external-charts'
 
       - name: Install kubeconform
         run: |
@@ -63,26 +94,48 @@ jobs:
           helm repo update
 
       - name: Lint Zylos Base Chart
-        run: helm lint ./helm/zylos-service-base
+        run: helm lint ./external-charts/zylos-service-base
 
-      - name: Validate Zylos Microservices
+      - name: Validate Zylos Microservices (Dynamic Loop)
         run: |
-          # Render Gateway and validate against K8s schemas
-          helm template zylos-infra-gateway ./helm/zylos-service-base \
-            --values helm-values/services/zylos-infra-gateway.yaml \
-            | kubeconform -strict -ignore-missing-schemas -schema-location default -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+          echo "==> Dynamically discovering microservices..."
 
-          # Render Hello Service and validate against K8s schemas
-          helm template zylos-service-hello ./helm/zylos-service-base \
-            --values helm-values/services/zylos-service-hello.yaml \
-            | kubeconform -strict -ignore-missing-schemas -schema-location default -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+          # Loop through every directory inside helm-values/services/
+          for service_dir in gitops-repo/helm-values/services/*/; do
+
+            # Strip the trailing slash and extract the actual service name (e.g., zylos-service-catalog)
+            service_dir=${service_dir%/}
+            service_name=$(basename "$service_dir")
+
+            echo "======================================================="
+            echo "🛡️ Validating Service: $service_name"
+            echo "======================================================="
+
+            # Loop through every values file inside that specific service directory
+            for values_file in "$service_dir"/*.yaml; do
+              # Ensure the file actually exists (prevents errors if a folder is empty)
+              if [ -f "$values_file" ]; then
+                env_file_name=$(basename "$values_file")
+                echo "  -> Rendering overlay: $env_file_name"
+
+                # Render the specific values file against the external base chart
+                helm template "$service_name" ./external-charts/zylos-service-base \
+                  --values "$values_file" \
+                  | kubeconform -strict -ignore-missing-schemas \
+                    -schema-location default \
+                    -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+              fi
+            done
+          done
 
       - name: Validate External Overlays
         run: |
           helm template kps prometheus-community/kube-prometheus-stack \
             --version 65.0.0 \
-            --values helm-values/observability/kube-prometheus-stack.yaml \
-            | kubeconform -strict -ignore-missing-schemas -schema-location default -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+            --values gitops-repo/helm-values/observability/kube-prometheus-stack/values.yaml \
+            | kubeconform -strict -ignore-missing-schemas \
+              -schema-location default \
+              -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
 
   conventional-commits:
     name: Conventional Commits

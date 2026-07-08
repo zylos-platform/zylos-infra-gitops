@@ -1,0 +1,13 @@
+# values-dev.yaml
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "128Mi"
+  limits:
+    cpu: "1000m"
+    memory: "512Mi"
+
+# Ensure ztunnel pods are treated as critical infrastructure
+# so they are never evicted if the node runs low on memory.
+priorityClassName: "system-node-critical"

@@ -1,0 +1,63 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-keycloak-core-netpol
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: keycloak
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow external web traffic coming via the NGINX Ingress Controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow internal microservices to perform token verification
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: zylos-services
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # High Availability: Allow Keycloak pods to form an Infinispan cluster
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: keycloak
+      ports:
+        - protocol: TCP
+          port: 7800
+
+    # Istio Ambient Mesh: Allow inbound encrypted mTLS traffic via HBONE
+    - ports:
+        - protocol: TCP
+          port: 15008
+
+  egress:
+    # Allow Keycloak to reach its CloudNativePG database instance
+    - to:
+        - podSelector:
+            matchLabels:
+              cnpg.io/cluster: keycloak-postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # High Availability: Allow Keycloak pods to talk to each other
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: keycloak
+      ports:
+        - protocol: TCP
+          port: 7800

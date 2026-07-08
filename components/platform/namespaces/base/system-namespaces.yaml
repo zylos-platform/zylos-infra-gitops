@@ -1,0 +1,102 @@
+# ---------------------------------------------------------
+# THE MESH & SECURITY (Highly Privileged - DO NOT TOUCH)
+# ---------------------------------------------------------
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kyverno
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-system
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: system
+
+# ---------------------------------------------------------
+# PLATFORM CONTROL PLANE (Operators & Tooling)
+# ---------------------------------------------------------
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sealed-secrets
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: control-plane
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: opa
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
+    istio.io/dataplane-mode: ambient
+    zylos.app/namespace-tier: control-plane
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cnpg-system
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: control-plane
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: percona-system
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: control-plane
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: strimzi-system
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: control-plane
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: keycloak-system
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: control-plane
+
+# ---------------------------------------------------------
+# PLATFORM OBSERVABILITY (Out of Mesh)
+# ---------------------------------------------------------
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: observability

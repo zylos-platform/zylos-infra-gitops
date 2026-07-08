@@ -1,0 +1,68 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-keycloak-operator-netpol
+  namespace: keycloak-system
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: keycloak-operator
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # ALLOW KUBERNETES API INGRESS
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: TCP
+          port: 8443
+
+    # ALLOW METRICS SCRAPING
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 15008 # Istio Ambient Mesh
+
+  egress:
+    # ALLOW KUBE-DNS RESOLUTION
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # ALLOW EGRESS TO KUBERNETES API SERVER
+    - ports:
+        - protocol: TCP
+          port: 443
+
+    # ALLOW EGRESS TO MANAGED KEYCLOAK WORKLOADS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: keycloak
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: keycloak
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
+        - protocol: TCP
+          port: 15008

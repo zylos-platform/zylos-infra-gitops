@@ -1,0 +1,7 @@
+# values.yaml
+
+# Globally define the ambient profile
+profile: ambient
+
+env:
+  RUST_LOG: "info"

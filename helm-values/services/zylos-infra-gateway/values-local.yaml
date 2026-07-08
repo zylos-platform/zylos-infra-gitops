@@ -1,0 +1,36 @@
+# values-local.yaml
+
+# Activate the application-local.properties
+springProfile: local
+environment: local
+
+# Save laptop battery
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 256Mi
+  limits:
+    cpu: 200m
+    memory: 512Mi
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: api.zylos.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+autoscaling:
+  enabled: false
+
+extraEnv:
+  - name: ZYLOS_ISSUER_URI
+    value: "http://keycloak.zylos.local/realms/zylos"
+
+  # kind pod CIDR
+  - name: ZYLOS_TRUSTED_PROXIES
+    value: "10\\..*"

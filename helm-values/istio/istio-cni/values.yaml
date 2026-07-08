@@ -1,0 +1,12 @@
+# values.yaml
+
+# Globally define the ambient profile
+profile: ambient
+
+cni:
+  ambient:
+    # Activate ambient mode at the CNI layer
+    enabled: true
+    # Ensures that if the CNI pod crashes and restarts,
+    # it audits the node and fixes any missing iptables rules for existing pods.
+    reconcileIptablesOnStartup: true

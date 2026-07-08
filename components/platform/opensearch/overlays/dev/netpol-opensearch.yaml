@@ -1,0 +1,61 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-opensearch-netpol
+  namespace: zylos-data-opensearch
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: opensearch
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # ALLOW INTRA-CLUSTER INBOUND (HA & Discovery)
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: opensearch
+      ports:
+        - protocol: TCP
+          port: 9300
+        - protocol: TCP
+          port: 9200
+        - protocol: TCP
+          port: 15008 # Istio Ambient
+
+    # ALLOW BOOTSTRAP JOB INBOUND
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: catalog-read-model-bootstrap
+      ports:
+        - protocol: TCP
+          port: 9200
+        - protocol: TCP
+          port: 15008
+
+    # ALLOW TENANT MICROSERVICES INBOUND
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: zylos-services
+      ports:
+        - protocol: TCP
+          port: 9200
+        - protocol: TCP
+          port: 15008
+
+  egress:
+    # ALLOW INTRA-CLUSTER OUTBOUND (HA Sync)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: opensearch
+      ports:
+        - protocol: TCP
+          port: 9300
+        - protocol: TCP
+          port: 9200
+        - protocol: TCP
+          port: 15008

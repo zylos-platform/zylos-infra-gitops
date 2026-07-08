@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: bootstrap-job-netpol
+  namespace: zylos-data-opensearch
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: catalog-read-model-bootstrap
+  policyTypes:
+    - Egress
+  egress:
+    # ALLOW EGRESS TO OPENSEARCH
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: opensearch
+      ports:
+        - protocol: TCP
+          port: 9200
+        - protocol: TCP
+          port: 15008 # Included in case the Job is ever enrolled in the mesh

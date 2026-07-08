@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-netpol-prometheus
+  namespace: observability
+spec:
+  egress:
+    # Append the specific Dev Node CIDR
+    - to:
+        - ipBlock:
+            cidr: 10.12.0.0/16
+      ports:
+        - protocol: TCP
+          port: 9100
+        - protocol: TCP
+          port: 10250

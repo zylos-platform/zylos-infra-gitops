@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kafka
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: messaging
+    zylos.app/environment: dev
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
+    targetRevision: main
+    path: components/platform/kafka/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zylos-data-kafka
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true
+      - SkipDryRunOnMissingResource=true # Kafka/KafkaNodePool CRDs come from the operator
+    retry:
+      limit: 10
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

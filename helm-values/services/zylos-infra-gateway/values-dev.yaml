@@ -1,0 +1,29 @@
+# values-dev.yaml
+
+springProfile: dev
+environment: dev
+
+# High Availability
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+# Overrides for the cloud environment
+extraEnv:
+  - name: ZYLOS_ISSUER_URI
+    value: "https://auth.zylos.app/realms/zylos"
+
+  - name: ZYLOS_TRUSTED_PROXIES
+    value: "172\\.16\\..*"

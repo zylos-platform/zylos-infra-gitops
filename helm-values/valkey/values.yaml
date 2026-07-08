@@ -1,0 +1,14 @@
+# values.yaml
+
+auth:
+  enabled: true
+  existingSecret: valkey-auth-secret
+  existingSecretPasswordKey: password
+
+commonConfiguration: |-
+  maxmemory-policy allkeys-lru
+
+metrics:
+  enabled: false
+  serviceMonitor:
+    enabled: false

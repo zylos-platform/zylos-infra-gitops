@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: keycloak-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: operator
+    zylos.app/environment: local
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
+    targetRevision: main
+    path: components/platform/keycloak-operator/overlays/local
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: keycloak-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m

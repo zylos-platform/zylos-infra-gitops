@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: schema-registry
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "14"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: messaging
+    zylos.app/environment: dev
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
+    targetRevision: main
+    path: components/platform/schema-registry/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zylos-data-kafka
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true
+    retry:
+      limit: 10
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m
