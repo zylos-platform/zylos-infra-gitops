@@ -48,7 +48,7 @@ hash_password() {
   local pass="$1"
   docker run --rm -i opensearchproject/opensearch:latest \
     /usr/share/opensearch/plugins/opensearch-security/tools/hash.sh -p "$pass" 2>/dev/null \
-    | grep -Eo '\$2[ayb]\$[0-9]{2}\$[./A-Za-z0-9]{53}' | head -n 1
+    | grep -Eo '\$2[ayb]\$[0-9]{2}\$[./A-Za-z0-9]{53}' | head -n 1 || true
 }
 
 echo "==> Generating Bcrypt hashes (this takes a few seconds)..."
