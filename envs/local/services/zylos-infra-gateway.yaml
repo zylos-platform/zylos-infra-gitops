@@ -14,7 +14,7 @@ metadata:
   labels:
     app.kubernetes.io/part-of: zylos-platform
     app.kubernetes.io/component: gateway
-    zylos.app/environment: dev
+    zylos.app/environment: local
 spec:
   project: apps
   sources:
