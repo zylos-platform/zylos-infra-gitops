@@ -30,6 +30,8 @@ seal_secret() {
   local ns="$1" name="$2" pass="$3" filename="$4"
   echo "    -> Sealing $name into namespace '$ns'..."
 
+  mkdir -p "$(dirname "$filename")"
+
   kubectl create secret generic "$name" \
     --namespace "$ns" \
     --from-literal=password="$pass" \
