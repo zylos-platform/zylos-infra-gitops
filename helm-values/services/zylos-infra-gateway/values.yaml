@@ -1,0 +1,33 @@
+# values.yaml
+
+fullnameOverride: "zylos-infra-gateway"
+
+image:
+  repository: ghcr.io/zylos-platform/zylos-infra-gateway
+  tag: "20260608-f775141" # CI replaces with a date-sha tag on each merged push to main
+
+serviceMonitor:
+  enabled: true
+
+networkPolicy:
+  enabled: true
+  ingress:
+    fromIstio: true
+    fromObservability: true
+  egress:
+    toDns: true
+    toIstio: true
+    toSamePlatform: true
+    toKeycloak: true
+    toObservability: true
+    toExternal: false
+
+extraEnv:
+  - name: ZYLOS_GATEWAY_CLIENT_ID
+    value: "zylos-gateway"
+
+  - name: ZYLOS_GATEWAY_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: zylos-gateway-secrets
+        key: gateway-secret

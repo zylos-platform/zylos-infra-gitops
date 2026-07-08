@@ -1,0 +1,32 @@
+# values-dev.yaml
+
+environment: dev
+
+# High Availability
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+# Overrides for the cloud environment
+extraEnv:
+  - name: ZYLOS_ISSUER_URI
+    value: "https://auth.dev.zylos.app/realms/zylos"
+
+  - name: ZYLOS_TOKEN_ENDPOINT
+    value: "https://auth.dev.zylos.app/realms/zylos/protocol/openid-connect/token"
+
+  # Tightened mesh egress range
+  - name: ZYLOS_TRUSTED_PROXIES
+    value: "172\\.16\\..*"
