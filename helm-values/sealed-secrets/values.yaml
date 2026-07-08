@@ -1,10 +1,4 @@
-###############################################################################
-# Sealed Secrets controller Helm values.
-#
-# Critical: fullnameOverride must be `sealed-secrets-controller` so the
-# kubeseal CLI works without --controller-name=... flags. This is a quirk of
-# the chart's default naming vs. the CLI's default lookup.
-###############################################################################
+# values.yaml
 
 fullnameOverride: sealed-secrets-controller
 
