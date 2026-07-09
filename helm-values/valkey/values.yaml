@@ -2,13 +2,17 @@
 
 auth:
   enabled: true
-  existingSecret: valkey-auth-secret
-  existingSecretPasswordKey: password
+  usersExistingSecret: valkey-auth-secret
+  aclUsers:
+    default:
+      permissions: "~* &* +@all" # Grants full admin rights to the default user
+      passwordKey: password
 
-commonConfiguration: |-
+valkeyConfig: |-
   maxmemory-policy allkeys-lru
 
 metrics:
-  enabled: false
+  enabled: true
   serviceMonitor:
-    enabled: false
+    enabled: true
+    namespace: zylos-data-valkey
