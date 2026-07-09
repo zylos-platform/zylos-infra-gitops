@@ -48,7 +48,7 @@ spec:
           env:
             # --- Connection to Keycloak ---
             - name: KEYCLOAK_URL
-              value: "http://keycloak.zylos.local"
+              value: "http://auth.zylos.local"
             - name: KEYCLOAK_USER
               valueFrom:
                 secretKeyRef:
