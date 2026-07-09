@@ -5,7 +5,7 @@ apiVersion: k8s.keycloak.org/v2beta1
 kind: Keycloak
 metadata:
   name: keycloak
-  namespace: platform
+  namespace: keycloak
   labels:
     app.kubernetes.io/part-of: zylos-platform
     app.kubernetes.io/name: keycloak
@@ -47,10 +47,10 @@ spec:
     httpEnabled: true
     httpPort: 8080
 
-  # Hostname configuration. Local kind: keycloak.zylos.local
+  # Hostname configuration. Local kind: auth.zylos.local
   # In prod: keycloak.zylos.app
   hostname:
-    hostname: http://keycloak.zylos.local
+    hostname: http://auth.zylos.local
     strict: true
 
   # Proxy mode: trust X-Forwarded-* headers from NGINX.

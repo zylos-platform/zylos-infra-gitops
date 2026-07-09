@@ -14,7 +14,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: keycloak-realm-config
-  namespace: platform
+  namespace: keycloak
   labels:
     app.kubernetes.io/part-of: zylos-platform
     app.kubernetes.io/component: identity

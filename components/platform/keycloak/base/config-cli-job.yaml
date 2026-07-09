@@ -10,7 +10,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: keycloak-config-cli
-  namespace: platform
+  namespace: keycloak
   labels:
     app.kubernetes.io/part-of: zylos-platform
     app.kubernetes.io/component: identity

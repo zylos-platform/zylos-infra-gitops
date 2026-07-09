@@ -21,7 +21,7 @@ apiVersion: k8s.keycloak.org/v2beta1
 kind: KeycloakRealmImport
 metadata:
   name: zylos-realm
-  namespace: platform
+  namespace: keycloak
   labels:
     app.kubernetes.io/part-of: zylos-platform
 spec:
