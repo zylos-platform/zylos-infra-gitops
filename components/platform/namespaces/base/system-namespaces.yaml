@@ -69,24 +69,6 @@ metadata:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
     zylos.app/namespace-tier: control-plane
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: strimzi-system
-  labels:
-    pod-security.kubernetes.io/enforce: baseline
-    app.kubernetes.io/part-of: zylos-platform
-    zylos.app/namespace-tier: control-plane
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: keycloak-system
-  labels:
-    pod-security.kubernetes.io/enforce: baseline
-    app.kubernetes.io/part-of: zylos-platform
-    zylos.app/namespace-tier: control-plane
 
 # ---------------------------------------------------------
 # PLATFORM OBSERVABILITY (Out of Mesh)

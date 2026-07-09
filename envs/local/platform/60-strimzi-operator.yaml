@@ -21,7 +21,7 @@ spec:
       releaseName: strimzi
   destination:
     server: https://kubernetes.default.svc
-    namespace: strimzi-system
+    namespace: zylos-data-kafka
   syncPolicy:
     automated:
       prune: true
