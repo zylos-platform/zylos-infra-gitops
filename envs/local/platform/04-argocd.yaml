@@ -16,6 +16,7 @@ spec:
       helm:
         valueFiles:
           - $values/helm-values/argocd/values.yaml
+          - $values/helm-values/argocd/values-local.yaml
 
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
