@@ -27,7 +27,7 @@ spec:
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: percona-system
+    namespace: zylos-data-mongodb
   syncPolicy:
     automated:
       prune: true
