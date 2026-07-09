@@ -40,7 +40,7 @@ seal_secret() {
     --dry-run=client -o yaml \
   | kubeseal --format yaml --controller-namespace sealed-secrets \
   | kubectl annotate -f - --local \
-      "argocd.argoproj.io/hook=PreSync" \
+      "argocd.argoproj.io/sync-wave=-40" \
       -o yaml \
   > "$filename"
 }
@@ -66,7 +66,7 @@ seal_secret \
   "zylos-services" \
   "catalog-mongodb-app-user" \
   "$APP_PASS" \
-  "components/services/zylos-service-catalog/overlays/${ENV}/catalog-svc-app-secret.yaml"
+  "components/services/zylos-service-catalog/overlays/${ENV}/catalog-mongodb-app-secret.yaml"
 
 # The CDC password for Debezium
 seal_secret \

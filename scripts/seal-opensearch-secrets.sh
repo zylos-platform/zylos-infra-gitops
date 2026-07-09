@@ -100,7 +100,7 @@ seal_literal() {
     --from-literal=password="$pass" \
     --dry-run=client -o yaml \
   | kubeseal --format yaml --controller-namespace sealed-secrets \
-  | kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml \
+  | kubectl annotate -f - --local "argocd.argoproj.io/sync-wave=-40" -o yaml \
   > "$filename"
 }
 
@@ -115,7 +115,7 @@ seal_file() {
     --from-file="${key}=${filepath}" \
     --dry-run=client -o yaml \
   | kubeseal --format yaml --controller-namespace sealed-secrets \
-  | kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml \
+  | kubectl annotate -f - --local "argocd.argoproj.io/sync-wave=-40" -o yaml \
   > "$filename"
 }
 

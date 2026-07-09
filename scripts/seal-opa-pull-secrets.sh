@@ -34,7 +34,7 @@ SEALED=$(kubectl create secret generic ghcr-opa-token \
   --from-literal=token="${OPA_GHCR_TOKEN:?set OPA_GHCR_TOKEN (read:packages)}" \
   --dry-run=client -o yaml | \
   kubeseal --controller-namespace=sealed-secrets --format=yaml | \
-  kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml)
+  kubectl annotate -f - --local "argocd.argoproj.io/sync-wave=-40" -o yaml)
 
 cat > "${OUT_FILE}" <<HEADER
 ###############################################################################

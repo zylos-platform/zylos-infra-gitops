@@ -60,7 +60,7 @@ DB_SEALED=$(kubectl create secret generic keycloak-db-credentials \
   --from-literal=password="${KEYCLOAK_DB_PASSWORD}" \
   --dry-run=client -o yaml | \
   kubeseal --controller-namespace=sealed-secrets --format=yaml | \
-  kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml)
+  kubectl annotate -f - --local "argocd.argoproj.io/sync-wave=-40" -o yaml)
 
 echo "==> Generating SealedSecret for keycloak-admin-credentials..."
 ADMIN_SEALED=$(kubectl create secret generic keycloak-admin-credentials \
@@ -69,7 +69,7 @@ ADMIN_SEALED=$(kubectl create secret generic keycloak-admin-credentials \
   --from-literal=password="${KEYCLOAK_ADMIN_PASSWORD}" \
   --dry-run=client -o yaml | \
   kubeseal --controller-namespace=sealed-secrets --format=yaml | \
-  kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml)
+  kubectl annotate -f - --local "argocd.argoproj.io/sync-wave=-40" -o yaml)
 
 # Write the combined manifest.
 cat > "${OUT_FILE}" <<HEADER
