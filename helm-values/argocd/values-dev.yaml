@@ -1,0 +1,11 @@
+# values-dev.yaml
+
+global:
+  domain: argocd.dev.zylos.com
+
+server:
+  service:
+    type: ClusterIP
+
+  ingress:
+    enabled: false

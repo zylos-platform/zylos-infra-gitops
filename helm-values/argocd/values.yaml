@@ -1,8 +1,3 @@
-# values.yaml
-
-global:
-  domain: argocd.zylos.local
-
 # CRDs are managed by the chart for simplicity.
 crds:
   install: true
@@ -10,8 +5,7 @@ crds:
 
 configs:
   cm:
-    # Surface Kubernetes events as resource-level health, and ignore dynamic
-    # webhook certificates injected by cert-manager to prevent OutOfSync loops.
+    # Surface Kubernetes events as resource-level health
     resource.exclusions: |
       - apiGroups:
           - "*"
@@ -19,13 +13,14 @@ configs:
           - Event
         clusters:
           - "*"
-      - apiGroups:
-          - admissionregistration.k8s.io
-        kinds:
-          - ValidatingWebhookConfiguration
-          - MutatingWebhookConfiguration
-        clusters:
-          - "*"
+
+    # Safely ignore dynamic certificate injections without deleting the webhooks
+    resource.customizations.ignoreDifferences.admissionregistration.k8s.io_MutatingWebhookConfiguration: |
+      jqPathExpressions:
+        - '.webhooks[].clientConfig.caBundle'
+    resource.customizations.ignoreDifferences.admissionregistration.k8s.io_ValidatingWebhookConfiguration: |
+      jqPathExpressions:
+        - '.webhooks[].clientConfig.caBundle'
 
   params:
     # Server-side apply is the default in v3, but explicit is better than implicit
@@ -38,11 +33,6 @@ configs:
 
 server:
   replicas: 1
-
-  # For local dev clusters (kind), expose via NodePort. In production we
-  # expose via Istio ingress gateway.
-  service:
-    type: ClusterIP
 
   # Allow access via "argocd CLI" without forcing TLS (local dev)
   extraArgs:

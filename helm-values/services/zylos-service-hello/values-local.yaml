@@ -20,6 +20,9 @@ pdb:
 autoscaling:
   enabled: false
 
+serviceMonitor:
+  enabled: false
+
 extraEnv:
   - name: ZYLOS_ISSUER_URI
     value: "http://auth.zylos.local/realms/zylos"

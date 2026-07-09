@@ -1,0 +1,8 @@
+# values-local.yaml
+
+global:
+  domain: argocd.zylos.local
+
+server:
+  service:
+    type: ClusterIP

@@ -1,20 +1,18 @@
 # values-local.yaml
 
-architecture: standalone
-
 dataStorage:
   enabled: false
 
-master:
-  persistence:
-    enabled: false # Caches usually don't need persistence locally
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
-      cpu: 250m
-      memory: 320Mi
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 320Mi
 
-  extraConfiguration: |-
-    maxmemory 256mb
+valkeyConfig: |-
+  maxmemory 256mb
+
+metrics:
+  enabled: false
