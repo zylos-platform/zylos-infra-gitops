@@ -58,7 +58,7 @@ if kubectl get ns ingress-nginx >/dev/null 2>&1; then
 else
   echo ""
   echo "==> [2/5] Installing NGINX Ingress controller..."
-  kubectl apply -f "https://raw.githubusercontent.com/kubernetes/ingress-nginx/${NGINX_INGRESS_VERSION}/deploy/static/provider/kind/deploy.yaml"
+  kubectl apply -f bootstrap/nginx-kind-deploy.yaml
 
   echo ""
   echo "==> Waiting for NGINX controller to be ready (up to 3 min)..."
@@ -94,7 +94,7 @@ rm -f "${COREFILE_TMP}" "${COREFILE_TMP}.new" 2>/dev/null || true
 # Step 4: Argo CD bootstrap (delegates to existing script)
 echo ""
 echo "==> [4/5] Bootstrapping Argo CD and platform components..."
-./scripts/bootstrap.sh
+./scripts/bootstrap.sh local
 
 # Step 5: Show the user how to monitor
 echo ""

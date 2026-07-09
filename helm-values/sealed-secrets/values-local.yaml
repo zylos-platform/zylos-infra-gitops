@@ -1,0 +1,5 @@
+# values-local.yaml
+
+metrics:
+  serviceMonitor:
+    enabled: false
