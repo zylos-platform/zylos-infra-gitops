@@ -24,10 +24,10 @@ networkPolicy:
 
 extraEnv:
   - name: ZYLOS_JWK_SET_URI
-    value: "http://keycloak.zylos.local/realms/zylos/protocol/openid-connect/certs"
+    value: "http://auth.zylos.local/realms/zylos/protocol/openid-connect/certs"
 
   - name: ZYLOS_TOKEN_ENDPOINT
-    value: "http://keycloak.zylos.local/realms/zylos/protocol/openid-connect/token"
+    value: "http://auth.zylos.local/realms/zylos/protocol/openid-connect/token"
 
   - name: ZYLOS_HELLO_SERVICE_URI
     value: "http://zylos-service-hello.zylos-services.svc.cluster.local:8080"

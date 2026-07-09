@@ -22,4 +22,4 @@ autoscaling:
 
 extraEnv:
   - name: ZYLOS_ISSUER_URI
-    value: "http://keycloak.zylos.local/realms/zylos"
+    value: "http://auth.zylos.local/realms/zylos"

@@ -18,7 +18,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: keycloak.zylos.local
+    - host: auth.zylos.local
       http:
         paths:
           - path: /
