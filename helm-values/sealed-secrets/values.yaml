@@ -32,8 +32,8 @@ containerSecurityContext:
       - ALL
   readOnlyRootFilesystem: true
 
-# Metrics: deferred until kube-prometheus-stack syncs (sync wave -12 in this
-# repo). Argo CD self-heal will eventually create the ServiceMonitor once the
+# Metrics: deferred until kube-prometheus-stack syncs.
+# Argo CD self-heal will eventually create the ServiceMonitor once the
 # CRD is available, but we explicitly opt in here for clarity.
 metrics:
   serviceMonitor:
