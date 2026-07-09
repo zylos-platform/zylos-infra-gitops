@@ -32,7 +32,7 @@ spec:
   # Database — points at the CloudNativePG read-write service.
   db:
     vendor: postgres
-    host: keycloak-postgres-rw.platform.svc.cluster.local
+    host: keycloak-postgres-rw.keycloak.svc.cluster.local
     port: 5432
     database: keycloak
     usernameSecret:
