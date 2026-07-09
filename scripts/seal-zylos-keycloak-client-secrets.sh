@@ -63,7 +63,7 @@ SEALED=$(kubectl create secret generic zylos-keycloak-client-secrets \
   --from-literal=gateway-secret="${GATEWAY_SECRET}" \
   --dry-run=client -o yaml | \
   kubeseal --controller-namespace=sealed-secrets --format=yaml | \
-  kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml)
+  kubectl annotate -f - --local "argocd.argoproj.io/sync-wave=-40" -o yaml)
 
 cat > "${OUT_FILE}" <<HEADER
 ###############################################################################
@@ -91,7 +91,7 @@ seal_app_secret() {
     --from-literal="${secret_key}=${pass}" \
     --dry-run=client -o yaml | \
     kubeseal --controller-namespace=sealed-secrets --format=yaml | \
-    kubectl annotate -f - --local "argocd.argoproj.io/hook=PreSync" -o yaml \
+    kubectl annotate -f - --local "argocd.argoproj.io/sync-wave=-40" -o yaml \
     > "$filename"
 }
 

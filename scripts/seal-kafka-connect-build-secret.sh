@@ -42,7 +42,7 @@ kubectl create secret docker-registry kafka-connect-build-secret \
   --dry-run=client -o yaml \
 | kubeseal --format yaml --controller-namespace sealed-secrets \
 | kubectl annotate -f - --local \
-    "argocd.argoproj.io/hook=PreSync" \
+    "argocd.argoproj.io/sync-wave=-40" \
     -o yaml \
 > "$OUT_FILE"
 
