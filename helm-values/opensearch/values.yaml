@@ -21,3 +21,10 @@ config:
   opensearch.yml:
     plugins.security.ssl.http.enabled: true
     plugins.security.allow_default_init_securityindex: true
+
+extraEnvs:
+  - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: opensearch-admin-credentials
+        key: password
