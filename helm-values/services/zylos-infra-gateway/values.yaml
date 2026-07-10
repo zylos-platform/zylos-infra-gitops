@@ -23,22 +23,13 @@ networkPolicy:
     toExternal: false
 
 extraEnv:
-  - name: ZYLOS_JWK_SET_URI
-    value: "http://auth.zylos.local/realms/zylos/protocol/openid-connect/certs"
+  ZYLOS_JWK_SET_URI: "http://auth.zylos.local/realms/zylos/protocol/openid-connect/certs"
+  ZYLOS_TOKEN_ENDPOINT: "http://auth.zylos.local/realms/zylos/protocol/openid-connect/token"
+  ZYLOS_HELLO_SERVICE_URI: "http://zylos-service-hello.zylos-services.svc.cluster.local:8080"
+  ZYLOS_CATALOG_SERVICE_URI: "http://zylos-service-catalog.zylos-services.svc.cluster.local:8080"
+  ZYLOS_GATEWAY_CLIENT_ID: "zylos-gateway"
 
-  - name: ZYLOS_TOKEN_ENDPOINT
-    value: "http://auth.zylos.local/realms/zylos/protocol/openid-connect/token"
-
-  - name: ZYLOS_HELLO_SERVICE_URI
-    value: "http://zylos-service-hello.zylos-services.svc.cluster.local:8080"
-
-  - name: ZYLOS_CATALOG_SERVICE_URI
-    value: "http://zylos-service-catalog.zylos-services.svc.cluster.local:8080"
-
-  - name: ZYLOS_GATEWAY_CLIENT_ID
-    value: "zylos-gateway"
-
-  - name: ZYLOS_GATEWAY_CLIENT_SECRET
+  ZYLOS_GATEWAY_CLIENT_SECRET:
     valueFrom:
       secretKeyRef:
         name: zylos-gateway-secret
