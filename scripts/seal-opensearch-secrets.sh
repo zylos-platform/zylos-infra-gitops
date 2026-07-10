@@ -15,8 +15,8 @@ fi
 # Differentiate local (stable) vs dev (random) credentials
 if [[ "$ENV" == "local" ]]; then
   echo "==> Using stable reproducible credentials for ${ENV} environment..."
-  ADMIN_PASS="admin"
-  APP_PASS="catalog"
+  ADMIN_PASS="LocalAdmin@123!"
+  APP_PASS="LocalCatalog@123!"
 else
   echo "==> Generating strong random credentials for ${ENV} environment..."
   ADMIN_PASS="$(openssl rand -hex 16)"
