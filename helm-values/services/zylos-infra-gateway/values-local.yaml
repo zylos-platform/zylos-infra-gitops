@@ -31,9 +31,7 @@ serviceMonitor:
   enabled: false
 
 extraEnv:
-  - name: ZYLOS_ISSUER_URI
-    value: "http://auth.zylos.local/realms/zylos"
+  ZYLOS_ISSUER_URI: "http://auth.zylos.local/realms/zylos"
 
   # kind pod CIDR
-  - name: ZYLOS_TRUSTED_PROXIES
-    value: "10\\..*"
+  ZYLOS_TRUSTED_PROXIES: "10\\..*"

@@ -24,5 +24,4 @@ serviceMonitor:
   enabled: false
 
 extraEnv:
-  - name: ZYLOS_ISSUER_URI
-    value: "http://auth.zylos.local/realms/zylos"
+  ZYLOS_ISSUER_URI: "http://auth.zylos.local/realms/zylos"

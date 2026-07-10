@@ -22,8 +22,5 @@ autoscaling:
 
 # Overrides for the cloud environment
 extraEnv:
-  - name: ZYLOS_ISSUER_URI
-    value: "https://auth.zylos.app/realms/zylos"
-
-  - name: ZYLOS_TRUSTED_PROXIES
-    value: "172\\.16\\..*"
+  ZYLOS_ISSUER_URI: "https://auth.zylos.app/realms/zylos"
+  ZYLOS_TRUSTED_PROXIES: "172\\.16\\..*"

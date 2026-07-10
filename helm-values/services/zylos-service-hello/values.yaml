@@ -29,14 +29,9 @@ networkPolicy:
     toObservability: true
 
 extraEnv:
-  - name: ZYLOS_JWK_SET_URI
-    value: "http://auth.zylos.local/realms/zylos/protocol/openid-connect/certs"
+  ZYLOS_JWK_SET_URI: "http://auth.zylos.local/realms/zylos/protocol/openid-connect/certs"
 
-  - name: ZYLOS_SECURITY_OPA_ENDPOINT
-    value: "http://opa.opa.svc.cluster.local:8181"
+  ZYLOS_SECURITY_OPA_ENDPOINT: "http://opa.opa.svc.cluster.local:8181"
 
-  - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
-    value: "http://opentelemetry-collector.observability.svc.cluster.local:4318/v1/traces"
-
-  - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
-    value: "http://opentelemetry-collector.observability.svc.cluster.local:4318/v1/metrics"
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://opentelemetry-collector.observability.svc.cluster.local:4318/v1/traces"
+  OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: "http://opentelemetry-collector.observability.svc.cluster.local:4318/v1/metrics"

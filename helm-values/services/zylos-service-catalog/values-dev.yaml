@@ -25,5 +25,4 @@ autoscaling:
   targetMemoryUtilizationPercentage: 80
 
 extraEnv:
-  - name: ZYLOS_ISSUER_URI
-    value: "https://auth.zylos.app/realms/zylos"
+  ZYLOS_ISSUER_URI: "https://auth.zylos.app/realms/zylos"
