@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - connect-cluster.yaml
   - connector-catalog.yaml
+  - kafka-connect-rbac.yaml
