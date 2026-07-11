@@ -23,22 +23,15 @@ spec:
     key.converter: org.apache.kafka.connect.storage.StringConverter
     value.converter: io.confluent.connect.avro.AvroConverter
     value.converter.schema.registry.url: http://schema-registry.zylos-data-kafka.svc.cluster.local:8081
-    config.providers: file
+
+    config.providers: file,secrets
     config.providers.file.class: org.apache.kafka.common.config.provider.FileConfigProvider
+    config.providers.secrets.class: io.strimzi.kafka.KubernetesSecretConfigProvider
 
   template:
     pod:
       imagePullSecrets:
         - name: kafka-connect-build-secret
-      volumes:
-        - name: mongo-creds
-          secret:
-            secretName: catalog-mongodb-debezium
-    connectContainer:
-      volumeMounts:
-        - name: mongo-creds
-          mountPath: /opt/kafka/external-configuration/mongo-creds
-          readOnly: true
 
   resources:
     requests:
