@@ -30,15 +30,12 @@ spec:
     pod:
       imagePullSecrets:
         - name: kafka-connect-build-secret
-      volumes:
-        - name: mongo-creds
-          secret:
-            secretName: catalog-mongodb-debezium
-    connectContainer:
-      volumeMounts:
-        - name: mongo-creds
-          mountPath: /opt/kafka/external-configuration/mongo-creds
-          readOnly: true
+
+  externalConfiguration:
+    volumes:
+      - name: mongo-creds
+        secret:
+          secretName: catalog-mongodb-debezium
 
   resources:
     requests:
