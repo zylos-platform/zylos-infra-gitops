@@ -8,7 +8,7 @@ metadata:
     strimzi.io/kraft: enabled
 spec:
   kafka:
-    # version omitted -> operator's default
+    version: 4.3.0
     listeners:
       - name: plain
         port: 9092
