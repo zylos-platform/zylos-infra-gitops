@@ -7,6 +7,8 @@ metadata:
     strimzi.io/use-connector-resources: "true"
 spec:
   replicas: 1
+
+  image: ghcr.io/zylos-platform/zylos-kafka-connect:0.1.0
   bootstrapServers: zylos-kafka-kafka-bootstrap.zylos-data-kafka.svc.cluster.local:9092
 
   groupId: zylos-kafka-connect
@@ -26,6 +28,8 @@ spec:
 
   template:
     pod:
+      imagePullSecrets:
+        - name: kafka-connect-build-secret
       volumes:
         - name: mongo-creds
           secret:
@@ -46,23 +50,3 @@ spec:
   jvmOptions:
     -Xms: 512m
     -Xmx: 512m
-
-  build:
-    output:
-      type: docker
-      image: ghcr.io/zylos-platform/zylos-kafka-connect:0.1.0
-      pushSecret: kafka-connect-build-secret
-    plugins:
-      - name: debezium-mongodb
-        artifacts:
-          - type: maven
-            group: io.debezium
-            artifact: debezium-connector-mongodb
-            version: 3.1.2.Final
-      - name: avro-converter
-        artifacts:
-          - type: maven
-            repository: https://packages.confluent.io/maven/
-            group: io.confluent
-            artifact: kafka-connect-avro-converter
-            version: 8.2.0
