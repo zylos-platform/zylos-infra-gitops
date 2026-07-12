@@ -16,7 +16,7 @@ spec:
   source:
     repoURL: https://strimzi.io/charts/
     chart: strimzi-kafka-operator
-    targetRevision: 1.0.1
+    targetRevision: 1.1.0
     helm:
       releaseName: strimzi
   destination:

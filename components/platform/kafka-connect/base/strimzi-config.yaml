@@ -1,0 +1,5 @@
+# strimzi-config.yaml
+images:
+  - path: spec/image
+    kind: KafkaConnect
+    group: kafka.strimzi.io

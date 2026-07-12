@@ -8,7 +8,7 @@ metadata:
 spec:
   replicas: 1
 
-  image: ghcr.io/zylos-platform/zylos-kafka-connect:0.1.0
+  image: ghcr.io/zylos-platform/zylos-kafka-connect
   bootstrapServers: zylos-kafka-kafka-bootstrap.zylos-data-kafka.svc.cluster.local:9092
 
   groupId: zylos-kafka-connect
