@@ -37,55 +37,6 @@ if ! command -v kubeseal >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! docker info >/dev/null 2>&1; then
-  echo "ERROR: Docker is not running. Required to generate OpenSearch bcrypt hashes." >&2
-  exit 1
-fi
-
-# Uses the official OpenSearch image to generate the hash, and a strict regex
-# to extract ONLY the bcrypt hash string.
-hash_password() {
-  local pass="$1"
-  docker run --rm -i opensearchproject/opensearch:latest \
-    /usr/share/opensearch/plugins/opensearch-security/tools/hash.sh -p "$pass" 2>/dev/null \
-    | grep -Eo '\$2[ayb]\$[0-9]{2}\$[./A-Za-z0-9]{53}' | head -n 1 || true
-}
-
-echo "==> Generating Bcrypt hashes (this takes a few seconds)..."
-ADMIN_HASH=$(hash_password "$ADMIN_PASS")
-APP_HASH=$(hash_password "$APP_PASS")
-
-if [[ -z "$ADMIN_HASH" || -z "$APP_HASH" ]]; then
-  echo "ERROR: Failed to generate bcrypt hashes." >&2
-  exit 1
-fi
-
-# -----------------------------------------------------------------------------
-# Generate internal_users.yml
-# -----------------------------------------------------------------------------
-INTERNAL_USERS_FILE=$(mktemp)
-trap 'rm -f "$INTERNAL_USERS_FILE"' EXIT
-
-cat <<EOF > "$INTERNAL_USERS_FILE"
-_meta:
-  type: "internalusers"
-  config_version: 2
-
-admin:
-  hash: "${ADMIN_HASH}"
-  reserved: true
-  backend_roles:
-  - "admin"
-  description: "Cluster Admin"
-
-catalog_service:
-  hash: "${APP_HASH}"
-  reserved: false
-  backend_roles:
-  - "kibana_user"
-  description: "Service account for catalog microservice"
-EOF
-
 # -----------------------------------------------------------------------------
 # Sealing Helpers
 # -----------------------------------------------------------------------------
@@ -104,30 +55,7 @@ seal_literal() {
   > "$filename"
 }
 
-seal_file() {
-  local ns="$1" name="$2" key="$3" filepath="$4" filename="$5"
-  echo "    -> Sealing config file '$name' into namespace '$ns'..."
-
-  mkdir -p "$(dirname "$filename")"
-
-  kubectl create secret generic "$name" \
-    --namespace "$ns" \
-    --from-file="${key}=${filepath}" \
-    --dry-run=client -o yaml \
-  | kubeseal --format yaml --controller-namespace sealed-secrets \
-  | kubectl annotate -f - --local "argocd.argoproj.io/sync-wave=-40" -o yaml \
-  > "$filename"
-}
-
 echo "==> Generating OpenSearch secrets for [${ENV^^}] environment..."
-
-# The Hashed Users File (For the OpenSearch Helm Chart core config)
-seal_file \
-  "zylos-data-opensearch" \
-  "opensearch-internal-users" \
-  "internal_users.yml" \
-  "$INTERNAL_USERS_FILE" \
-  "components/platform/opensearch/overlays/${ENV}/opensearch-internal-users-secret.yaml"
 
 # The Raw Admin Password (For the Argo CD Bootstrap Job)
 seal_literal \
@@ -135,6 +63,12 @@ seal_literal \
   "opensearch-admin-credentials" \
   "$ADMIN_PASS" \
   "components/platform/opensearch/overlays/${ENV}/opensearch-admin-secret.yaml"
+
+seal_literal \
+  "zylos-data-opensearch" \
+  "catalog-opensearch-app-user" \
+  "$APP_PASS" \
+  "components/platform/opensearch/overlays/${ENV}/catalog-opensearch-app-secret.yaml"
 
 # The Raw App Password (For the Catalog Service to authenticate)
 seal_literal \

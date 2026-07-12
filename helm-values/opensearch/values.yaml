@@ -3,12 +3,10 @@
 clusterName: opensearch
 masterService: opensearch
 
-# Enforce secure HTTPS routing globally
-protocol: https
+protocol: http
 
 securityConfig:
   enabled: true
-  internalUsersSecret: opensearch-internal-users
   path: /usr/share/opensearch/config/opensearch-security
 
 # Keep the privileged init container off so the namespace remains 'baseline'.

@@ -3,4 +3,4 @@ kind: Kustomization
 resources:
   - ../../base
   - opensearch-admin-secret.yaml
-  - opensearch-internal-users-secret.yaml
+  - catalog-opensearch-app-secret.yaml
