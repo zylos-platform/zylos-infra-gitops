@@ -4,6 +4,10 @@ resources:
 - connect-cluster.yaml
 - connector-catalog.yaml
 - kafka-connect-rbac.yaml
+
+configurations:
+  - strimzi-config.yaml
+
 images:
 - name: ghcr.io/zylos-platform/zylos-kafka-connect
   newName: ghcr.io/zylos-platform/zylos-kafka-connect
