@@ -142,9 +142,28 @@ data:
         firstName: Bob
         lastName: Seller
         email: bob@zylos.example
+        attributes:
+          seller_id: ["3f2b1c8a-5d4e-4f6a-9b0c-1d2e3f4a5b6c"]
         credentials:
           - type: password
             value: "BobDevPw_2026!"
+            temporary: false
+        realmRoles:
+          - seller
+        requiredActions: []
+        groups: []
+
+      - username: dave
+        enabled: true
+        emailVerified: true
+        firstName: Dave
+        lastName: Seller
+        email: dave@zylos.example
+        attributes:
+          seller_id: ["7a9c4e2f-8b1d-4c3a-a5e6-2f7b8c9d0e1f"]
+        credentials:
+          - type: password
+            value: "DaveDevPw_2026!"
             temporary: false
         realmRoles:
           - seller
@@ -185,9 +204,26 @@ data:
               access.token.claim: "true"
               id.token.claim: "false"
               userinfo.token.claim: "false"
-      # Per-target audience scope: adds aud=zylos-internal-hello. OPTIONAL —
-      # acquired only when the caller requests &scope=hello-aud during exchange,
-      # so a caller's base token never carries an internal audience.
+
+      - name: seller-identity
+        description: "Emits the seller_id claim from the user's seller_id attribute"
+        protocol: openid-connect
+        attributes:
+          include.in.token.scope: "false"
+          display.on.consent.screen: "false"
+        protocolMappers:
+          - name: seller-id
+            protocol: openid-connect
+            protocolMapper: oidc-usermodel-attribute-mapper
+            consentRequired: false
+            config:
+              user.attribute: "seller_id"
+              claim.name: "seller_id"
+              jsonType.label: "String"
+              access.token.claim: "true"
+              id.token.claim: "false"
+              userinfo.token.claim: "false"
+
       - name: hello-aud
         description: "Adds aud=zylos-internal-hello (requested per-route on exchange)"
         protocol: openid-connect
@@ -201,6 +237,21 @@ data:
             consentRequired: false
             config:
               included.client.audience: zylos-internal-hello
+              access.token.claim: "true"
+              id.token.claim: "false"
+      - name: catalog-aud
+        description: "Adds aud=zylos-internal-catalog (requested per-route on exchange)"
+        protocol: openid-connect
+        attributes:
+          include.in.token.scope: "false"
+          display.on.consent.screen: "false"
+        protocolMappers:
+          - name: catalog-audience
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              included.client.audience: zylos-internal-catalog
               access.token.claim: "true"
               id.token.claim: "false"
       - name: gateway-aud
@@ -330,8 +381,8 @@ data:
           standard.token.exchange.enabled: "true"
           access.token.signed.response.alg: "RS256"
           access.token.lifespan: "120" # 2-min exchanged tokens (architecture §6)
-        defaultClientScopes: ["acr", "roles", "zylos-actor"]
-        optionalClientScopes: ["hello-aud"]
+        defaultClientScopes: ["acr", "roles", "zylos-actor", "seller-identity"]
+        optionalClientScopes: ["hello-aud", "catalog-aud"]
 
       # ----- Admin Console (Auth Code + PKCE) -----
       - clientId: zylos-web-admin
@@ -365,3 +416,34 @@ data:
           id.token.signed.response.alg: "RS256"
         defaultClientScopes: ["web-origins", "acr", "profile", "roles", "email"]
         optionalClientScopes: ["address", "phone", "offline_access", "microprofile-jwt"]
+    ###########################################################################
+    # User profile — declarative attributes
+    ###########################################################################
+    userProfile:
+      attributes:
+        - name: username
+          permissions:
+            view: ["admin", "user"]
+            edit: ["admin", "user"]
+        - name: email
+          permissions:
+            view: ["admin", "user"]
+            edit: ["admin", "user"]
+        - name: firstName
+          permissions:
+            view: ["admin", "user"]
+            edit: ["admin", "user"]
+        - name: lastName
+          permissions:
+            view: ["admin", "user"]
+            edit: ["admin", "user"]
+        - name: seller_id
+          displayName: "Seller ID"
+          multivalued: false
+          permissions:
+            view: ["admin"]
+            edit: ["admin"]
+          validations:
+            length:
+              min: 36
+              max: 36
