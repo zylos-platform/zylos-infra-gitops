@@ -46,7 +46,7 @@ data:
     #!/bin/sh
     set -eu
 
-    OS="${OPENSEARCH_URL:-https://opensearch.zylos-data-opensearch.svc.cluster.local:9200}"
+    OS="${OPENSEARCH_URL:-http://opensearch.zylos-data-opensearch.svc.cluster.local:9200}"
     TEMPLATE="catalog-products"
     INDEX="catalog-products-v1"
 
@@ -59,6 +59,15 @@ data:
     until os_curl "$OS/_cluster/health?wait_for_status=yellow&timeout=5s" >/dev/null 2>&1; do
       echo "  not ready, retrying"; sleep 3
     done
+
+    echo "Provisioning catalog_service application user..."
+    os_curl -X PUT "$OS/_plugins/_security/api/internalusers/catalog_service" \
+      -H 'Content-Type: application/json' \
+      -d '{
+        "password": "'"${CATALOG_APP_PASSWORD}"'",
+        "backend_roles": ["kibana_user"]
+      }'
+    echo
 
     echo "Upserting composable index template: $TEMPLATE"
     os_curl -X PUT "$OS/_index_template/$TEMPLATE" \

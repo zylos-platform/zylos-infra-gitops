@@ -26,11 +26,16 @@ spec:
           command: ["/bin/sh", "/bootstrap/bootstrap.sh"]
           env:
             - name: OPENSEARCH_URL
-              value: "https://opensearch.zylos-data-opensearch.svc.cluster.local:9200"
+              value: "http://opensearch.zylos-data-opensearch.svc.cluster.local:9200"
             - name: ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: opensearch-admin-credentials
+                  key: password
+            - name: CATALOG_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-opensearch-app-user
                   key: password
           volumeMounts:
             - name: bootstrap-volume
