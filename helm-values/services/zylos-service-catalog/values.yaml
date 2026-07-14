@@ -18,6 +18,19 @@ networkPolicy:
     fromIstio: true
     fromObservability: true
     fromIngressNginx: false
+    extra:
+      # Allow traffic from the reconciliation cron job.
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: zylos-services
+            podSelector:
+              matchLabels:
+                app.kubernetes.io/name: zylos-service-catalog
+                app.kubernetes.io/component: reconciliation
+        ports:
+          - protocol: TCP
+            port: 9000
   egress:
     toDns: true
     toIstio: true

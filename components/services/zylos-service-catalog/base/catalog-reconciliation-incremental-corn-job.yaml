@@ -1,0 +1,104 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: catalog-reconciliation-incremental
+  namespace: zylos-services
+  labels:
+    app.kubernetes.io/name: zylos-service-catalog
+    app.kubernetes.io/component: reconciliation
+spec:
+  schedule: "0 3 * * 1-6"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 300
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600 # 1-hour failsafe
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: zylos-service-catalog
+            app.kubernetes.io/component: reconciliation
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: reconcile
+              image: ghcr.io/zylos-platform/zylos-toolbox
+              env:
+                - name: MODE
+                  value: "INCREMENTAL"
+                - name: WINDOW_HOURS
+                  value: "48"
+                - name: PAGE_LIMIT
+                  value: "500"
+                - name: ENDPOINT
+                  value: "http://zylos-service-catalog.zylos-services.svc.cluster.local:9000/actuator/reconciliation"
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+
+                  CURSOR=""
+                  PAGES=0
+                  MAX_PAGES=500
+                  TOTAL_SCANNED=0
+                  TOTAL_REPAIRED=0
+
+                  while [ "$PAGES" -lt "$MAX_PAGES" ]; do
+                    BODY=$(jq -nc \
+                      --arg mode "$MODE" \
+                      --arg cursor "$CURSOR" \
+                      --argjson limit "$PAGE_LIMIT" \
+                      --argjson windowHours "$WINDOW_HOURS" \
+                      '{mode: $mode, limit: $limit, windowHours: $windowHours}
+                       + (if $cursor == "" then {} else {cursor: $cursor} end)')
+
+                    RESP=$(curl -sS --fail-with-body \
+                      --retry 4 --retry-delay 3 --retry-connrefused \
+                      --connect-timeout 10 --max-time 120 \
+                      -X POST "$ENDPOINT" \
+                      -H 'Content-Type: application/json' \
+                      -d "$BODY")
+
+                    echo "$RESP" | jq -c '{scanned, drifted, repaired, aborted}'
+
+                    if [ "$(echo "$RESP" | jq -r '.aborted')" = "true" ]; then
+                      echo "MASS DRIFT DETECTED — aborting without repair." >&2
+                      echo "This is systemic (index recreated? CDC down?), not incidental drift." >&2
+                      exit 1
+                    fi
+
+                    TOTAL_SCANNED=$((TOTAL_SCANNED + $(echo "$RESP" | jq -r '.scanned // 0')))
+                    TOTAL_REPAIRED=$((TOTAL_REPAIRED + $(echo "$RESP" | jq -r '.repaired // 0')))
+
+                    CURSOR=$(echo "$RESP" | jq -r '.nextCursor // ""')
+                    if [ -z "$CURSOR" ] || [ "$CURSOR" = "null" ]; then
+                      echo "Reconciliation complete: scanned=${TOTAL_SCANNED} repaired=${TOTAL_REPAIRED}"
+                      exit 0
+                    fi
+
+                    PAGES=$((PAGES + 1))
+                  done
+
+                  echo "Hit page cap (${MAX_PAGES}); scan incomplete — raise MAX_PAGES or PAGE_LIMIT." >&2
+                  exit 1
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "64Mi"
+                limits:
+                  cpu: "200m"
+                  memory: "128Mi"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]

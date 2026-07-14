@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-catalog-reconciliation-corn-job-egress-netpol
+  namespace: zylos-services
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: zylos-service-catalog
+      app.kubernetes.io/component: reconciliation
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        # Allow traffic TO the catalog backend pods
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: zylos-service-catalog
+              app.kubernetes.io/instance: zylos-service-catalog
+      ports:
+        - protocol: TCP
+          port: 9000
