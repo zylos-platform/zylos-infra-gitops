@@ -6,9 +6,9 @@ resources:
 - kafka-connect-rbac.yaml
 
 configurations:
-  - strimzi-config.yaml
+- strimzi-config.yaml
 
 images:
 - name: ghcr.io/zylos-platform/zylos-kafka-connect
   newName: ghcr.io/zylos-platform/zylos-kafka-connect
-  newTag: 495c0ff2b91f114043d15b78810b8500d5f58ffc
+  newTag: 349e30a977ff919aec9434f070974b3e5cc41b6f
