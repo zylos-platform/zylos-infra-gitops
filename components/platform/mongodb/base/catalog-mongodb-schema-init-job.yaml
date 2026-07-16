@@ -17,9 +17,9 @@ data:
       { expireAfterSeconds: 604800, name: "outbox_ttl_occurredAt", background: true }
     );
 
-    print("Creating products TTL index...");
+    print("Creating products index...");
     catalogDb.products.createIndex(
-      { updatedAt: 1 }, { name: "product_updatedAt" }
+      { updatedAt: 1, _id: 1 }, { name: "idx_updatedAt_id" }
     );
 
     print("Creating idempotency TTL index...");
