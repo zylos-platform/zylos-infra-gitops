@@ -46,21 +46,18 @@ spec:
                 - |
                   set -eu
 
-                  CURSOR=""
+                  BODY=$(jq -nc \
+                      --arg mode "$MODE" \
+                      --argjson limit "$PAGE_LIMIT" \
+                      --argjson windowHours "$WINDOW_HOURS" \
+                      '{mode: $mode, limit: $limit, windowHours: $windowHours}')
+
                   PAGES=0
-                  MAX_PAGES=500
+                  MAX_PAGES=2000
                   TOTAL_SCANNED=0
                   TOTAL_REPAIRED=0
 
                   while [ "$PAGES" -lt "$MAX_PAGES" ]; do
-                    BODY=$(jq -nc \
-                      --arg mode "$MODE" \
-                      --arg cursor "$CURSOR" \
-                      --argjson limit "$PAGE_LIMIT" \
-                      --argjson windowHours "$WINDOW_HOURS" \
-                      '{mode: $mode, limit: $limit, windowHours: $windowHours}
-                       + (if $cursor == "" then {} else {cursor: $cursor} end)')
-
                     RESP=$(curl -sS --fail-with-body \
                       --retry 4 --retry-delay 3 --retry-connrefused \
                       --connect-timeout 10 --max-time 120 \
@@ -68,7 +65,7 @@ spec:
                       -H 'Content-Type: application/json' \
                       -d "$BODY")
 
-                    echo "$RESP" | jq -c '{scanned, drifted, repaired, aborted}'
+                    echo "$RESP" | jq -c '{scanned, drifted, repaired, aborted, hasMore}'
 
                     if [ "$(echo "$RESP" | jq -r '.aborted')" = "true" ]; then
                       echo "MASS DRIFT DETECTED — aborting without repair." >&2
@@ -79,8 +76,7 @@ spec:
                     TOTAL_SCANNED=$((TOTAL_SCANNED + $(echo "$RESP" | jq -r '.scanned // 0')))
                     TOTAL_REPAIRED=$((TOTAL_REPAIRED + $(echo "$RESP" | jq -r '.repaired // 0')))
 
-                    CURSOR=$(echo "$RESP" | jq -r '.nextCursor // ""')
-                    if [ -z "$CURSOR" ] || [ "$CURSOR" = "null" ]; then
+                    if [ "$(echo "$RESP" | jq -r '.hasMore')" = "false" ]; then
                       echo "Reconciliation complete: scanned=${TOTAL_SCANNED} repaired=${TOTAL_REPAIRED}"
                       exit 0
                     fi
@@ -88,7 +84,7 @@ spec:
                     PAGES=$((PAGES + 1))
                   done
 
-                  echo "Hit page cap (${MAX_PAGES}); scan incomplete — raise MAX_PAGES or PAGE_LIMIT." >&2
+                  echo "Hit page cap (${MAX_PAGES})." >&2
                   exit 1
               resources:
                 requests:
