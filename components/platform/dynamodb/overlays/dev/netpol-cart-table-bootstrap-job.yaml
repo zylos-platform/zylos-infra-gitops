@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-cart-bootstrap-egress
+  namespace: zylos-data-dynamodb
+  labels:
+    app.kubernetes.io/part-of: zylos-platform
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: cart-table-bootstrap
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: zylos-data-dynamodb
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: dynamodb-local
+      ports:
+        - protocol: TCP
+          port: 8000

@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cart-table-bootstrap-config
+  namespace: zylos-data-dynamodb
+  labels:
+    app.kubernetes.io/component: cart-table-bootstrap
+    app.kubernetes.io/part-of: zylos-platform
+data:
+  zylos-cart-table.json: |
+    {
+      "TableName": "zylos-cart",
+      "BillingMode": "PAY_PER_REQUEST",
+      "AttributeDefinitions": [
+        { "AttributeName": "PK",     "AttributeType": "S" },
+        { "AttributeName": "SK",     "AttributeType": "S" },
+        { "AttributeName": "GSI1PK", "AttributeType": "S" },
+        { "AttributeName": "GSI1SK", "AttributeType": "S" },
+        { "AttributeName": "GSI2PK", "AttributeType": "S" },
+        { "AttributeName": "GSI2SK", "AttributeType": "S" }
+      ],
+      "KeySchema": [
+        { "AttributeName": "PK", "KeyType": "HASH" },
+        { "AttributeName": "SK", "KeyType": "RANGE" }
+      ],
+      "GlobalSecondaryIndexes": [
+        {
+          "IndexName": "GSI1-owner",
+          "KeySchema": [
+            { "AttributeName": "GSI1PK", "KeyType": "HASH" },
+            { "AttributeName": "GSI1SK", "KeyType": "RANGE" }
+          ],
+          "Projection": { "ProjectionType": "KEYS_ONLY" }
+        },
+        {
+          "IndexName": "GSI2-expiry",
+          "KeySchema": [
+            { "AttributeName": "GSI2PK", "KeyType": "HASH" },
+            { "AttributeName": "GSI2SK", "KeyType": "RANGE" }
+          ],
+          "Projection": { "ProjectionType": "KEYS_ONLY" }
+        }
+      ]
+    }
+  bootstrap.sh: |
+    #!/bin/sh
+    set -eu
+    ENDPOINT="http://dynamodb-local.zylos-data-dynamodb.svc.cluster.local:8000"
+    TABLE="zylos-cart"
+
+    echo "Waiting for DynamoDB Local at ${ENDPOINT} ..."
+    until aws dynamodb list-tables --endpoint-url "${ENDPOINT}" >/dev/null 2>&1; do
+      echo "  ...not ready yet"; sleep 2
+    done
+
+    if aws dynamodb describe-table --table-name "${TABLE}" --endpoint-url "${ENDPOINT}" >/dev/null 2>&1; then
+      echo "Table ${TABLE} already exists — skipping create."
+    else
+      echo "Creating table ${TABLE} ..."
+      aws dynamodb create-table --endpoint-url "${ENDPOINT}" \
+        --cli-input-json file:///bootstrap/zylos-cart-table.json
+      aws dynamodb wait table-exists --table-name "${TABLE}" --endpoint-url "${ENDPOINT}"
+    fi
+
+    # TTL is a backstop only (the reaper does authoritative expiry via the outbox).
+    STATUS="$(aws dynamodb describe-time-to-live --table-name "${TABLE}" \
+      --endpoint-url "${ENDPOINT}" \
+      --query 'TimeToLiveDescription.TimeToLiveStatus' --output text 2>/dev/null || echo UNKNOWN)"
+    if [ "${STATUS}" != "ENABLED" ] && [ "${STATUS}" != "ENABLING" ]; then
+      echo "Enabling TTL on attribute 'expiresAt' ..."
+      aws dynamodb update-time-to-live --table-name "${TABLE}" --endpoint-url "${ENDPOINT}" \
+        --time-to-live-specification "Enabled=true,AttributeName=expiresAt"
+    else
+      echo "TTL already ${STATUS}."
+    fi
+
+    echo "Cart table bootstrap complete."
