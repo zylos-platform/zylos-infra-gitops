@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-dynamodb-allow-clients-and-bootstrap
+  namespace: zylos-data-dynamodb
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dynamodb-local
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # ZYLOS MICROSERVICES
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: zylos-services
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: zylos-service-cart
+      ports:
+        - protocol: TCP
+          port: 15008 # Istio Ambient HBONE tunnel
+        - protocol: TCP
+          port: 8000 # raw fallback
+    # TABLE BOOTSTRAP JOB (same namespace)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: zylos-data-dynamodb
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: cart-table-bootstrap
+      ports:
+        - protocol: TCP
+          port: 15008
+        - protocol: TCP
+          port: 8000
+  egress:
+    # Istio Ambient return path
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 15008
