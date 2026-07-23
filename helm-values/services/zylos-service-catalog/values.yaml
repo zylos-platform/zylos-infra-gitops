@@ -4,7 +4,7 @@ fullnameOverride: "zylos-service-catalog"
 
 image:
   repository: ghcr.io/zylos-platform/zylos-service-catalog
-  tag: "20260722-193278a" # CI bumps
+  tag: "20260723-28ea54d" # CI bumps
 
 ingress:
   enabled: false
