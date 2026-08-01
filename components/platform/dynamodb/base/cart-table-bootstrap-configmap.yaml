@@ -25,7 +25,7 @@ data:
       ],
       "GlobalSecondaryIndexes": [
         {
-          "IndexName": "GSI1-owner",
+          "IndexName": "GSI1-expiry",
           "KeySchema": [
             { "AttributeName": "GSI1PK", "KeyType": "HASH" },
             { "AttributeName": "GSI1SK", "KeyType": "RANGE" }
@@ -33,12 +33,12 @@ data:
           "Projection": { "ProjectionType": "KEYS_ONLY" }
         },
         {
-          "IndexName": "GSI2-expiry",
+          "IndexName": "GSI2-outbox-pending",
           "KeySchema": [
             { "AttributeName": "GSI2PK", "KeyType": "HASH" },
             { "AttributeName": "GSI2SK", "KeyType": "RANGE" }
           ],
-          "Projection": { "ProjectionType": "KEYS_ONLY" }
+          "Projection": { "ProjectionType": "ALL" }
         }
       ]
     }

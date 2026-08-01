@@ -36,32 +36,22 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: zylos-data-valkey
-  labels:
-    pod-security.kubernetes.io/enforce: baseline
-    app.kubernetes.io/part-of: zylos-platform
-    istio.io/dataplane-mode: ambient
-    zylos.app/namespace-tier: data
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: zylos-data-kafka
-  labels:
-    pod-security.kubernetes.io/enforce: baseline
-    app.kubernetes.io/part-of: zylos-platform
-    istio.io/dataplane-mode: ambient
-    zylos.app/namespace-tier: data
----
-apiVersion: v1
-kind: Namespace
-metadata:
   name: zylos-data-dynamodb
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
+    zylos.app/namespace-tier: data
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zylos-infra-kafka
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
     istio.io/dataplane-mode: ambient
     zylos.app/namespace-tier: data
+
 # ---------------------------------------------------------
 # APPLICATION TIER (Stateless Microservices & Identity)
 # ---------------------------------------------------------
@@ -70,7 +60,7 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: keycloak
+  name: zylos-identity
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
@@ -80,7 +70,27 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: zylos-services
+  name: zylos-infra-gateway
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    app.kubernetes.io/part-of: zylos-platform
+    istio.io/dataplane-mode: ambient
+    zylos.app/namespace-tier: tenant
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zylos-catalog
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    app.kubernetes.io/part-of: zylos-platform
+    istio.io/dataplane-mode: ambient
+    zylos.app/namespace-tier: tenant
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zylos-cart
   labels:
     pod-security.kubernetes.io/enforce: restricted
     app.kubernetes.io/part-of: zylos-platform
