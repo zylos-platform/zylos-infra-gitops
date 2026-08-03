@@ -14,9 +14,9 @@ metadata:
 spec:
   project: platform
   sources:
-    - repoURL: https://grafana.github.io/helm-charts
+    - repoURL: https://grafana-community.github.io/helm-charts
       chart: tempo
-      targetRevision: 1.18.0
+      targetRevision: 2.2.0
       helm:
         releaseName: tempo
         valueFiles:

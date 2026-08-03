@@ -32,12 +32,6 @@ prometheus:
     retention: 7d # Local dev — prod uses 30d
     retentionSize: 4GB
 
-    # Discover ServiceMonitors and PodMonitors in ALL namespaces, not just our own
-    serviceMonitorSelectorNilUsesHelmValues: false
-    podMonitorSelectorNilUsesHelmValues: false
-    ruleSelectorNilUsesHelmValues: false
-    probeSelectorNilUsesHelmValues: false
-
     # Enable remote write — OTel Collector pushes here too
     enableRemoteWriteReceiver: true
 
@@ -93,7 +87,7 @@ grafana:
     - name: Tempo
       type: tempo
       access: proxy
-      url: http://tempo.observability.svc.cluster.local:3100
+      url: http://tempo.observability.svc.cluster.local:3200
       jsonData:
         httpMethod: GET
         serviceMap:
