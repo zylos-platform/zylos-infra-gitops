@@ -11,14 +11,24 @@ spec:
     - Ingress
     - Egress
   ingress:
-    # UI / remote-write / kubelet / Grafana queries
-    - ports:
+    # UI / remote-write / Grafana queries
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+      ports:
         - protocol: TCP
           port: 9090
   egress:
-    # Scrape pod targets cluster-wide
+    # Intra-namespace scraping
     - to:
-        - namespaceSelector: {}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+    # Kubelet Scraping
+    - ports:
+        - protocol: TCP
+          port: 10250
     # Kube-API Server
     - ports:
         - protocol: TCP

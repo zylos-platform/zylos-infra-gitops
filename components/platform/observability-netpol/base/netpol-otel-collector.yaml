@@ -11,9 +11,9 @@ spec:
     - Ingress
     - Egress
   ingress:
-    # OTLP from workloads + istiod
+    # Accept telemetry from ALL namespaces
     - from:
-        - namespaceSelector: {}
+        - namespaceSelector: { }
       ports:
         - protocol: TCP
           port: 4317
@@ -24,6 +24,31 @@ spec:
         - protocol: TCP
           port: 13133
   egress:
+    # Push Metrics to Prometheus
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+    # Push Traces to Tempo
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: tempo
+      ports:
+        - protocol: TCP
+          port: 4318
+    # Push Logs to Loki
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: loki
+              app.kubernetes.io/component: gateway
+      ports:
+        - protocol: TCP
+          port: 8080
     # DNS Resolution
     - to:
         - namespaceSelector:
@@ -37,19 +62,3 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
-    # Send traces to Tempo (OTLP gRPC)
-    - to:
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/name: tempo
-      ports:
-        - protocol: TCP
-          port: 4317
-    # Send logs to Loki (HTTP)
-    - to:
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/name: loki
-      ports:
-        - protocol: TCP
-          port: 3100

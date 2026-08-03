@@ -19,11 +19,16 @@ spec:
       ports:
         - protocol: TCP
           port: 4317
+        - protocol: TCP
+          port: 4318
     # Allow Grafana to Query Traces
     - from:
         - podSelector:
             matchLabels:
               app.kubernetes.io/name: grafana
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
       ports:
         - protocol: TCP
           port: 3200
