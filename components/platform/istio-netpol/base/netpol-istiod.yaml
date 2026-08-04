@@ -32,14 +32,15 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: observability
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: opentelemetry-collector
       ports:
         - protocol: TCP
           port: 15014
   egress:
     # Communication with Kube-API
-    - to:
-        - podSelector: {}
-      ports:
+    - ports:
         - protocol: TCP
           port: 443
         - protocol: TCP
@@ -49,6 +50,9 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: observability
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: opentelemetry-collector
       ports:
         - protocol: TCP
           port: 4317
