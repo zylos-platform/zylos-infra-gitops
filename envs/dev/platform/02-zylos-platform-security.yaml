@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kyverno-policies
+  name: zylos-platform-security
   namespace: argocd
   annotations:
-    argocd.signalfx.com/sync-wave: "-105"
+    argocd.argoproj.io/sync-wave: "-90"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
@@ -15,10 +15,10 @@ spec:
   source:
     repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
     targetRevision: main
-    path: components/platform/kyverno-policies/base
+    path: components/platform/platform-security
   destination:
     server: https://kubernetes.default.svc
-    namespace: kyverno
+    namespace: default
   syncPolicy:
     automated:
       prune: true
