@@ -13,7 +13,7 @@ spec:
   ingress:
     # Accept telemetry from ALL namespaces
     - from:
-        - namespaceSelector: { }
+        - namespaceSelector: {}
       ports:
         - protocol: TCP
           port: 4317

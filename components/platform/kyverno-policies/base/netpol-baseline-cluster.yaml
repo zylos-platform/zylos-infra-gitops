@@ -1,9 +1,11 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: zylos-netpol-baseline
+  name: zylos-netpol-baseline-cluster
+  namespace: kyverno
 spec:
   rules:
+    # Default Deny All Traffic
     - name: default-deny
       match:
         any:
@@ -30,6 +32,7 @@ spec:
               - Ingress
               - Egress
 
+    # DNS Resolution
     - name: allow-dns
       match:
         any:
@@ -68,6 +71,76 @@ spec:
                   - protocol: TCP
                     port: 53
 
+    # Istio Ambient Mesh
+    - name: allow-istio-hbone
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchExpressions:
+                  - key: zylos.app/namespace-tier
+                    operator: In
+                    values:
+                      - data
+                      - tenant
+      generate:
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        name: zylos-allow-istio-hbone
+        namespace: "{{request.object.metadata.name}}"
+        synchronize: true
+        data:
+          spec:
+            podSelector: {}
+            policyTypes:
+              - Ingress
+            ingress:
+              - ports:
+                  - protocol: TCP
+                    port: 15008
+
+    # OTel Telemetry Push
+    - name: allow-observability-push
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchExpressions:
+                  - key: zylos.app/namespace-tier
+                    operator: In
+                    values:
+                      - data
+                      - tenant
+      generate:
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        name: zylos-allow-observability-push
+        namespace: "{{request.object.metadata.name}}"
+        synchronize: true
+        data:
+          spec:
+            podSelector: {}
+            policyTypes:
+              - Egress
+            egress:
+              - to:
+                  - namespaceSelector:
+                      matchLabels:
+                        kubernetes.io/metadata.name: observability
+                    podSelector:
+                      matchLabels:
+                        app.kubernetes.io/name: opentelemetry-collector
+                ports:
+                  - protocol: TCP
+                    port: 4317 # OTLP gRPC
+                  - protocol: TCP
+                    port: 4318 # OTLP HTTP
+
+    # Kubelet Node Probes
     - name: allow-node-probes
       match:
         any:
@@ -98,37 +171,3 @@ spec:
                     port: 8080
                   - protocol: TCP
                     port: 8443
-
-    - name: allow-intra-namespace
-      match:
-        any:
-          - resources:
-              kinds:
-                - Namespace
-              selector:
-                matchLabels:
-                  zylos.app/trust-zone: "true"
-                matchExpressions:
-                  - key: zylos.app/namespace-tier
-                    operator: In
-                    values:
-                      - data
-                      - tenant
-      generate:
-        apiVersion: networking.k8s.io/v1
-        kind: NetworkPolicy
-        name: zylos-allow-intra-namespace
-        namespace: "{{request.object.metadata.name}}"
-        synchronize: true
-        data:
-          spec:
-            podSelector: {}
-            policyTypes:
-              - Ingress
-              - Egress
-            ingress:
-              - from:
-                  - podSelector: {}
-            egress:
-              - to:
-                  - podSelector: {}
