@@ -5,8 +5,8 @@ metadata:
   namespace: opa
   labels:
     app.kubernetes.io/name: opa
-    app.kubernetes.io/part-of: zylos-platform
-    app.kubernetes.io/component: authorization
+    app.kubernetes.io/component: policy-engine
+    app.kubernetes.io/part-of: zylos-core-infrastructure
 data:
   config.yaml: |
     services:
@@ -34,3 +34,14 @@ data:
     # Dev-grade: console decision logs. Routed to OTLP/Loki in observability hardening.
     decision_logs:
       console: true
+
+    metrics_export:
+      type: otlp/http
+      address: opentelemetry-collector.observability.svc.cluster.local:4318
+      export_interval_ms: 10000
+      service_name: opa
+
+    distributed_tracing:
+      type: grpc
+      address: opentelemetry-collector.observability.svc.cluster.local:4317
+      service_name: opa

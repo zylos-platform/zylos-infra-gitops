@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: opa
+  name: opa-service
   namespace: opa
   labels:
     app.kubernetes.io/name: opa
-    app.kubernetes.io/part-of: zylos-platform
-    app.kubernetes.io/component: authorization
+    app.kubernetes.io/component: policy-engine
+    app.kubernetes.io/part-of: zylos-core-infrastructure
 spec:
   type: ClusterIP
   selector:
