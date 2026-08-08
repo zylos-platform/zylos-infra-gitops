@@ -15,7 +15,6 @@ spec:
     - Egress
   egress:
     - to:
-        # Allow traffic TO the catalog backend pods
         - podSelector:
             matchLabels:
               app.kubernetes.io/name: zylos-service-catalog
