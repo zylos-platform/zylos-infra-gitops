@@ -40,6 +40,7 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
+    istio.io/dataplane-mode: ambient
     zylos.app/namespace-tier: data
 ---
 apiVersion: v1

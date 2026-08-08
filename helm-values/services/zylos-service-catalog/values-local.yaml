@@ -3,7 +3,6 @@
 springProfile: local
 environment: local
 
-# Laptop optimization
 replicaCount: 1
 
 resources:
@@ -18,9 +17,6 @@ pdb:
   enabled: false
 
 autoscaling:
-  enabled: false
-
-serviceMonitor:
   enabled: false
 
 extraEnv:

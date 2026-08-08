@@ -1,8 +1,8 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: catalog-reconciliation-incremental
-  namespace: zylos-services
+  name: zylos-service-catalog-reconciliation-incremental
+  namespace: zylos-catalog
   labels:
     app.kubernetes.io/name: zylos-service-catalog
     app.kubernetes.io/component: reconciliation
@@ -22,6 +22,7 @@ spec:
             app.kubernetes.io/name: zylos-service-catalog
             app.kubernetes.io/component: reconciliation
         spec:
+          serviceAccountName: zylos-service-catalog-reconciler
           restartPolicy: Never
           automountServiceAccountToken: false
           securityContext:
@@ -40,7 +41,7 @@ spec:
                 - name: PAGE_LIMIT
                   value: "500"
                 - name: ENDPOINT
-                  value: "http://zylos-service-catalog.zylos-services.svc.cluster.local:9000/actuator/reconciliation"
+                  value: "http://zylos-service-catalog:9000/actuator/reconciliation"
               command: ["/bin/sh", "-c"]
               args:
                 - |
