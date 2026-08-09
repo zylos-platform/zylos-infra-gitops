@@ -1,5 +1,5 @@
 # ---------------------------------------------------------
-# APPLICATION DATA PLANE (Stateful Data Services)
+# Application Data Plane
 # ---------------------------------------------------------
 # Note: These namespaces WILL receive the Kyverno NetPol baseline
 ---
@@ -54,9 +54,8 @@ metadata:
     zylos.app/namespace-tier: data
 
 # ---------------------------------------------------------
-# APPLICATION TIER (Stateless Microservices & Identity)
+# Shared Platform Services
 # ---------------------------------------------------------
-# Note: These namespaces WILL receive the Kyverno NetPol baseline
 ---
 apiVersion: v1
 kind: Namespace
@@ -66,7 +65,21 @@ metadata:
     pod-security.kubernetes.io/enforce: baseline
     app.kubernetes.io/part-of: zylos-platform
     istio.io/dataplane-mode: ambient
-    zylos.app/namespace-tier: tenant
+    zylos.app/namespace-tier: core
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: opa
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    app.kubernetes.io/part-of: zylos-platform
+    istio.io/dataplane-mode: ambient
+    zylos.app/namespace-tier: core
+
+# ---------------------------------------------------------
+# Edge Ingress
+# ---------------------------------------------------------
 ---
 apiVersion: v1
 kind: Namespace
@@ -76,7 +89,11 @@ metadata:
     pod-security.kubernetes.io/enforce: restricted
     app.kubernetes.io/part-of: zylos-platform
     istio.io/dataplane-mode: ambient
-    zylos.app/namespace-tier: tenant
+    zylos.app/namespace-tier: edge
+
+# ---------------------------------------------------------
+# Tenant Applications
+# ---------------------------------------------------------
 ---
 apiVersion: v1
 kind: Namespace
