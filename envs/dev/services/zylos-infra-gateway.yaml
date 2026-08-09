@@ -36,7 +36,7 @@ spec:
       path: components/services/zylos-infra-gateway/overlays/dev
   destination:
     server: https://kubernetes.default.svc
-    namespace: zylos-services
+    namespace: zylos-infra-gateway
   syncPolicy:
     automated:
       prune: true
