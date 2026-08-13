@@ -45,15 +45,11 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 # Install Argo CD with Helm.
-echo ""
-echo "==> [1/4] Adding Argo CD Helm repo..."
-helm repo add argo https://argoproj.github.io/argo-helm
-helm repo update argo
 
 echo ""
-echo "==> [2/4] Installing Argo CD..."
+echo "==> [1/3] Installing Argo CD..."
 
-helm upgrade --install argocd argo/argo-cd \
+helm upgrade --install argocd oci://ghcr.io/argoproj/argo-helm/argo-cd \
   --version "${ARGOCD_CHART_VERSION}" \
   --namespace "${ARGOCD_NAMESPACE}" \
   --create-namespace \
@@ -63,14 +59,14 @@ helm upgrade --install argocd argo/argo-cd \
   --timeout 10m
 
 echo ""
-echo "==> [3/4] Applying Zylos AppProjects..."
+echo "==> [2/3] Applying Zylos AppProjects..."
 # The projects MUST be applied before the root app, otherwise Argo CD
 # will reject the root app for referencing a non-existent project.
 sed "s|REPO_URL_PLACEHOLDER|${GIT_REPO_URL}|g; s|REVISION_PLACEHOLDER|${GIT_REVISION}|g" \
   bootstrap/projects-app.yaml | kubectl apply -f -
 
 echo ""
-echo "==> [4/4] Applying ${ENV} root app-of-apps..."
+echo "==> [3/3] Applying ${ENV} root app-of-apps..."
 # Dynamically target the correct root app based on the script parameter
 sed "s|REPO_URL_PLACEHOLDER|${GIT_REPO_URL}|g; s|REVISION_PLACEHOLDER|${GIT_REVISION}|g" \
   "bootstrap/root-${ENV}.yaml" | kubectl apply -f -

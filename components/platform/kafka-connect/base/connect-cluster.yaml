@@ -2,14 +2,14 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaConnect
 metadata:
   name: zylos-kafka-connect
-  namespace: zylos-data-kafka
+  namespace: zylos-infra-kafka
   annotations:
     strimzi.io/use-connector-resources: "true"
 spec:
   replicas: 1
 
   image: ghcr.io/zylos-platform/zylos-kafka-connect
-  bootstrapServers: zylos-kafka-kafka-bootstrap.zylos-data-kafka.svc.cluster.local:9092
+  bootstrapServers: zylos-kafka-kafka-bootstrap.zylos-infra-kafka.svc.cluster.local:9092
 
   groupId: zylos-kafka-connect
   configStorageTopic: connect-cluster-configs
@@ -22,7 +22,7 @@ spec:
     status.storage.replication.factor: 1
     key.converter: org.apache.kafka.connect.storage.StringConverter
     value.converter: io.confluent.connect.avro.AvroConverter
-    value.converter.schema.registry.url: http://schema-registry.zylos-data-kafka.svc.cluster.local:8081
+    value.converter.schema.registry.url: http://schema-registry.zylos-infra-kafka.svc.cluster.local:8081
 
     config.providers: file,secrets
     config.providers.file.class: org.apache.kafka.common.config.provider.FileConfigProvider

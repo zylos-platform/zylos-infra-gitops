@@ -17,7 +17,7 @@ if [[ "$ENV" != "local" && "$ENV" != "dev" ]]; then
   exit 1
 fi
 
-NS="keycloak"
+NS="zylos-identity"
 TARGET_DIR="components/platform/keycloak/overlays/${ENV}"
 OUT_FILE="${TARGET_DIR}/keycloak-secrets.yaml"
 

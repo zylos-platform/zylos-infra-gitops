@@ -13,7 +13,7 @@ if [[ "$ENV" != "local" && "$ENV" != "dev" ]]; then
   exit 1
 fi
 
-NS="zylos-data-kafka"
+NS="zylos-infra-kafka"
 OUT_DIR="components/platform/kafka-connect/overlays/${ENV}"
 OUT_FILE="${OUT_DIR}/kafka-connect-build-secret.yaml"
 

@@ -3,24 +3,20 @@
 springProfile: local
 environment: local
 
-# Laptop optimization
 replicaCount: 1
 
 resources:
   requests:
-    cpu: 50m
+    cpu: 100m
     memory: 256Mi
   limits:
-    cpu: 200m
+    cpu: 400m
     memory: 512Mi
 
 pdb:
   enabled: false
 
 autoscaling:
-  enabled: false
-
-serviceMonitor:
   enabled: false
 
 extraEnv:

@@ -2,7 +2,7 @@ apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
   name: zylos-kafka
-  namespace: zylos-data-kafka
+  namespace: zylos-infra-kafka
   annotations:
     strimzi.io/node-pools: enabled
     strimzi.io/kraft: enabled
@@ -23,14 +23,12 @@ spec:
   entityOperator:
     topicOperator: {}
     userOperator: {}
-
 ---
-
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: dual
-  namespace: zylos-data-kafka
+  namespace: zylos-infra-kafka
   labels:
     strimzi.io/cluster: zylos-kafka
 spec:
@@ -40,18 +38,18 @@ spec:
     - broker
   resources:
     requests:
-      cpu: 250m
-      memory: 768Mi
+      cpu: 100m
+      memory: 512Mi
     limits:
-      cpu: 1
-      memory: 1536Mi
+      cpu: 500m
+      memory: 1Gi
   jvmOptions:
-    -Xms: 512m
-    -Xmx: 512m
+    -Xms: 256m
+    -Xmx: 256m
   storage:
     type: jbod
     volumes:
       - id: 0
         type: persistent-claim
         size: 5Gi
-        deleteClaim: false
+        deleteClaim: true

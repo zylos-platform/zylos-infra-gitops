@@ -1,0 +1,13 @@
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: edge-jwt-validator
+  namespace: zylos-infra-gateway
+spec:
+  selector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: zylos-edge-gateway
+  jwtRules:
+    - issuer: "https://auth.zylos.app/realms/zylos"
+      jwksUri: "http://keycloak-service.zylos-identity.svc.cluster.local:8080/realms/zylos/protocol/openid-connect/certs"
+      forwardOriginalToken: true

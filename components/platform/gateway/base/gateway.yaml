@@ -1,0 +1,40 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: zylos-edge-gateway
+  namespace: zylos-infra-gateway
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  gatewayClassName: istio
+  listeners:
+    # ---------------------------------------------------------
+    # HTTP LISTENER (Port 80)
+    # ---------------------------------------------------------
+    - name: http
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: zylos-infra-gateway
+
+    # ---------------------------------------------------------
+    # HTTPS LISTENER (Port 443)
+    # ---------------------------------------------------------
+    - name: https
+      port: 443
+      protocol: HTTPS
+      hostname: "api.zylos.app"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: zylos-edge-tls-cert
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              zylos.app/namespace-tier: tenant

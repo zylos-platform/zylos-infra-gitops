@@ -17,7 +17,7 @@ if [[ "$ENV" != "local" && "$ENV" != "dev" ]]; then
   exit 1
 fi
 
-NS="keycloak"
+NS="zylos-identity"
 TARGET_DIR="components/platform/keycloak/overlays/${ENV}"
 OUT_FILE="${TARGET_DIR}/zylos-keycloak-client-secrets.yaml"
 
@@ -97,7 +97,7 @@ seal_app_secret() {
 
 # Distribute the Gateway secret directly into the application namespace
 seal_app_secret \
-  "zylos-services" \
+  "zylos-infra-gateway" \
   "zylos-gateway-secret" \
   "gateway-secret" \
   "${GATEWAY_SECRET}" \
