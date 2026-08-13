@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-service-cart-reaper-egress
+  namespace: zylos-cart
+  labels:
+    app.kubernetes.io/name: zylos-service-cart
+    app.kubernetes.io/component: reaper
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: zylos-service-cart
+      app.kubernetes.io/component: reaper
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: zylos-service-cart
+              app.kubernetes.io/component: api
+      ports:
+        - protocol: TCP
+          port: 9000

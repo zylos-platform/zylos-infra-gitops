@@ -9,7 +9,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: keycloak
-  namespace: keycloak
+  namespace: zylos-identity
   labels:
     app.kubernetes.io/part-of: zylos-platform
     app.kubernetes.io/component: identity

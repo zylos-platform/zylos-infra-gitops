@@ -4,42 +4,36 @@ fullnameOverride: "zylos-service-catalog"
 
 image:
   repository: ghcr.io/zylos-platform/zylos-service-catalog
-  tag: "20260723-28ea54d" # CI bumps
+  tag: "20260723-28ea54d"
 
-ingress:
-  enabled: false
-
-serviceMonitor:
-  enabled: true
+serviceAccount:
+  create: true
+  name: catalog-api
 
 networkPolicy:
-  enabled: true
   ingress:
-    fromIstio: true
-    fromObservability: true
-    fromIngressNginx: false
     extra:
-      # Allow traffic from the reconciliation cron job.
       - from:
           - namespaceSelector:
               matchLabels:
-                kubernetes.io/metadata.name: zylos-services
-            podSelector:
+                zylos.app/namespace-tier: edge
+        ports:
+          - protocol: TCP
+            port: 8080
+
+      - from:
+          - podSelector:
               matchLabels:
                 app.kubernetes.io/name: zylos-service-catalog
                 app.kubernetes.io/component: reconciliation
         ports:
           - protocol: TCP
             port: 9000
+
   egress:
-    toDns: true
-    toIstio: true
-    toSamePlatform: false
-    toKeycloak: true
+    toIdentity: true
     toOpa: true
-    toObservability: true
     extra:
-      # MongoDB (Percona) — write model + outbox.
       - to:
           - namespaceSelector:
               matchLabels:
@@ -47,7 +41,7 @@ networkPolicy:
         ports:
           - protocol: TCP
             port: 27017
-      # Valkeyrie — distributed cache for read-model projections.
+
       - to:
           - namespaceSelector:
               matchLabels:
@@ -55,11 +49,11 @@ networkPolicy:
         ports:
           - protocol: TCP
             port: 6379
-      # Kafka namespace: Schema Registry (8081) + broker (9092, projection consumer + DLT producer).
+
       - to:
           - namespaceSelector:
               matchLabels:
-                kubernetes.io/metadata.name: zylos-data-kafka
+                kubernetes.io/metadata.name: zylos-infra-kafka
         ports:
           - protocol: TCP
             port: 9092
@@ -67,7 +61,7 @@ networkPolicy:
             port: 9093
           - protocol: TCP
             port: 8081
-      # OpenSearch — read-model projection store.
+
       - to:
           - namespaceSelector:
               matchLabels:
@@ -75,6 +69,17 @@ networkPolicy:
         ports:
           - protocol: TCP
             port: 9200
+
+authorizationPolicy:
+  enabled: true
+  allowedPorts: [8080, 9000]
+  allowedCallers:
+    - namespace: zylos-infra-gateway
+      serviceAccount: gateway
+    - namespace: zylos-cart
+      serviceAccount: cart-api
+    - namespace: zylos-catalog
+      serviceAccount: zylos-service-catalog-reconciler
 
 extraEnv:
   ZYLOS_JWK_SET_URI: "http://auth.zylos.local/realms/zylos/protocol/openid-connect/certs"
@@ -87,7 +92,7 @@ extraEnv:
         name: catalog-mongodb-app-user
         key: password
 
-  ZYLOS_CATALOG_SCHEMA_REGISTRY_URL: "http://schema-registry.zylos-data-kafka.svc.cluster.local:8081"
+  ZYLOS_CATALOG_SCHEMA_REGISTRY_URL: "http://schema-registry.zylos-infra-kafka.svc.cluster.local:8081"
   ZYLOS_CATALOG_AUTO_REGISTER_SCHEMAS: "true"
 
   ZYLOS_CATALOG_VALKEY_HOST: "valkey.zylos-data-valkey.svc.cluster.local"
@@ -98,7 +103,7 @@ extraEnv:
         name: catalog-valkey-app-user
         key: password
 
-  ZYLOS_CATALOG_KAFKA_BOOTSTRAP: "zylos-kafka-kafka-bootstrap.zylos-data-kafka.svc.cluster.local:9092"
+  ZYLOS_CATALOG_KAFKA_BOOTSTRAP: "zylos-kafka-kafka-bootstrap.zylos-infra-kafka.svc.cluster.local:9092"
 
   ZYLOS_CATALOG_PROJECTION_GROUP: "catalog-projection"
   ZYLOS_CATALOG_EVENT_TOPIC: "catalog.product.events.v1"

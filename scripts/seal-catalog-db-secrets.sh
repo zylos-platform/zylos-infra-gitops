@@ -63,14 +63,14 @@ seal_secret \
 
 # The App password twin for the catalog Service
 seal_secret \
-  "zylos-services" \
+  "zylos-catalog" \
   "catalog-mongodb-app-user" \
   "$APP_PASS" \
   "components/services/zylos-service-catalog/overlays/${ENV}/catalog-mongodb-app-secret.yaml"
 
 # The CDC password for Debezium
 seal_secret \
-  "zylos-data-kafka" \
+  "zylos-infra-kafka" \
   "catalog-mongodb-debezium" \
   "$CDC_PASS" \
   "components/platform/kafka-connect/overlays/${ENV}/catalog-cdc-secret.yaml"

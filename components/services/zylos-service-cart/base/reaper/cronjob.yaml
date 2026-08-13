@@ -1,0 +1,56 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: zylos-service-cart-reaper
+  namespace: zylos-cart
+  labels:
+    app.kubernetes.io/name: zylos-service-cart
+    app.kubernetes.io/component: reaper
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 240 # 4-minute failsafe
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: zylos-service-cart
+            app.kubernetes.io/component: reaper
+        spec:
+          serviceAccountName: zylos-service-catalog-reconciler
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: reaper
+              image: ghcr.io/zylos-platform/zylos-toolbox
+              env:
+                - name: ENDPOINT
+                  value: "http://zylos-service-cart:9000/actuator/reaper"
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  echo "Starting cart reaper job against ${ENDPOINT}..."
+                  curl -s -f -X POST "$ENDPOINT"
+                  echo "Sweep triggered successfully."
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "64Mi"
+                limits:
+                  cpu: "200m"
+                  memory: "128Mi"
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]

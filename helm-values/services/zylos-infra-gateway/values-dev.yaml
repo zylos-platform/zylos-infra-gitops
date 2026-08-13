@@ -3,7 +3,6 @@
 springProfile: dev
 environment: dev
 
-# High Availability
 replicaCount: 2
 
 resources:

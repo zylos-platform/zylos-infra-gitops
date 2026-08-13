@@ -4,7 +4,6 @@
 springProfile: local
 environment: local
 
-# Save laptop battery
 replicaCount: 1
 
 resources:
@@ -15,23 +14,10 @@ resources:
     cpu: 200m
     memory: 512Mi
 
-ingress:
-  enabled: true
-  className: nginx
-  hosts:
-    - host: api.zylos.local
-      paths:
-        - path: /
-          pathType: Prefix
-
 autoscaling:
-  enabled: false
-
-serviceMonitor:
   enabled: false
 
 extraEnv:
   ZYLOS_ISSUER_URI: "http://auth.zylos.local/realms/zylos"
 
-  # kind pod CIDR
   ZYLOS_TRUSTED_PROXIES: "10\\..*"

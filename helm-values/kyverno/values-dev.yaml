@@ -6,3 +6,21 @@ admissionController:
       memory: 256Mi
     limits:
       memory: 1Gi
+  metering:
+    config: grpc
+    collector: "opentelemetry-collector.observability.svc.cluster.local:4317"
+
+backgroundController:
+  metering:
+    config: grpc
+    collector: "opentelemetry-collector.observability.svc.cluster.local:4317"
+
+cleanupController:
+  metering:
+    config: grpc
+    collector: "opentelemetry-collector.observability.svc.cluster.local:4317"
+
+reportsController:
+  metering:
+    config: grpc
+    collector: "opentelemetry-collector.observability.svc.cluster.local:4317"

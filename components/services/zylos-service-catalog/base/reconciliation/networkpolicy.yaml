@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-service-catalog-reconciler-egress
+  namespace: zylos-catalog
+  labels:
+    app.kubernetes.io/name: zylos-service-catalog
+    app.kubernetes.io/component: reconciliation
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: zylos-service-catalog
+      app.kubernetes.io/component: reconciliation
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: zylos-service-catalog
+              app.kubernetes.io/component: api
+      ports:
+        - protocol: TCP
+          port: 9000

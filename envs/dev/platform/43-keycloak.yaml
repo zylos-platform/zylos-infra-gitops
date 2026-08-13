@@ -19,7 +19,7 @@ spec:
     path: components/platform/keycloak/overlays/dev
   destination:
     server: https://kubernetes.default.svc
-    namespace: keycloak
+    namespace: zylos-identity
   syncPolicy:
     automated:
       prune: true

@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - cronjob-incremental.yaml
+  - cronjob-full.yaml
+  - networkpolicy.yaml
+  - serviceaccount.yaml

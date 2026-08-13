@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: strimzi-connect-secret-reader
-  namespace: zylos-data-kafka
+  namespace: zylos-infra-kafka
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
@@ -12,11 +12,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: strimzi-connect-secret-reader-binding
-  namespace: zylos-data-kafka
+  namespace: zylos-infra-kafka
 subjects:
   - kind: ServiceAccount
     name: zylos-kafka-connect-connect
-    namespace: zylos-data-kafka
+    namespace: zylos-infra-kafka
 roleRef:
   kind: Role
   name: strimzi-connect-secret-reader

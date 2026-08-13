@@ -36,7 +36,7 @@ spec:
       path: components/services/zylos-service-catalog/overlays/dev
   destination:
     server: https://kubernetes.default.svc
-    namespace: zylos-services
+    namespace: zylos-catalog
   syncPolicy:
     automated:
       prune: true

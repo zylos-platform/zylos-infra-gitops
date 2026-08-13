@@ -1,0 +1,66 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-kafka-netpol
+  namespace: zylos-infra-kafka
+spec:
+  podSelector:
+    matchLabels:
+      strimzi.io/cluster: zylos-kafka
+  policyTypes:
+    - Ingress
+  ingress:
+    # ---------------------------------------------------------
+    # 1. ALLOW INTER-BROKER & KRAFT COMMUNICATION (CRITICAL)
+    # ---------------------------------------------------------
+    - from:
+        - podSelector:
+            matchLabels:
+              strimzi.io/cluster: zylos-kafka
+      ports:
+        - protocol: TCP
+          port: 9090 # KRaft Controller
+        - protocol: TCP
+          port: 9091 # Internal Partition Replication
+
+    # ---------------------------------------------------------
+    # 2. ALLOW STRIMZI CLUSTER OPERATOR (Same Namespace)
+    # ---------------------------------------------------------
+    - from:
+        - podSelector:
+            matchLabels:
+              strimzi.io/kind: cluster-operator
+
+    # ---------------------------------------------------------
+    # 3. ALLOW TENANT MICROSERVICES (Cross-Namespace)
+    # ---------------------------------------------------------
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              zylos.app/namespace-tier: tenant
+      ports:
+        - protocol: TCP
+          port: 9092 # Plaintext Listener
+        - protocol: TCP
+          port: 9093 # TLS Listener
+        - protocol: TCP
+          port: 15008 # Istio Ambient Mesh HBONE
+
+    # ---------------------------------------------------------
+    # 4. ALLOW INTERNAL KAFKA ECOSYSTEM (Same Namespace)
+    # ---------------------------------------------------------
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - schema-registry
+                  - zylos-kafka-connect
+      ports:
+        - protocol: TCP
+          port: 9092
+        - protocol: TCP
+          port: 9093
+        - protocol: TCP
+          port: 15008

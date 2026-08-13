@@ -1,36 +1,57 @@
 # values.yaml
 
 fullnameOverride: "zylos-infra-gateway"
+component: gateway
 
 image:
   repository: ghcr.io/zylos-platform/zylos-infra-gateway
-  tag: "20260709-5d41a71" # CI replaces with a date-sha tag on each merged push to main
+  tag: "20260709-5d41a71"
 
-serviceMonitor:
-  enabled: true
+serviceAccount:
+  create: true
+  name: gateway
 
 networkPolicy:
-  enabled: true
   ingress:
-    fromIstio: true
-    fromObservability: true
+    extra:
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                zylos.app/namespace-tier: edge
+        ports:
+          - protocol: TCP
+            port: 8080
+
   egress:
-    toDns: true
-    toIstio: true
-    toSamePlatform: true
-    toKeycloak: true
-    toObservability: true
-    toExternal: false
+    toIdentity: true
+    extra:
+      - to:
+          - namespaceSelector:
+              matchLabels:
+                zylos.app/namespace-tier: tenant
+        ports:
+          - protocol: TCP
+            port: 8080
+          - protocol: TCP
+            port: 9000
+
+authorizationPolicy:
+  enabled: true
+  allowedPorts: [8080]
+  allowedCallers:
+    - namespace: zylos-infra-gateway
+      serviceAccount: istio-ingressgateway
 
 extraEnv:
   ZYLOS_JWK_SET_URI: "http://auth.zylos.local/realms/zylos/protocol/openid-connect/certs"
   ZYLOS_TOKEN_ENDPOINT: "http://auth.zylos.local/realms/zylos/protocol/openid-connect/token"
-  ZYLOS_HELLO_SERVICE_URI: "http://zylos-service-hello.zylos-services.svc.cluster.local:8080"
-  ZYLOS_CATALOG_SERVICE_URI: "http://zylos-service-catalog.zylos-services.svc.cluster.local:8080"
-  ZYLOS_GATEWAY_CLIENT_ID: "zylos-gateway"
 
+  ZYLOS_GATEWAY_CLIENT_ID: "zylos-gateway"
   ZYLOS_GATEWAY_CLIENT_SECRET:
     valueFrom:
       secretKeyRef:
         name: zylos-gateway-secret
         key: gateway-secret
+
+  ZYLOS_CATALOG_SERVICE_URI: "http://zylos-service-catalog.zylos-catalog.svc.cluster.local:8080"
+  ZYLOS_CART_SERVICE_URI: "http://zylos-service-cart.zylos-cart.svc.cluster.local:8080"

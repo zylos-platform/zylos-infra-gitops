@@ -61,7 +61,7 @@ seal_literal \
   "components/platform/valkey/overlays/${ENV}/valkey-auth-secret.yaml"
 
 seal_literal \
-  "zylos-services" \
+  "zylos-catalog" \
   "catalog-valkey-app-user" \
   "$VALKEY_PASS" \
   "components/services/zylos-service-catalog/overlays/${ENV}/catalog-valkey-secret.yaml"

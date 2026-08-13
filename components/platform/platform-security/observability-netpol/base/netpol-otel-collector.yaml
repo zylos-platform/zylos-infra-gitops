@@ -1,0 +1,64 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-netpol-opentelemetry-collector
+  namespace: observability
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: opentelemetry-collector
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Accept telemetry from ALL namespaces
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+    # Health checks (kubelet)
+    - ports:
+        - protocol: TCP
+          port: 13133
+  egress:
+    # Push Metrics to Prometheus
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+    # Push Traces to Tempo
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: tempo
+      ports:
+        - protocol: TCP
+          port: 4318
+    # Push Logs to Loki
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: loki
+              app.kubernetes.io/component: gateway
+      ports:
+        - protocol: TCP
+          port: 8080
+    # DNS Resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53

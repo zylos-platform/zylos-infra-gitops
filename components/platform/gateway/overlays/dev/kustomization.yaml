@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patches:
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: Gateway
+      name: zylos-edge-gateway
+      namespace: zylos-infra-gateway
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/cert-manager.io~1cluster-issuer
+        value: "letsencrypt-staging"
+
+      - op: replace
+        path: /spec/listeners/1/hostname
+        value: "api.dev.zylos.app"
+
+  - target:
+      kind: RequestAuthentication
+      name: edge-jwt-validator
+      namespace: zylos-infra-gateway
+    patch: |-
+      - op: replace
+        path: /spec/jwtRules/0/issuer
+        value: "https://auth.dev.zylos.app/realms/zylos"

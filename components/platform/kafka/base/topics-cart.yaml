@@ -2,12 +2,12 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaTopic
 metadata:
   name: cart.cart.events.v1
-  namespace: zylos-data-kafka
+  namespace: zylos-infra-kafka
   labels:
     strimzi.io/cluster: zylos-kafka
 spec:
   topicName: cart.cart.events.v1
-  partitions: 6
+  partitions: 3
   replicas: 1
   config:
     cleanup.policy: delete
@@ -19,12 +19,12 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaTopic
 metadata:
   name: cart.cart.snapshot.v1
-  namespace: zylos-data-kafka
+  namespace: zylos-infra-kafka
   labels:
     strimzi.io/cluster: zylos-kafka
 spec:
   topicName: cart.cart.snapshot.v1
-  partitions: 6
+  partitions: 3
   replicas: 1
   config:
     cleanup.policy: compact

@@ -72,7 +72,7 @@ seal_literal \
 
 # The Raw App Password (For the Catalog Service to authenticate)
 seal_literal \
-  "zylos-services" \
+  "zylos-catalog" \
   "catalog-opensearch-app-user" \
   "$APP_PASS" \
   "components/services/zylos-service-catalog/overlays/${ENV}/catalog-opensearch-secret.yaml"
