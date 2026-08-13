@@ -1,16 +1,6 @@
 # ---------------------------------------------------------
 # System & Observability
 # ---------------------------------------------------------
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: kyverno
-  labels:
-    pod-security.kubernetes.io/enforce: privileged
-    app.kubernetes.io/part-of: zylos-platform
-    zylos.app/namespace-tier: system
----
 apiVersion: v1
 kind: Namespace
 metadata:

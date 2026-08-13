@@ -10,13 +10,13 @@ metadata:
   labels:
     app.kubernetes.io/part-of: zylos-platform
     app.kubernetes.io/component: service-mesh
-    zylos.app/environment: dev
+    zylos.app/environment: local
 spec:
   project: platform
   sources:
     - repoURL: https://istio-release.storage.googleapis.com/charts
       chart: base
-      targetRevision: 1.24.3
+      targetRevision: 1.30.3
       helm:
         releaseName: istio-base
         valueFiles:

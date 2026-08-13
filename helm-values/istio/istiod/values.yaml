@@ -2,6 +2,10 @@
 
 profile: ambient
 
+global:
+  networkPolicy:
+    enabled: true
+
 pilot:
   env:
     PILOT_ENABLE_AMBIENT: "true"

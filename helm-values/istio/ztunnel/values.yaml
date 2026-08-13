@@ -3,5 +3,9 @@
 # Globally define the ambient profile
 profile: ambient
 
+global:
+  networkPolicy:
+    enabled: true
+
 env:
   RUST_LOG: "info"
