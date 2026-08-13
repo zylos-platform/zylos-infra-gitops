@@ -1,0 +1,80 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zylos-edge-gateway-netpol
+  namespace: zylos-infra-gateway
+spec:
+  podSelector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: zylos-edge-gateway
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # ---- INGRESS (Public Internet) ----
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+
+  # ---- HARDENED EGRESS ----
+  egress:
+    # 1. DNS Resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # 2. Control Plane (Istiod xDS & mTLS cert management)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: istio-system
+      ports:
+        - protocol: TCP
+          port: 15012
+        - protocol: TCP
+          port: 15010
+
+    # 3. Identity Server (JWKS Key Validation)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: zylos-identity
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 443
+
+    # 4. Telemetry Push (OpenTelemetry Collector)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: opentelemetry-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+
+    # 5. Tenant Workloads (Routing to Application Tier)
+    # Allows forwarding ONLY to namespaces explicitly tier-labeled as tenant apps.
+    # Data tier namespaces (zylos-data-*) are explicitly EXCLUDED.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              zylos.app/namespace-tier: tenant
