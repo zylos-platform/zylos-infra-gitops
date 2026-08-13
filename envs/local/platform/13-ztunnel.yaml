@@ -10,18 +10,17 @@ metadata:
   labels:
     app.kubernetes.io/part-of: zylos-platform
     app.kubernetes.io/component: service-mesh
-    zylos.app/environment: dev
+    zylos.app/environment: local
 spec:
   project: platform
   sources:
     - repoURL: https://istio-release.storage.googleapis.com/charts
       chart: ztunnel
-      targetRevision: 1.24.3
+      targetRevision: 1.30.3
       helm:
         releaseName: ztunnel
         valueFiles:
           - $values/helm-values/istio/ztunnel/values.yaml
-          - $values/helm-values/istio/ztunnel/values-dev.yaml
 
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main

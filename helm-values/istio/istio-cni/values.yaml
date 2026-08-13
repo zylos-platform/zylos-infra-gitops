@@ -3,6 +3,10 @@
 # Globally define the ambient profile
 profile: ambient
 
+global:
+  networkPolicy:
+    enabled: true
+
 cni:
   ambient:
     # Activate ambient mode at the CNI layer

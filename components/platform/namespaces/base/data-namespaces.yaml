@@ -1,8 +1,6 @@
 # ---------------------------------------------------------
 # Application Data Plane
 # ---------------------------------------------------------
-# Note: These namespaces WILL receive the Kyverno NetPol baseline
----
 apiVersion: v1
 kind: Namespace
 metadata:
