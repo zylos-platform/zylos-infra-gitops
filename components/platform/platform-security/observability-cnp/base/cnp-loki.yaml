@@ -42,9 +42,6 @@ spec:
     matchLabels:
       app.kubernetes.io/name: loki
       app.kubernetes.io/component: single-binary
-  policyTypes:
-    - Ingress
-    - Egress
   ingress:
     - fromEndpoints:
         - matchLabels:
