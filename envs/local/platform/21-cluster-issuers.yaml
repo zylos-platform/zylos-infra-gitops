@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cert-manager-issuers
+  name: cluster-issuers
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "-3"
@@ -9,13 +9,13 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
   labels:
     app.kubernetes.io/part-of: zylos-platform
-    zylos.app/environment: dev
+    zylos.app/environment: local
 spec:
   project: platform
   source:
     repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
     targetRevision: main
-    path: components/platform/cert-manager-issuers/overlays/dev
+    path: components/platform/cluster-issuers/overlays/local
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
@@ -25,6 +25,7 @@ spec:
       selfHeal: true
     syncOptions:
       - ServerSideApply=true
+      - CreateNamespace=false
     retry:
       limit: 5
       backoff:
