@@ -38,14 +38,7 @@ echo "Argo CD chart:   ${ARGOCD_CHART_VERSION}"
 echo "Source repo:     ${GIT_REPO_URL}@${GIT_REVISION}"
 echo ""
 
-read -p "Continue? [y/N] " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-  exit 1
-fi
-
 # Install Argo CD with Helm.
-
 echo ""
 echo "==> [1/3] Installing Argo CD..."
 

@@ -1,14 +1,10 @@
-###############################################################################
-# zylos-infra-gateway Argo CD Application.
-# Composes helm/zylos-service-base with helm-values/services/values.yaml.
-###############################################################################
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: zylos-infra-gateway
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "18" # After platform components and secrets
+    argocd.argoproj.io/sync-wave: "18"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
@@ -16,11 +12,11 @@ metadata:
     app.kubernetes.io/component: gateway
     zylos.app/environment: local
 spec:
-  project: apps
-  sources:
-    - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
-      targetRevision: main
-      path: components/platform/gateway/overlays/local
+  project: platform
+  source:
+    repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
+    targetRevision: main
+    path: components/platform/gateway/overlays/local
   destination:
     server: https://kubernetes.default.svc
     namespace: zylos-infra-gateway

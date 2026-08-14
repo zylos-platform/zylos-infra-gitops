@@ -12,10 +12,10 @@ echo "==============================================="
 echo "Zylos Remote AKS Cluster Bootstrap (Istio-Ready)"
 echo "==============================================="
 
-echo "==> [1/4] Creating Azure Resource Group..."
+echo "==> [1/5] Creating Azure Resource Group..."
 az group create --name $RESOURCE_GROUP --location $LOCATION -o none
 
-echo "==> [2/4] Creating AKS cluster (Free Tier, 1x D4ds_v7 Node)..."
+echo "==> [2/5] Creating AKS cluster (Free Tier, 1x D4ds_v7 Node)..."
 az aks create \
   --resource-group $RESOURCE_GROUP \
   --name $CLUSTER_NAME \
@@ -29,11 +29,11 @@ az aks create \
   --yes
 
 echo ""
-echo "==> [3/4] Connecting to AKS..."
+echo "==> [3/5] Connecting to AKS..."
 az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME --overwrite-existing
 
 echo ""
-echo "==> [4/4] Installing Kubernetes Gateway API CRDs..."
+echo "==> [4/5] Installing Kubernetes Gateway API CRDs..."
 # Istio Ambient Mesh REQUIRES these CRDs to be installed before Istio boots.
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.1.0/standard-install.yaml
 

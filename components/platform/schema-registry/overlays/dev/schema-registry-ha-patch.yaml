@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: schema-registry
-  namespace: zylos-data-kafka
+  namespace: zylos-infra-kafka
 spec:
   replicas: 2
   template:

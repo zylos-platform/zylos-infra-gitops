@@ -75,7 +75,7 @@ authorizationPolicy:
   allowedPorts: [8080, 9000]
   allowedCallers:
     - namespace: zylos-infra-gateway
-      serviceAccount: gateway
+      serviceAccount: zylos-edge-gateway
     - namespace: zylos-cart
       serviceAccount: cart-api
     - namespace: zylos-catalog
