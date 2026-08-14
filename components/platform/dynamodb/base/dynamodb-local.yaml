@@ -1,5 +1,4 @@
 # DynamoDB Local — the in-cluster stand-in for the managed Amazon DynamoDB
-
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -7,6 +6,7 @@ metadata:
   namespace: zylos-data-dynamodb
   labels:
     app.kubernetes.io/name: dynamodb-local
+    app.kubernetes.io/component: database
     app.kubernetes.io/part-of: zylos-platform
 spec:
   accessModes:
@@ -22,7 +22,7 @@ metadata:
   namespace: zylos-data-dynamodb
   labels:
     app.kubernetes.io/name: dynamodb-local
-    app.kubernetes.io/component: cart-datastore
+    app.kubernetes.io/component: database
     app.kubernetes.io/part-of: zylos-platform
 spec:
   replicas: 1
@@ -35,8 +35,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: dynamodb-local
-        app.kubernetes.io/component: cart-datastore
-        zylos.app/namespace-tier: data
+        app.kubernetes.io/component: database
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -96,6 +95,7 @@ metadata:
   namespace: zylos-data-dynamodb
   labels:
     app.kubernetes.io/name: dynamodb-local
+    app.kubernetes.io/component: database
     app.kubernetes.io/part-of: zylos-platform
 spec:
   selector:
@@ -105,3 +105,53 @@ spec:
       port: 8000
       targetPort: 8000
       protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zylos-dynamodb-local-cnp
+  namespace: zylos-data-dynamodb
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: dynamodb-local
+      app.kubernetes.io/component: database
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: dynamodb-local
+            app.kubernetes.io/component: bootstrap-job
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": zylos-cart
+            app.kubernetes.io/name: zylos-service-cart
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: zylos-dynamodb-authz
+  namespace: zylos-data-dynamodb
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dynamodb-local
+      app.kubernetes.io/component: database
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/zylos-data-dynamodb/sa/zylos-cart-table-bootstrap"
+              - "cluster.local/ns/zylos-cart/sa/cart-api"
+      to:
+        - operation:
+            ports: ["8000"]

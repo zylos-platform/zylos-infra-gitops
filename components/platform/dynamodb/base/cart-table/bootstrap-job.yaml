@@ -4,7 +4,9 @@ metadata:
   name: cart-table-bootstrap-job
   namespace: zylos-data-dynamodb
   labels:
-    app.kubernetes.io/component: cart-table-bootstrap
+    app.kubernetes.io/name: dynamodb-local
+    app.kubernetes.io/instance: cart-table
+    app.kubernetes.io/component: bootstrap-job
     app.kubernetes.io/part-of: zylos-platform
   annotations:
     argocd.argoproj.io/hook: PostSync
@@ -15,9 +17,10 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/component: cart-table-bootstrap
-        zylos.app/namespace-tier: data
+        app.kubernetes.io/name: dynamodb-local
+        app.kubernetes.io/component: bootstrap-job
     spec:
+      serviceAccountName: zylos-cart-table-bootstrap
       automountServiceAccountToken: false
       restartPolicy: Never
       securityContext:
