@@ -13,7 +13,7 @@ metadata:
   labels:
     app.kubernetes.io/part-of: zylos-platform
     app.kubernetes.io/component: database
-    zylos.app/environment: local
+    zylos.app/environment: dev
 spec:
   project: platform
   source:

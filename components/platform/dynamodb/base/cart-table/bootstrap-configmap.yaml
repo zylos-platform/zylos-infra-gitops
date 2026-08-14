@@ -4,7 +4,9 @@ metadata:
   name: cart-table-bootstrap-config
   namespace: zylos-data-dynamodb
   labels:
-    app.kubernetes.io/component: cart-table-bootstrap
+    app.kubernetes.io/name: dynamodb-local
+    app.kubernetes.io/instance: cart-table
+    app.kubernetes.io/component: bootstrap-config
     app.kubernetes.io/part-of: zylos-platform
 data:
   zylos-cart-table.json: |
@@ -45,7 +47,7 @@ data:
   bootstrap.sh: |
     #!/bin/sh
     set -eu
-    ENDPOINT="http://dynamodb-local.zylos-data-dynamodb.svc.cluster.local:8000"
+    ENDPOINT="http://dynamodb-local:8000"
     TABLE="zylos-cart"
 
     echo "Waiting for DynamoDB Local at ${ENDPOINT} ..."

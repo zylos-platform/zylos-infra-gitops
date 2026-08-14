@@ -1,0 +1,19 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zylos-cart-table-bootstrap-cnp
+  namespace: zylos-data-dynamodb
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: dynamodb-local
+      app.kubernetes.io/component: bootstrap-job
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: dynamodb-local
+            app.kubernetes.io/component: database
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
