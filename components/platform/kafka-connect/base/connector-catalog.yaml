@@ -1,12 +1,12 @@
 apiVersion: kafka.strimzi.io/v1
 kind: KafkaConnector
 metadata:
-  name: catalog-outbox
+  name: catalog-outbox-connector
   namespace: zylos-infra-kafka
   labels:
-    strimzi.io/cluster: zylos-kafka-connect
+    app.kubernetes.io/name: catalog-outbox-connector
     app.kubernetes.io/part-of: zylos-platform
-    app.kubernetes.io/component: messaging
+    app.kubernetes.io/component: cdc-connector
 spec:
   class: io.debezium.connector.mongodb.MongoDbConnector
   tasksMax: 1

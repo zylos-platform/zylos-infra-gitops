@@ -1,0 +1,50 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zylos-kafka-connect-cnp
+  namespace: zylos-infra-kafka
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: zylos-kafka-connect
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            strimzi.io/kind: cluster-operator
+      toPorts:
+        - ports:
+            - port: "8083" # Kafka Connect REST API
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            strimzi.io/cluster: zylos-kafka
+            strimzi.io/kind: Kafka
+      toPorts:
+        - ports:
+            - port: "9092"
+              protocol: TCP
+
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: schema-registry
+      toPorts:
+        - ports:
+            - port: "8081"
+              protocol: TCP
+
+    - toEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": zylos-data-mongodb
+            app.kubernetes.io/name: percona-server-mongodb
+      toPorts:
+        - ports:
+            - port: "27017"
+              protocol: TCP
+
+    - toEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP

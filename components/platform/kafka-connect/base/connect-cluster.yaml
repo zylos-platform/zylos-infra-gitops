@@ -5,11 +5,14 @@ metadata:
   namespace: zylos-infra-kafka
   annotations:
     strimzi.io/use-connector-resources: "true"
+  labels:
+    app.kubernetes.io/name: zylos-kafka-connect
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: connect
 spec:
-  replicas: 1
-
+  replicas: 2
   image: ghcr.io/zylos-platform/zylos-kafka-connect
-  bootstrapServers: zylos-kafka-kafka-bootstrap.zylos-infra-kafka.svc.cluster.local:9092
+  bootstrapServers: zylos-kafka-kafka-bootstrap:9092
 
   groupId: zylos-kafka-connect
   configStorageTopic: connect-cluster-configs
@@ -17,21 +20,34 @@ spec:
   statusStorageTopic: connect-cluster-status
 
   config:
-    config.storage.replication.factor: 1
-    offset.storage.replication.factor: 1
-    status.storage.replication.factor: 1
+    config.storage.replication.factor: 3
+    offset.storage.replication.factor: 3
+    status.storage.replication.factor: 3
     key.converter: org.apache.kafka.connect.storage.StringConverter
     value.converter: io.confluent.connect.avro.AvroConverter
-    value.converter.schema.registry.url: http://schema-registry.zylos-infra-kafka.svc.cluster.local:8081
-
+    value.converter.schema.registry.url: http://schema-registry:8081
     config.providers: file,secrets
     config.providers.file.class: org.apache.kafka.common.config.provider.FileConfigProvider
     config.providers.secrets.class: io.strimzi.kafka.KubernetesSecretConfigProvider
 
   template:
     pod:
-      imagePullSecrets:
-        - name: kafka-connect-build-secret
+      metadata:
+        labels:
+          app.kubernetes.io/name: zylos-kafka-connect
+          app.kubernetes.io/part-of: zylos-platform
+          app.kubernetes.io/component: connect
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+    connectContainer:
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
 
   resources:
     requests:
