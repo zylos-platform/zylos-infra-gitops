@@ -1,0 +1,20 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: zylos-schema-registry-authz
+  namespace: zylos-infra-kafka
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: schema-registry
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/zylos-infra-kafka/sa/zylos-kafka-connect-connect"
+              - "cluster.local/ns/zylos-catalog/sa/catalog-api"
+              - "cluster.local/ns/zylos-cart/sa/cart-api"
+      to:
+        - operation:
+            ports: ["8081"]

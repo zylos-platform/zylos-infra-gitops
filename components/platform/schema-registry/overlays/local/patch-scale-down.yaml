@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schema-registry
+  namespace: zylos-infra-kafka
+spec:
+  replicas: 1
+  template:
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: schema-registry
+          env:
+            - name: SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: SCHEMA_REGISTRY_HEAP_OPTS
+              value: "-Xms128m -Xmx256m"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+              ephemeral-storage: 100Mi
+            limits:
+              cpu: 250m
+              memory: 384Mi
+              ephemeral-storage: 250Mi
