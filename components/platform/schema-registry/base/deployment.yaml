@@ -1,7 +1,3 @@
-###############################################################################
-# Confluent Schema Registry — Avro schema governance (BACKWARD compatibility).
-# State lives in the Kafka topic _schemas (RF=1 on the single broker).
-###############################################################################
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -10,9 +6,9 @@ metadata:
   labels:
     app.kubernetes.io/name: schema-registry
     app.kubernetes.io/part-of: zylos-platform
-    app.kubernetes.io/component: messaging
+    app.kubernetes.io/component: registry
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: schema-registry
@@ -21,9 +17,10 @@ spec:
       labels:
         app.kubernetes.io/name: schema-registry
         app.kubernetes.io/part-of: zylos-platform
-        app.kubernetes.io/component: messaging
+        app.kubernetes.io/component: registry
     spec:
       enableServiceLinks: false
+      serviceAccountName: schema-registry
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
@@ -40,13 +37,11 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
-              value: "PLAINTEXT://zylos-kafka-kafka-bootstrap.zylos-infra-kafka.svc.cluster.local:9092"
+              value: "PLAINTEXT://zylos-kafka-kafka-bootstrap:9092"
             - name: SCHEMA_REGISTRY_LISTENERS
               value: "http://0.0.0.0:8081"
-            # Single broker -> the _schemas topic must use RF 1 (prod: 3).
             - name: SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR
-              value: "1"
-            # Global compatibility policy from the architecture.
+              value: "3"
             - name: SCHEMA_REGISTRY_SCHEMA_COMPATIBILITY_LEVEL
               value: "backward"
             - name: SCHEMA_REGISTRY_HEAP_OPTS
@@ -54,7 +49,7 @@ spec:
           ports:
             - name: http
               containerPort: 8081
-          startupProbe: # tolerate Kafka not being ready instantly
+          startupProbe:
             httpGet:
               path: /subjects
               port: http

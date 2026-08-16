@@ -1,0 +1,40 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zylos-kafka-cnp
+  namespace: zylos-infra-kafka
+spec:
+  endpointSelector:
+    matchLabels:
+      strimzi.io/cluster: zylos-kafka
+      strimzi.io/kind: Kafka
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            strimzi.io/kind: cluster-operator
+        - matchLabels:
+            strimzi.io/name: zylos-kafka-entity-operator
+      toPorts:
+        - ports:
+            - port: "9090" # KRaft Controller
+              protocol: TCP
+            - port: "9092" # Plaintext Listener
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace.labels.zylos.app/namespace-tier": tenant
+      toPorts:
+        - ports:
+            - port: "9092"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: schema-registry
+        - matchLabels:
+            app.kubernetes.io/name: zylos-kafka-connect
+      toPorts:
+        - ports:
+            - port: "9092"
+              protocol: TCP

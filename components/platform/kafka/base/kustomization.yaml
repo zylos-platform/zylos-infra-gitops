@@ -4,3 +4,4 @@ resources:
   - kafka-cluster.yaml
   - topics-catalog.yaml
   - topics-cart.yaml
+  - cilium-network-policy.yaml
