@@ -1,9 +1,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - config-cli-job.yaml
-  - ingress.yaml
   - keycloak.yaml
-  - postgres-cnpg.yaml
-  - realm-config-configmap.yaml
+  - keycloak-postgres.yaml
+  - httproute.yaml
+  - configmap.yaml
+  - job-config-cli.yaml
   - realm-import.yaml
+  - serviceaccount-job.yaml
+  - authorization-policy-keycloak.yaml
+  - cilium-networkpolicy-keycloak.yaml
+  - authorization-policy-db.yaml
+  - cilium-networkpolicy-db.yaml
+  - cilium-networkpolicy-job.yaml

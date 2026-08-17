@@ -9,11 +9,12 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: keycloak-config-cli
+  name: zylos-keycloak-config-cli-job
   namespace: zylos-identity
   labels:
+    app.kubernetes.io/name: keycloak
     app.kubernetes.io/part-of: zylos-platform
-    app.kubernetes.io/component: identity
+    app.kubernetes.io/component: reconciliation
   annotations:
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
@@ -23,10 +24,11 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: keycloak-config-cli
+        app.kubernetes.io/name: keycloak
         app.kubernetes.io/part-of: zylos-platform
-        istio.io/dataplane-mode: none
+        app.kubernetes.io/component: reconciliation
     spec:
+      serviceAccountName: keycloak-config-cli
       automountServiceAccountToken: false
       restartPolicy: OnFailure
       securityContext:
@@ -48,7 +50,7 @@ spec:
           env:
             # --- Connection to Keycloak ---
             - name: KEYCLOAK_URL
-              value: "http://auth.zylos.local"
+              value: "http://keycloak-service:8080"
             - name: KEYCLOAK_USER
               valueFrom:
                 secretKeyRef:
@@ -126,11 +128,6 @@ spec:
                 secretKeyRef:
                   name: zylos-keycloak-client-secrets
                   key: mobile-bff-secret
-            - name: ZYLOS_GATEWAY_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: zylos-keycloak-client-secrets
-                  key: gateway-secret
 
             # --- Logging ---
             - name: SPRING_PROFILES_ACTIVE

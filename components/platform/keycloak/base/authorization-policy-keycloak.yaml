@@ -1,0 +1,33 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: zylos-keycloak-authz
+  namespace: zylos-identity
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: keycloak
+      app.kubernetes.io/component: identity-server
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/zylos-infra-gateway/sa/gateway"
+              - "cluster.local/ns/zylos-identity/sa/keycloak-config-cli"
+              - "cluster.local/ns/zylos-identity/sa/keycloak"
+              - "cluster.local/ns/observability/sa/grafana"
+              - "cluster.local/ns/observability/sa/prometheus"
+      to:
+        - operation:
+            ports: ["8080", "9000", "7800"]
+
+    - to:
+        - operation:
+            ports: ["8080"]
+            paths:
+              - "/realms/zylos/protocol/openid-connect/certs"
+              - "/realms/zylos/protocol/openid-connect/token"
+              - "/realms/zylos/protocol/openid-connect/userinfo"
+              - "/realms/zylos/protocol/openid-connect/logout"
+              - "/realms/zylos/.well-known/openid-configuration"

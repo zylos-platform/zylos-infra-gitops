@@ -1,0 +1,79 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zylos-keycloak-cnp
+  namespace: zylos-identity
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: keycloak
+      app.kubernetes.io/component: identity-server
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": zylos-infra-gateway
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace.labels.zylos.app/namespace-tier": tenant
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: keycloak-config-cli
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": observability
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+            - port: "9000"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: keycloak
+            app.kubernetes.io/component: identity-server
+      toPorts:
+        - ports:
+            - port: "7800"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/component: identity-database
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: keycloak
+            app.kubernetes.io/component: identity-server
+      toPorts:
+        - ports:
+            - port: "7800"
+              protocol: TCP
+
+    - toEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "6443"
+              protocol: TCP

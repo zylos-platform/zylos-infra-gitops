@@ -1,0 +1,19 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zylos-keycloak-config-cli-cnp
+  namespace: zylos-identity
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: keycloak
+      app.kubernetes.io/component: reconciliation
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: keycloak
+            app.kubernetes.io/component: identity-server
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
