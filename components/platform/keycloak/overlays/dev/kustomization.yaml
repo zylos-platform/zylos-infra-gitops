@@ -2,5 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
-  - netpol-keycloak-core.yaml
-  - netpol-keycloak-postgres.yaml
+
+patches:
+  - path: patch-scale-down.yaml
+  - path: patch-test-users.yaml

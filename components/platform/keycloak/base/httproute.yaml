@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: keycloak-route
+  namespace: zylos-identity
+spec:
+  parentRefs:
+    - name: zylos-edge-gateway
+      namespace: zylos-infra-gateway
+  hostnames:
+    - "auth.zylos.app"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: keycloak-service
+          port: 8080

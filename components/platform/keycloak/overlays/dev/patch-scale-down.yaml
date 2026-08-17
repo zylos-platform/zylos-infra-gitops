@@ -1,0 +1,54 @@
+apiVersion: k8s.keycloak.org/v2beta1
+kind: Keycloak
+metadata:
+  name: keycloak
+  namespace: zylos-identity
+spec:
+  instances: 1
+
+  hostname:
+    hostname: http://auth.dev.zylos.app
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+  unsupported:
+    podTemplate:
+      spec:
+        containers:
+          - name: keycloak
+            env:
+              - name: KC_DB_POOL_INITIAL_SIZE
+                value: "5"
+              - name: KC_DB_POOL_MAX_SIZE
+                value: "20"
+              - name: KC_HEALTH_ENABLED
+                value: "true"
+              - name: KC_METRICS_ENABLED
+                value: "true"
+              - name: KC_LOG_LEVEL
+                value: "INFO"
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: keycloak-postgres
+  namespace: zylos-identity
+spec:
+  instances: 1
+
+  storage:
+    size: 5Gi
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi

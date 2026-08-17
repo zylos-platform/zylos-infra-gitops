@@ -1,0 +1,43 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zylos-keycloak-postgres-cnp
+  namespace: zylos-identity
+spec:
+  endpointSelector:
+    matchLabels:
+      cnpg.io/cluster: keycloak-postgres
+      app.kubernetes.io/component: identity-database
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: keycloak
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            cnpg.io/cluster: keycloak-postgres
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            cnpg.io/cluster: keycloak-postgres
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+
+    - toEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "6443"
+              protocol: TCP

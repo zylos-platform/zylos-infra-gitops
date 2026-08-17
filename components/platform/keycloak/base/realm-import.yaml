@@ -3,10 +3,9 @@
 #
 # This manifest does ONE job: ensure the `zylos` realm exists. Nothing more.
 #
-# All realm content (clients, roles, users, client policies, signing key
-# settings, token-exchange permissions, refresh-token reuse detection, etc.)
-# is reconciled by keycloak-config-cli, reading from a canonical realm YAML
-# in this repo.
+# All realm content (clients, roles, client policies, signing key
+# settings, refresh-token reuse detection, etc.) is reconciled by keycloak-config-cli,
+# reading from a canonical realm YAML in this repo.
 #
 # Why this split:
 #   - The Keycloak Operator's KeycloakRealmImport controller is CREATE-ONLY:
@@ -23,7 +22,9 @@ metadata:
   name: zylos-realm
   namespace: zylos-identity
   labels:
+    app.kubernetes.io/name: keycloak
     app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: identity-realm
 spec:
   keycloakCRName: keycloak
   realm:
