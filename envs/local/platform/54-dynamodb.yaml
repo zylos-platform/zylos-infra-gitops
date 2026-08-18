@@ -19,7 +19,7 @@ spec:
   source:
     repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
     targetRevision: main
-    path: components/platform/dynamodb/base
+    path: components/platform/dynamodb/overlays/local
   destination:
     server: https://kubernetes.default.svc
     namespace: zylos-data-dynamodb

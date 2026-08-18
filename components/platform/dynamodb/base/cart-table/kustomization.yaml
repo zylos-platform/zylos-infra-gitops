@@ -3,5 +3,5 @@ kind: Kustomization
 resources:
   - bootstrap-configmap.yaml
   - bootstrap-job.yaml
-  - cilium-network-policy.yaml
+  - cilium-networkpolicy.yaml
   - serviceaccount.yaml

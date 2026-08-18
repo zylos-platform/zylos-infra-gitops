@@ -4,7 +4,7 @@ resources:
 - connect-cluster.yaml
 - connector-catalog.yaml
 - kafka-connect-rbac.yaml
-- cilium-network-policy.yaml
+- cilium-networkpolicy.yaml
 
 configurations:
 - strimzi-config.yaml
