@@ -8,9 +8,6 @@ metadata:
 spec:
   gatewayClassName: istio
   listeners:
-    # ---------------------------------------------------------
-    # HTTP LISTENER (Port 80)
-    # ---------------------------------------------------------
     - name: http
       port: 80
       protocol: HTTP
@@ -21,20 +18,14 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: zylos-infra-gateway
 
-    # ---------------------------------------------------------
-    # HTTPS LISTENER (Port 443)
-    # ---------------------------------------------------------
-    - name: https
+    - name: https-wildcard
       port: 443
       protocol: HTTPS
-      hostname: "api.zylos.app"
+      hostname: "*.zylos.app"
       tls:
         mode: Terminate
         certificateRefs:
-          - name: zylos-edge-tls-cert
+          - name: zylos-wildcard-tls-cert
       allowedRoutes:
         namespaces:
-          from: Selector
-          selector:
-            matchLabels:
-              zylos.app/namespace-tier: tenant
+          from: All

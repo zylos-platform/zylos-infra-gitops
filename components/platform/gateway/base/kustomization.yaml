@@ -3,6 +3,6 @@ kind: Kustomization
 
 resources:
   - gateway.yaml
-  - cilium-network-policy.yaml
+  - cilium-networkpolicy.yaml
   - http-route-redirect.yaml
   - request-authentication.yaml
