@@ -25,11 +25,11 @@ spec:
     - toEndpoints:
         - matchLabels:
             "k8s:io.kubernetes.pod.namespace": kube-system
-            k8s-app: kube-dns
+            "k8s:k8s-app": kube-dns
       toPorts:
         - ports:
             - port: "53"
-              protocol: UDP
+              protocol: ANY
           rules:
             dns:
               - matchPattern: "*"
@@ -37,7 +37,7 @@ spec:
     - toEndpoints:
         - matchLabels:
             "k8s:io.kubernetes.pod.namespace": observability
-            app.kubernetes.io/name: opentelemetry-collector
+            "k8s:app.kubernetes.io/name": opentelemetry-collector
       toPorts:
         - ports:
             - port: "4317" # OTLP gRPC
