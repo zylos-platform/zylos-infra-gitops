@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: zylos-wildcard-tls
+  namespace: zylos-infra-gateway
+spec:
+  secretName: zylos-wildcard-tls-cert
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+  dnsNames:
+    - "*.dev.zylos.app"
+    - "dev.zylos.app"
