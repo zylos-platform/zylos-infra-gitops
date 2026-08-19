@@ -33,3 +33,10 @@ cainjector:
     limits:
       cpu: 250m
       memory: 256Mi
+
+podLabels:
+  azure.workload.identity/use: "true"
+
+serviceAccount:
+  annotations:
+    azure.workload.identity/client-id: "2e4722c7-0201-419e-9085-5715e8a85130"

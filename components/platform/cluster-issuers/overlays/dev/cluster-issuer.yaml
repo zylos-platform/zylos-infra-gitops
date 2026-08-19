@@ -9,9 +9,10 @@ spec:
     privateKeySecretRef:
       name: letsencrypt-staging-account-key
     solvers:
-      - http01:
-          gatewayHTTPRoute:
-            parentRefs:
-              - name: zylos-edge-gateway
-                namespace: zylos-infra-gateway
-                kind: Gateway
+      - dns01:
+          azureDNS:
+            subscriptionID: "38f8608b-1bc1-4f95-bef0-a1e27f798148"
+            resourceGroupName: "zylos-rg"
+            hostedZoneName: "dev.zylos.app"
+            managedIdentity:
+              clientID: "2e4722c7-0201-419e-9085-5715e8a85130"
