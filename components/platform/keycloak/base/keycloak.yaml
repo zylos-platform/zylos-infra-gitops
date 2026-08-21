@@ -36,8 +36,13 @@ spec:
     httpPort: 8080
 
   hostname:
-    hostname: http://auth.zylos.app
+    hostname: https://auth.zylos.app
     strict: true
+
+  unsupported:
+    podTemplate:
+      spec:
+        serviceAccountName: keycloak
 
   proxy:
     headers: xforwarded

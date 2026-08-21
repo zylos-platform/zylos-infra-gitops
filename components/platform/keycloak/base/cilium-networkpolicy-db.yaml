@@ -7,11 +7,11 @@ spec:
   endpointSelector:
     matchLabels:
       cnpg.io/cluster: keycloak-postgres
-      app.kubernetes.io/component: identity-database
   ingress:
     - fromEndpoints:
         - matchLabels:
-            app.kubernetes.io/name: keycloak
+            app.kubernetes.io/instance: keycloak
+            app.kubernetes.io/component: server
       toPorts:
         - ports:
             - port: "5432"
@@ -23,6 +23,24 @@ spec:
       toPorts:
         - ports:
             - port: "5432"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": cnpg-system
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+            - port: "8000"
+              protocol: TCP
+
+    - fromEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "8000"
               protocol: TCP
   egress:
     - toEndpoints:

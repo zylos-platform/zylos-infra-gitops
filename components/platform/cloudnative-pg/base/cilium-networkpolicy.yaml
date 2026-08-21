@@ -31,3 +31,14 @@ spec:
               protocol: TCP
             - port: "6443"
               protocol: TCP
+
+    - toEndpoints:
+        - matchExpressions:
+            - key: cnpg.io/cluster
+              operator: Exists
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+            - port: "8000"
+              protocol: TCP

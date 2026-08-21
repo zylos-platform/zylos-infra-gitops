@@ -11,8 +11,8 @@ spec:
   egress:
     - toEndpoints:
         - matchLabels:
-            app.kubernetes.io/name: keycloak
-            app.kubernetes.io/component: identity-server
+            app.kubernetes.io/instance: keycloak
+            app.kubernetes.io/component: server
       toPorts:
         - ports:
             - port: "8080"
