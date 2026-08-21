@@ -1,0 +1,26 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zylos-percona-operator-cnp
+  namespace: zylos-data-mongodb
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: percona-server-mongodb-operator
+  egress:
+    - toEntities:
+        - kube-apiserver
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "6443"
+              protocol: TCP
+
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/component: mongod
+      toPorts:
+        - ports:
+            - port: "27017"
+              protocol: TCP

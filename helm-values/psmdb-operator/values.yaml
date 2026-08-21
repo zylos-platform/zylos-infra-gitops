@@ -1,4 +1,4 @@
-# values-local.yaml
+# values.yaml
 
 resources:
   requests:
