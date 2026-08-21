@@ -7,7 +7,6 @@ spec:
   selector:
     matchLabels:
       cnpg.io/cluster: keycloak-postgres
-      app.kubernetes.io/component: identity-database
   action: ALLOW
   rules:
     - from:

@@ -7,7 +7,7 @@ spec:
   instances: 1
 
   hostname:
-    hostname: http://auth.dev.zylos.app
+    hostname: https://auth.dev.zylos.app
 
   resources:
     requests:
@@ -23,10 +23,6 @@ spec:
         containers:
           - name: keycloak
             env:
-              - name: KC_DB_POOL_INITIAL_SIZE
-                value: "5"
-              - name: KC_DB_POOL_MAX_SIZE
-                value: "20"
               - name: KC_HEALTH_ENABLED
                 value: "true"
               - name: KC_METRICS_ENABLED

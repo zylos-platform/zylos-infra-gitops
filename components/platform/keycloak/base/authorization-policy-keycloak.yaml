@@ -6,8 +6,8 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: keycloak
-      app.kubernetes.io/component: identity-server
+      app.kubernetes.io/instance: keycloak
+      app.kubernetes.io/component: server
   action: ALLOW
   rules:
     - from:
