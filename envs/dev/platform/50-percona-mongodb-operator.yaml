@@ -16,15 +16,19 @@ spec:
   sources:
     - repoURL: https://percona.github.io/percona-helm-charts
       chart: psmdb-operator
-      targetRevision: 1.22.0
+      targetRevision: 1.23.0
       helm:
         releaseName: psmdb-operator
         valueFiles:
-          - $values/helm-values/psmdb-operator/values-dev.yaml
+          - $values/helm-values/psmdb-operator/values.yaml
 
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
+
+    - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
+      targetRevision: main
+      path: components/platform/psmdb-operator/overlays/dev
   destination:
     server: https://kubernetes.default.svc
     namespace: zylos-data-mongodb

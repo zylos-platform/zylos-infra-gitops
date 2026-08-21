@@ -1,0 +1,18 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zylos-catalog-db-init-job-cnp
+  namespace: zylos-data-mongodb
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: catalog-mongodb
+      app.kubernetes.io/component: initialization
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/component: mongod
+      toPorts:
+        - ports:
+            - port: "27017"
+              protocol: TCP

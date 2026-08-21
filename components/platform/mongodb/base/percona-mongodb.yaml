@@ -6,23 +6,26 @@ kind: PerconaServerMongoDB
 metadata:
   name: percona-server-mongodb
   namespace: zylos-data-mongodb
+  labels:
+    app.kubernetes.io/name: percona-server-mongodb
+    app.kubernetes.io/part-of: zylos-platform
   finalizers:
     - percona.com/delete-psmdb-pods-in-order
 spec:
-  crVersion: 1.22.0
+  crVersion: 1.23.0
   image: percona/percona-server-mongodb:8.0
   imagePullPolicy: IfNotPresent
   updateStrategy: SmartUpdate
   upgradeOptions:
     apply: disabled
     schedule: "0 2 * * *"
-  unsafeFlags: # Local-dev relaxations.
+  unsafeFlags:
     replsetSize: true
     tls: true
   tls:
     mode: disabled
   secrets:
-    users: percona-server-mongodb-system-users # operator auto-generates if absent
+    users: percona-server-mongodb-system-users
   replsets:
     - name: rs0
       size: 1

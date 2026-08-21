@@ -36,7 +36,7 @@ spec:
     - toEndpoints:
         - matchLabels:
             "k8s:io.kubernetes.pod.namespace": zylos-data-mongodb
-            app.kubernetes.io/name: percona-server-mongodb
+            "k8s:app.kubernetes.io/component": mongod
       toPorts:
         - ports:
             - port: "27017"

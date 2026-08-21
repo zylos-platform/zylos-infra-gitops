@@ -4,4 +4,4 @@ resources:
   - crd-keycloaks.yaml
   - crd-realmimports.yaml
   - operator.yaml
-  - cilium-network-policy.yaml
+  - cilium-networkpolicy.yaml

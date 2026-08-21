@@ -1,0 +1,59 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zylos-percona-mongodb-cnp
+  namespace: zylos-data-mongodb
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/component: mongod
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/component: mongod
+      toPorts:
+        - ports:
+            - port: "27017"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: percona-server-mongodb-operator
+      toPorts:
+        - ports:
+            - port: "27017"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": zylos-catalog
+      toPorts:
+        - ports:
+            - port: "27017"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            "k8s:io.kubernetes.pod.namespace": zylos-infra-kafka
+            app.kubernetes.io/name: zylos-kafka-connect
+      toPorts:
+        - ports:
+            - port: "27017"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: catalog-mongodb
+            app.kubernetes.io/component: initialization
+      toPorts:
+        - ports:
+            - port: "27017"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/component: mongod
+      toPorts:
+        - ports:
+            - port: "27017"
+              protocol: TCP

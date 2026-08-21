@@ -28,7 +28,7 @@ spec:
         app.kubernetes.io/part-of: zylos-platform
         app.kubernetes.io/component: reconciliation
     spec:
-      serviceAccountName: keycloak-config-cli
+      serviceAccountName: keycloak-config-cli-reconciler
       automountServiceAccountToken: false
       restartPolicy: OnFailure
       securityContext:

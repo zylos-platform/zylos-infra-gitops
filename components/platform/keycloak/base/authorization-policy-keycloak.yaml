@@ -14,7 +14,7 @@ spec:
         - source:
             principals:
               - "cluster.local/ns/zylos-infra-gateway/sa/gateway"
-              - "cluster.local/ns/zylos-identity/sa/keycloak-config-cli"
+              - "cluster.local/ns/zylos-identity/sa/keycloak-config-cli-reconciler"
               - "cluster.local/ns/zylos-identity/sa/keycloak"
               - "cluster.local/ns/observability/sa/grafana"
               - "cluster.local/ns/observability/sa/prometheus"
