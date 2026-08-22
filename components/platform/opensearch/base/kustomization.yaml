@@ -1,5 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - catalog-products-bootstrap-configmap.yaml
-  - catalog-products-bootstrap-job.yaml
+  - cilium-networkpolicy-job.yaml
+  - cilium-networkpolicy.yaml
+  - serviceaccount-job.yaml
+  - job-catalog-bootstrap.yaml
+  - configmap-catalog-bootstrap.yaml
