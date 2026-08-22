@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/part-of: zylos-platform
     app.kubernetes.io/component: registry
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: schema-registry
@@ -41,11 +41,11 @@ spec:
             - name: SCHEMA_REGISTRY_LISTENERS
               value: "http://0.0.0.0:8081"
             - name: SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR
-              value: "3"
+              value: "1"
             - name: SCHEMA_REGISTRY_SCHEMA_COMPATIBILITY_LEVEL
               value: "backward"
             - name: SCHEMA_REGISTRY_HEAP_OPTS
-              value: "-Xms256m -Xmx512m"
+              value: "-Xms128m -Xmx256m"
           ports:
             - name: http
               containerPort: 8081
@@ -67,14 +67,15 @@ spec:
             periodSeconds: 20
           resources:
             requests:
-              cpu: 100m
-              memory: 384Mi
-              ephemeral-storage: 500Mi
+              cpu: 50m
+              memory: 256Mi
+              ephemeral-storage: 100Mi
             limits:
-              cpu: 500m
-              memory: 768Mi
-              ephemeral-storage: 1Gi
+              cpu: 250m
+              memory: 384Mi
+              ephemeral-storage: 250Mi
           securityContext:
+            readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]

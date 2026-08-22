@@ -4,5 +4,5 @@ resources:
   - deployment.yaml
   - service.yaml
   - serviceaccount.yaml
-  - cilium-network-policy.yaml
+  - cilium-networkpolicy.yaml
   - authorization-policy.yaml
