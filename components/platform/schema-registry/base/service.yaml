@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: schema-registry
     app.kubernetes.io/part-of: zylos-platform
-    app.kubernetes.io/component: messaging
+    app.kubernetes.io/component: registry
 spec:
   type: ClusterIP
   selector:
