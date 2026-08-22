@@ -3,13 +3,23 @@ kind: ConfigMap
 metadata:
   name: catalog-products-bootstrap-config
   namespace: zylos-data-opensearch
+  labels:
+    app.kubernetes.io/name: catalog-opensearch
+    app.kubernetes.io/part-of: zylos-platform
+    app.kubernetes.io/component: bootstrap
 data:
   index-template.json: |
     {
       "index_patterns": ["catalog-products-*"],
       "priority": 100,
       "template": {
-        "settings": { "index": { "number_of_shards": 1, "number_of_replicas": 0, "refresh_interval": "1s" } },
+        "settings": {
+          "index": {
+            "number_of_shards": 1,
+            "number_of_replicas": 0,
+            "refresh_interval": "1s"
+          }
+        },
         "mappings": {
           "dynamic": "strict",
           "properties": {
@@ -46,26 +56,45 @@ data:
     #!/bin/sh
     set -eu
 
-    OS="${OPENSEARCH_URL:-http://opensearch.zylos-data-opensearch.svc.cluster.local:9200}"
+    OS="${OPENSEARCH_URL:-http://opensearch:9200}"
     TEMPLATE="catalog-products"
     INDEX="catalog-products-v1"
+    MAX_RETRIES=60
+    RETRY_COUNT=0
 
-    # Helper function to ensure TLS bypass and Auth are perfectly applied to every call
     os_curl() {
       curl -k -u "admin:${ADMIN_PASSWORD}" -fsS "$@"
     }
 
-    echo "Waiting for OpenSearch at $OS"
+    echo "Waiting for OpenSearch at $OS to reach at least yellow status..."
     until os_curl "$OS/_cluster/health?wait_for_status=yellow&timeout=5s" >/dev/null 2>&1; do
-      echo "  not ready, retrying"; sleep 3
+      if [ "$RETRY_COUNT" -ge "$MAX_RETRIES" ]; then
+        echo "Error: OpenSearch did not become ready within 5 minutes. Failing job."
+        exit 1
+      fi
+      echo "  -> OpenSearch not ready. Retrying... ($RETRY_COUNT/$MAX_RETRIES)"
+      RETRY_COUNT=$((RETRY_COUNT+1))
+      sleep 5
     done
+
+    echo "Creating strict Role for the catalog service..."
+    os_curl -X PUT "$OS/_plugins/_security/api/roles/catalog_service_role" \
+      -H 'Content-Type: application/json' \
+      -d '{
+        "cluster_permissions": ["cluster_monitor"],
+        "index_permissions": [{
+          "index_patterns": ["catalog-products*"],
+          "allowed_actions": ["crud", "create_index", "indices_monitor"]
+        }]
+      }'
+    echo
 
     echo "Provisioning catalog_service application user..."
     os_curl -X PUT "$OS/_plugins/_security/api/internalusers/catalog_service" \
       -H 'Content-Type: application/json' \
       -d '{
         "password": "'"${CATALOG_APP_PASSWORD}"'",
-        "backend_roles": ["kibana_user"]
+        "backend_roles": ["catalog_service_role"]
       }'
     echo
 
@@ -74,7 +103,6 @@ data:
       -H 'Content-Type: application/json' --data-binary @/bootstrap/index-template.json
     echo
 
-      # Suppress both stdout (the JSON response) and stderr (if the index doesn't exist yet)
     if os_curl -o /dev/null "$OS/$INDEX" >/dev/null 2>&1; then
       echo "Index $INDEX already exists; nothing to create"
     else
@@ -84,4 +112,4 @@ data:
       echo
     fi
 
-    echo "Bootstrap complete"
+    echo "Bootstrap complete!"

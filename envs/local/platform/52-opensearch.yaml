@@ -19,12 +19,11 @@ spec:
   sources:
     - repoURL: https://opensearch-project.github.io/helm-charts
       chart: opensearch
-      targetRevision: 3.7.0
+      targetRevision: 3.8.0
       helm:
         releaseName: opensearch
         valueFiles:
           - $values/helm-values/opensearch/values.yaml
-          - $values/helm-values/opensearch/values-local.yaml
 
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
