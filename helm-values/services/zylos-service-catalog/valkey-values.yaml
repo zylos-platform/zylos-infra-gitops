@@ -1,0 +1,4 @@
+# valkey-values.yaml
+
+auth:
+  usersExistingSecret: catalog-valkey-secret

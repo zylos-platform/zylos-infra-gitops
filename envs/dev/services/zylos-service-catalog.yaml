@@ -8,7 +8,7 @@ metadata:
   name: zylos-service-catalog
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "20" # After all platform components
+    argocd.argoproj.io/sync-wave: "20"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
@@ -26,6 +26,15 @@ spec:
         valueFiles:
           - $values/helm-values/services/zylos-service-catalog/values.yaml
           - $values/helm-values/services/zylos-service-catalog/values-dev.yaml
+
+    - repoURL: https://valkey.io/valkey-helm
+      chart: valkey
+      targetRevision: 0.11.0
+      helm:
+        releaseName: catalog-valkey
+        valueFiles:
+          - $values/helm-values/valkey/values.yaml
+          - $values/helm-values/services/zylos-service-catalog/valkey-values.yaml
 
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
