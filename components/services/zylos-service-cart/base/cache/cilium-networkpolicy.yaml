@@ -1,0 +1,34 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: zylos-cart-valkey-cnp
+  namespace: zylos-cart
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/instance: cart-valkey
+      app.kubernetes.io/name: valkey
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/instance: cart-valkey
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: zylos-service-cart
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/instance: cart-valkey
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP

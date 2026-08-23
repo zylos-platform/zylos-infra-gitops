@@ -26,6 +26,15 @@ spec:
           - $values/helm-values/services/zylos-service-cart/values.yaml
           - $values/helm-values/services/zylos-service-cart/values-local.yaml
 
+    - repoURL: https://valkey.io/valkey-helm
+      chart: valkey
+      targetRevision: 0.11.0
+      helm:
+        releaseName: cart-valkey
+        valueFiles:
+          - $values/helm-values/valkey/values.yaml
+          - $values/helm-values/services/zylos-service-cart/valkey-values.yaml
+
     - repoURL: https://github.com/zylos-platform/zylos-infra-gitops.git
       targetRevision: main
       ref: values
