@@ -83,6 +83,12 @@ authorizationPolicy:
     - namespace: zylos-catalog
       serviceAccount: zylos-service-catalog-reconciler
 
+httpRoute:
+  enabled: true
+  paths:
+    - value: /api/v1/products
+      type: PathPrefix
+
 extraEnv:
   ZYLOS_JWK_SET_URI: "http://keycloak-service.zylos-identity.svc.cluster.local:8080/realms/zylos/protocol/openid-connect/certs"
   ZYLOS_SECURITY_OPA_ENDPOINT: "http://opa.opa.svc.cluster.local:8181"
