@@ -3,26 +3,21 @@
 springProfile: dev
 environment: dev
 
-replicaCount: 2
+replicaCount: 1
 
 resources:
   requests:
-    cpu: 200m
-    memory: 512Mi
+    cpu: 100m
+    memory: 256Mi
   limits:
-    cpu: 1000m
-    memory: 1Gi
+    cpu: 400m
+    memory: 512Mi
 
 pdb:
-  enabled: true
-  maxUnavailable: 1
+  enabled: false
 
 autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 6
-  targetCPUUtilizationPercentage: 75
-  targetMemoryUtilizationPercentage: 80
+  enabled: false
 
 extraEnv:
-  ZYLOS_ISSUER_URI: "https://auth.zylos.app/realms/zylos"
+  ZYLOS_ISSUER_URI: "https://auth.dev.zylos.app/realms/zylos"

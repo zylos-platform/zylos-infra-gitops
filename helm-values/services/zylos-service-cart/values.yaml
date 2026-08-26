@@ -17,6 +17,9 @@ networkPolicy:
           - namespaceSelector:
               matchLabels:
                 zylos.app/namespace-tier: edge
+            podSelector:
+              matchLabels:
+                gateway.networking.k8s.io/gateway-name: zylos-edge-gateway
         ports:
           - protocol: TCP
             port: 8080
@@ -29,7 +32,6 @@ networkPolicy:
         ports:
           - protocol: TCP
             port: 9000
-
   egress:
     toIdentity: true
     toOpa: true
@@ -43,9 +45,9 @@ networkPolicy:
             port: 8000
 
       - to:
-          - namespaceSelector:
+          - podSelector:
               matchLabels:
-                kubernetes.io/metadata.name: zylos-data-valkey
+                app.kubernetes.io/instance: cart-valkey
         ports:
           - protocol: TCP
             port: 6379
@@ -78,26 +80,26 @@ httpRoute:
       type: PathPrefix
 
 extraEnv:
-  ZYLOS_JWK_SET_URI: "http://auth.zylos.local/realms/zylos/protocol/openid-connect/certs"
+  ZYLOS_JWK_SET_URI: "http://keycloak-service.zylos-identity.svc.cluster.local:8080/realms/zylos/protocol/openid-connect/certs"
   ZYLOS_SECURITY_OPA_ENDPOINT: "http://opa.opa.svc.cluster.local:8181"
 
-  ZYLOS_CATALOG_KAFKA_BOOTSTRAP: "zylos-kafka-kafka-bootstrap.zylos-infra-kafka.svc.cluster.local:9092"
-
-  ZYLOS_CATALOG_VALKEY_HOST: "valkey.zylos-data-valkey.svc.cluster.local"
-  ZYLOS_CATALOG_VALKEY_PORT: "6379"
-  ZYLOS_CATALOG_VALKEY_PASSWORD:
+  ZYLOS_CART_VALKEY_HOST: "cart-valkey"
+  ZYLOS_CART_VALKEY_PORT: "6379"
+  ZYLOS_CART_VALKEY_PASSWORD:
     valueFrom:
       secretKeyRef:
-        name: catalog-valkey-app-user
+        name: cart-valkey-secret
         key: password
 
-  ZYLOS_CATALOG_SCHEMA_REGISTRY_URL: "http://schema-registry.zylos-infra-kafka.svc.cluster.local:8081"
-  ZYLOS_CATALOG_AUTO_REGISTER_SCHEMAS: "true"
+  ZYLOS_CART_KAFKA_BOOTSTRAP: "zylos-kafka-kafka-bootstrap.zylos-infra-kafka.svc.cluster.local:9092"
+
+  ZYLOS_CART_SCHEMA_REGISTRY_URL: "http://schema-registry.zylos-infra-kafka.svc.cluster.local:8081"
+  ZYLOS_CART_AUTO_REGISTER_SCHEMAS: "true"
 
   ZYLOS_CART_DYNAMODB_ENDPOINT: "http://dynamodb-local.zylos-data-dynamodb.svc.cluster.local:8000"
   ZYLOS_CART_AWS_REGION: "us-east-1"
 
-  ZYLOS_SERVICE_VERSION: "0.1.0"
-
   OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://opentelemetry-collector.observability.svc.cluster.local:4318/v1/traces"
   OTEL_EXPORTER_OTLP_METRICS_ENDPOINT: "http://opentelemetry-collector.observability.svc.cluster.local:4318/v1/metrics"
+
+  ZYLOS_SERVICE_VERSION: "0.1.0"
