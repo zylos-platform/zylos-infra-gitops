@@ -47,7 +47,7 @@ seal_valkey_secret() {
 
   kubectl create secret generic "$name" \
     --namespace "$ns" \
-    --from-literal=valkey-password="$pass" \
+    --from-literal=password="$pass" \
     --dry-run=client -o yaml \
   | kubeseal --format yaml --controller-namespace sealed-secrets \
   | kubectl annotate -f - --local "argocd.argoproj.io/sync-wave=-40" -o yaml \

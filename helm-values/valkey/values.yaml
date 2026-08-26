@@ -5,7 +5,7 @@ auth:
   aclUsers:
     default:
       permissions: "~* &* +@all"
-      passwordKey: valkey-password
+      passwordKey: password
 
 resources:
   requests:
